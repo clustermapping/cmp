@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= name %> Map</title>
+    <script type="text/javascript" src="<%= base %>/viz/bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/bower_components/d3/d3.min.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/bower_components/queue-async/queue.min.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/bower_components/topojson/topojson.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/mythos-vis/dist/mythosvis.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/mythos-vis/src/d3Plot.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/js/lib/chart-utils.js"></script>
+
+    <script type="text/javascript" src="/profiles/clustermapping/modules/hbs_viz/js/utility/d3AlbersUsaPr.js"></script>
+    <script type="text/javascript" src="/profiles/clustermapping/modules/hbs_viz/js/utility/d3MapMenu.js"></script>
+    <script type="text/javascript" src="/profiles/clustermapping/modules/hbs_viz/js/charts/d3SmallBarChart.js"></script>
+
+    <link href="<%= base %>/viz/mythos-vis/src/style/mythos-vis.css" rel="stylesheet" type="text/css">
+    <link href="<%= base %>/viz/css/fonts.css" rel="stylesheet" type="text/css">
+    <link href="<%= base %>/viz/css/style.css" rel="stylesheet" type="text/css">
+    <link href="<%= base %>/viz/css/map.css" rel="stylesheet" type="text/css">
+    <link href="/profiles/clustermapping/modules/hbs_viz/css/hbs-viz.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400italic,700,900,700italic,900italic,600italic,600|Lato:400,700,900,700italic,900italic,400italic" rel="stylesheet" type="text/css" />
+</head>
+<div id="chart" class="block-hbs-viz"></div>
+
+<script type="text/javascript">window.hbsBaseUrl = '<%= base %>'</script>
+<script type="text/javascript" src="<%= base %>/viz/bootstrap/js/button.js"></script>
+<script type="text/javascript" src="<%= base %>/viz/bootstrap/js/collapse.js"></script>
+<script type="text/javascript" src="<%= base %>/viz/bootstrap/js/dropdown.js"></script>
+<script type="text/javascript" src="<%= base %>/viz/bootstrap/js/modal.js"></script>
+<script type="text/javascript" src="<%= base %>/viz/bootstrap/js/tooltip.js"></script>
+<script type="text/javascript" src="<%= base %>/viz/bootstrap/js/popover.js"></script>
+<script type="text/javascript" src="<%= base %>/viz/js/<%= name %>.js"></script>
+</body>
+</html>

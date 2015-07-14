@@ -1,0 +1,178 @@
+<?php
+
+/**
+ *  @file
+ *  Create a custom autocomplete for quickly searching through specified content types and fields.
+ */
+
+/**
+ *  Implementation of hook_menu().
+ *  Provide a callback for doing the autocomplete and a form for configuring it
+ */
+function quick_search_menu() {
+  $items = array();
+
+  $items['admin/config/search/quick_search'] = array(
+    'title' => 'Quick Search',
+    'description' => 'Configure Quick Search settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('quick_search_admin'),
+    'access arguments' => array('administer search'),
+    'file' => 'quick_search.admin.inc',
+  );
+
+  //callback for getting search results for autocomplete
+  $items['quick_search/%/autocomplete/%'] = array(
+    'page callback' => 'quick_search_get_suggestions',
+    'page arguments' => array(1,3,4),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  //callback for getting search results for autocomplete
+  $items['quick_search/%/cluster/%'] = array(
+    'page callback' => 'quick_search_get_suggestions_cluster',
+    'page arguments' => array(1,3,4),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['quick_search_compare/%/autocomplete/%'] = array(
+    'page callback' => 'quick_search_compare_regions',
+    'page arguments' => array(1,3),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ *  Menu callback for getting autcomplete results
+ *  currently this does only 'Begins with' style matching
+ *  @param $search - the partial search to match on
+ *
+ *  Outputs results as json (note that this function results in an ultimate exit)
+ */
+function quick_search_compare_regions ($hash = NULL, $search = '') {
+
+  $output = array(
+    'label' => t('Are you interested in ?'),
+    'results' => array(),
+  );
+  $callback = quick_search_callback($hash);
+  $output['label'] = quick_search_callback($hash);
+  if(function_exists($callback)) {
+    $output['results'] = $callback($search);
+  }
+  drupal_alter($callback, $output);
+
+  drupal_json_output($output);
+}
+
+/**
+ *  Menu callback for getting autcomplete results
+ *  currently this does only 'Begins with' style matching
+ *  @param $search - the partial search to match on
+ *
+ *  Outputs results as json (note that this function results in an ultimate exit)
+ */
+function quick_search_get_suggestions ($hash = NULL, $search = '') {
+
+  $output = array(
+    'label' => t('Are you interested in ?'),
+    'results' => array(),
+  );
+  $callback = quick_search_callback($hash);
+  $output['label'] = quick_search_callback($hash);
+  if(function_exists($callback)) {
+    $output['results'] = $callback($search);
+  }
+  drupal_alter($callback, $output);
+
+  drupal_json_output($output);
+}
+
+/**
+ *  Menu callback for getting autcomplete results
+ *  currently this does only 'Begins with' style matching
+ *  @param $search - the partial search to match on
+ *
+ *  Outputs results as json (note that this function results in an ultimate exit)
+ */
+function quick_search_get_suggestions_cluster ($hash = NULL, $cluster = '', $search = '') {
+  $output = array(
+    'label' => t('Are you interested in ?'),
+    'results' => array(),
+  );
+  $callback = quick_search_callback($hash);
+  $output['label'] = quick_search_callback($hash);
+  if(function_exists($callback)) {
+    $output['results'] = $callback($cluster, $search);
+  }
+  drupal_alter($callback, $output);
+  drupal_json_output($output);
+}
+
+/**
+ * quick_search_callbacks()
+ *
+ * retrive callbacks from cache()
+ */
+function quick_search_callback($hash) {
+  $cache = cache_get("quick_search_callbacks");
+  $quick_search_callbacks = isset($cache->data)?$cache->data : array();
+
+  return isset($quick_search_callbacks[$hash]) ? $quick_search_callbacks[$hash] : FALSE;
+}
+
+/**
+ * quick_search_callback_set()
+ *
+ * cache a callback function and return its hash key
+ *
+ * we are doing this ensure that not any callback is used, only one intended for quick_search
+ */
+function quick_search_callback_set($callback) {
+  $cache = cache_get("quick_search_callbacks");
+  $quick_search_callbacks = isset($cache->data)?$cache->data : array();
+  $hash = hash("md5", $callback);
+  $quick_search_callbacks[$hash] = $callback;
+  cache_set("quick_search_callbacks", $quick_search_callbacks, 'cache', CACHE_TEMPORARY);
+  return $hash;
+}
+
+/**
+ *  Process hook to call by setting as a #pre_render function on quicksearch form elements
+ */
+function quick_search_process_search($element) {
+
+  $minlength = variable_get('quick_search_minlength', 3);
+  $hash = quick_search_callback_set($element['#attributes']['quick_search_callback']);
+  drupal_add_js(array( 'quick_search' => array(
+    $element['#id'] => array(
+      'path' => base_path() . "quick_search/$hash/autocomplete",
+      'minlength' => $minlength,
+    )
+
+  )), 'setting');
+
+  $base = drupal_get_path('module', 'quick_search');
+  drupal_add_js($base . '/js/quick_search.js');
+  drupal_add_css($base . '/css/quick_search.css');
+
+  $element['#attributes']['class'][] = 'use-quicksearch';
+  $element['#attributes']['autocomplete'] = "off";
+  return $element;
+}
+
+/**
+ *  Implementation of hook_form_FORM_ID_alter().
+ *  Adds quicksearch to the search form.
+ */
+/*
+function quick_search_form_search_block_form_alter(&$form, &$form_state, $form_id) {
+  $form['search_block_form']['#pre_render'][] = 'quick_search_process_search';
+  $form['search_block_form']['#attributes']['autocomplete'] = "off";
+}
+*/

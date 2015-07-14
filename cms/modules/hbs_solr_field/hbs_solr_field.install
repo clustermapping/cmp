@@ -1,0 +1,37 @@
+<?php
+/**
+ * @file
+ * Install, update, and uninstall functions for the hbs_solr_field module.
+ */
+
+/**
+ * Implements hook_field_schema().
+ *
+ * Defines the database schema of the field, using the format used by the
+ * Schema API.
+ *
+ * The data we will store here is just one 7-character element, even
+ * though the widget presents the three portions separately.
+ *
+ * All implementations of hook_field_schema() must be in the module's
+ * .install file.
+ *
+ * @see http://drupal.org/node/146939
+ * @see schemaapi
+ * @see hook_field_schema()
+ * @ingroup field_example
+ */
+function hbs_solr_field_field_schema($field) {
+  $columns = array(
+    'solr_reference' => array('type' => 'varchar','length' => 128, 'not null' => FALSE),
+    'solr_id' => array('type' => 'varchar','length' => 128, 'not null' => FALSE),
+    'solr_key' => array('type' => 'varchar','length' => 128, 'not null' => FALSE),
+  );
+  $indexes = array(
+    'solr_reference' => array('solr_reference'),
+  );
+  return array(
+    'columns' => $columns,
+    'indexes' => $indexes,
+  );
+}

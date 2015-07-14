@@ -1,0 +1,12 @@
+name = Dashboard Features
+description = Provides ancillary features for dashboard content
+core = 7.x
+package = Clustermapping.us
+version = 7.x-1.0-beta1
+project = dashboard_features
+dependencies[] = views
+features[ctools][] = views:views_default:3.0
+features[features_api][] = api:2
+features[views_view][] = related
+features_exclude[dependencies][ctools] = ctools
+project path = profiles/clustermapping/modules

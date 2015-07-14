@@ -1,0 +1,88 @@
+
+.cluster-list li {
+	list-style: none;
+	text-align: right;
+	margin-top: -5px;
+	white-space:nowrap;
+}
+
+.cluster-list li div.cluster-label {
+	width: 280px;
+	display: inline-block;
+	text-overflow:ellipsis;
+	overflow: hidden;
+	vertical-align: middle;
+}
+
+.cluster-list li div.line-chart {
+	width: 200px;
+	display: inline-block;
+	text-align: left;
+}
+.cluster-list li div.line-chart-bar {
+  background-color: #405b9a;
+  text-align: left;
+  padding: 3px;
+  margin: 1px;
+  color: white;
+  display: inline-block;
+  /*height: 30px;*/
+  /*vertical-align: middle;*/
+}
+
+.cluster-list li a  {
+	line-height: 32px;
+	width: auto;
+	text-decoration: none;
+	font-weight: bold;
+	font-size: 120%;
+	/*text-align: right;*/
+}
+
+.cluster-list li a .icon {
+    background: url(cluster_icons.png) no-repeat top left;
+    display: inline-block;
+    vertical-align: text-bottom;
+}
+
+#cluster-item-aerospace-engines .icon { background-position: 0 0; width: 32px; height: 37px; } 
+#cluster-item-aerospace-vehicles-and-defense .icon { background-position: 0 -87px; width: 32px; height: 37px; } 
+#cluster-item-agricultural-products .icon { background-position: 0 -174px; width: 32px; height: 37px; } 
+#cluster-item-analytical-instruments .icon { background-position: 0 -261px; width: 32px; height: 37px; } 
+#cluster-item-apparel .icon { background-position: 0 -348px; width: 32px; height: 37px; } 
+#cluster-item-automotive .icon { background-position: 0 -435px; width: 32px; height: 37px; } 
+#cluster-item-biopharmaceuticals .icon { background-position: 0 -522px; width: 32px; height: 37px; } 
+#cluster-item-building-fixtures-equipment-and-services .icon { background-position: 0 -609px; width: 32px; height: 37px; } 
+#cluster-item-business-services .icon { background-position: 0 -696px; width: 32px; height: 37px; } 
+#cluster-item-chemical-products .icon { background-position: 0 -783px; width: 32px; height: 37px; } 
+#cluster-item-communications-equipment .icon { background-position: 0 -870px; width: 32px; height: 37px; } 
+#cluster-item-construction-materials .icon { background-position: 0 -957px; width: 32px; height: 37px; } 
+#cluster-item-distribution-services .icon { background-position: 0 -1044px; width: 32px; height: 37px; } 
+#cluster-item-education-and-knowledge-creation .icon { background-position: 0 -1131px; width: 32px; height: 37px; } 
+#cluster-item-entertainment .icon { background-position: 0 -1218px; width: 32px; height: 37px; } 
+#cluster-item-financial-services .icon { background-position: 0 -1305px; width: 32px; height: 37px; } 
+#cluster-item-fishing-and-fishing-products .icon { background-position: 0 -1392px; width: 32px; height: 37px; } 
+#cluster-item-footwear .icon { background-position: 0 -1479px; width: 32px; height: 37px; } 
+#cluster-item-forest-products .icon { background-position: 0 -1566px; width: 32px; height: 37px; } 
+#cluster-item-furniture .icon { background-position: 0 -1653px; width: 32px; height: 37px; } 
+#cluster-item-heavy-construction-services .icon { background-position: 0 -1740px; width: 32px; height: 37px; } 
+#cluster-item-heavy-machinery .icon { background-position: 0 -1827px; width: 32px; height: 37px; } 
+#cluster-item-hospitality-and-tourism .icon { background-position: 0 -1914px; width: 32px; height: 37px; } 
+#cluster-item-information-technology .icon { background-position: -82px 0; width: 32px; height: 37px; } 
+#cluster-item-jewelry-and-precious-metals .icon { background-position: -82px -87px; width: 32px; height: 37px; } 
+#cluster-item-leather-and-related-products .icon { background-position: -82px -174px; width: 32px; height: 37px; } 
+#cluster-item-lighting-and-electrical-equipment .icon { background-position: -82px -261px; width: 32px; height: 37px; } 
+#cluster-item-medical-devices .icon { background-position: -82px -348px; width: 32px; height: 37px; } 
+#cluster-item-metal-manufacturing .icon { background-position: -82px -435px; width: 32px; height: 37px; } 
+#cluster-item-motor-driven-products .icon { background-position: -82px -522px; width: 32px; height: 37px; } 
+#cluster-item-oil-and-gas-products-and-services .icon { background-position: -82px -609px; width: 32px; height: 37px; } 
+#cluster-item-plastics .icon { background-position: -82px -696px; width: 32px; height: 37px; } 
+#cluster-item-power-generation-and-transmission .icon { background-position: -82px -783px; width: 32px; height: 37px; } 
+#cluster-item-prefabricated-enclosures .icon { background-position: -82px -870px; width: 32px; height: 37px; } 
+#cluster-item-processed-food .icon { background-position: -82px -957px; width: 32px; height: 37px; } 
+#cluster-item-production-technology .icon { background-position: -82px -1044px; width: 32px; height: 37px; } 
+#cluster-item-publishing-and-printing .icon { background-position: -82px -1131px; width: 32px; height: 37px; } 
+#cluster-item-sporting-recreational-and-childrens-goods .icon { background-position: -82px -1218px; width: 32px; height: 37px; } 
+#cluster-item-textiles .icon { background-position: -82px -1305px; width: 32px; height: 37px; } 
+#cluster-item-tobacco .icon { background-position: -82px -1392px; width: 32px; height: 37px; } 
+#cluster-item-transportation-and-logistics .icon { background-position: -82px -1479px; width: 32px; height: 37px; } 

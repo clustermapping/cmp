@@ -1,0 +1,7 @@
+name="HBS Search Autocomplete"
+description="Provides suggestions for search for HBS"
+package = Clustermapping.us
+core = 7.x
+version = 7.x-1.0-beta1
+project = hbs_search_autocomplete
+dependencies[] = quick_search

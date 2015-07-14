@@ -1,0 +1,52 @@
+<:!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <link href="css/style.css" rel="stylesheet"/>
+    <style>
+        .chart {
+            position: relative;
+            padding-top: 0;
+            height: 0;
+            overflow: auto;
+            -webkit-overflochart-scrolling:touch;
+            border: solid black 1px;
+        }
+
+        .chart iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .chart-100 { padding-bottom: 100%; }
+        .chart-90 { padding-bottom: 90%; }
+        .chart-80 { padding-bottom: 80%; }
+        .chart-75 { padding-bottom: 75%; }
+        .chart-70 { padding-bottom: 70%; }
+        .chart-60 { padding-bottom: 60%; }
+        .chart-50 { padding-bottom: 50%; }
+        .chart-40 { padding-bottom: 40%; }
+        .chart-30 { padding-bottom: 30%; }
+        .chart-25 { padding-bottom: 25%; }
+        .chart-20 { padding-bottom: 20%; }
+        .chart-10 { padding-bottom: 10%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+			<div class="row">
+    		<div class="col-md-12 chart chart-100">
+        	<iframe src="/data/viz/jobcreation.html#/:region_type/:region_code/:start_year/:end_year/:cluster_code"></iframe>
+    		</div>
+
+    		<div class="col-md-6 chart chart-50">
+        	<iframe src="jobcreation.html#/state/50/1998/2011/local"></iframe>
+    		</div>
+    	</div>
+    </div>
+</body>
+</html>

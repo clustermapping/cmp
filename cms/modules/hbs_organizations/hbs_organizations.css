@@ -1,0 +1,27 @@
+.org-url {
+  /*font-size: 20px;
+margin: 20px 0 30px;*/
+}
+
+.members-list {}
+.members-list header{
+  background-color: transparent;
+}
+.members-list .node-teaser{
+  margin-bottom: 0;
+}
+.members-list .node-teaser .field{
+  margin-top: 5px;
+}
+  .members-list h2 {
+    font-size: 18px;
+    font-weight: normal;
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .members-list p {
+    font-size: 14px;
+  }
+  .members-list ul.links {
+    display: none;
+  }

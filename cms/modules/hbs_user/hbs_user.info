@@ -1,0 +1,7 @@
+name = User Profile
+description = Provides user profile configuration for member profiles.
+core = 7.x
+package = Clustermapping.us
+version = 7.x-1.0-beta1
+project = hbs_user
+features[features_api][] = api:2

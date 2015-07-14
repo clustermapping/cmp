@@ -1,0 +1,75 @@
+<?php
+
+/**
+ * Implements hook_menu
+ *
+ * Provides a callback to show the api/region/admin page
+ */
+function hbs_data_admin_menu() {
+  return array(
+    'admin/config/hbsdata' => array(
+      'title' => 'HBS Data Management',
+      'description' => 'Manage data related to HBS Clustermapping',
+      'page callback' => 'system_admin_menu_block_page',
+      'access arguments' => array('manage hbs data'),
+      'position' => 'right',
+      'file' => 'system.admin.inc',
+      'file path' => drupal_get_path('module', 'system'),
+    ),
+    'admin/config/hbsdata/region' => array(
+      'title' => 'Regional Data Administration',
+      'description' => 'Create and manage regions',
+      'page callback' => 'hbs_data_admin_page',
+      'page arguments' => array('region'),
+      'access arguments' => array('manage hbs data')
+    ),
+    'admin/config/hbsdata/clusterData' => array(
+      'title' => 'Cluster to Region Data Administration',
+      'description' => 'Create and manage regions',
+      'page callback' => 'hbs_data_admin_page',
+      'page arguments' => array('cluster'),
+      'access arguments' => array('manage hbs data')
+    ),
+    'admin/config/hbsdata/cluster' => array(
+      'title' => 'Cluster to NAICS Data Administration',
+      'description' => 'Create and manage regions',
+      'page callback' => 'hbs_data_admin_page',
+      'page arguments' => array('cluster/meta'),
+      'access arguments' => array('manage hbs data')
+    ),
+  );
+}
+
+/**
+ * Implements hook_permissions
+ *
+ * Provides a permission to manage the hbs data
+ */
+function hbs_data_admin_permission() {
+  return array(
+    'manage hbs data' => array(
+      'title' => t('Manage HBS Data'),
+      'description' => t('Upload and manage HBS data.'),
+    ),
+  );
+}
+
+function hbs_data_landing() {
+  return 'tbd';
+}
+
+/**
+ * Page callback to provide a view of the api/region/admin page
+ * Allows users to upload shape data for the region
+ */
+function hbs_data_admin_page($type) {
+  global $base_path;
+  $markup = array(
+    'data_view' => array(
+      '#type' => 'markup',
+      '#markup' => '<iframe src="' . $base_path . 'api/' . $type . '" frameborder=0 height="700px" width="100%"></iframe>',
+    ),
+  );
+
+  return drupal_render($markup);
+}

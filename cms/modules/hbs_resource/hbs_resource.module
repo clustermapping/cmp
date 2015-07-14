@@ -1,0 +1,164 @@
+<?php
+/**
+ * @file
+ * Code for the Clustermapping resources feature.
+ */
+
+include_once 'hbs_resource.features.inc';
+
+/**
+ * Implements hook_menu().
+ */
+function hbs_resource_menu() {
+  $items['resource'] = array(
+    'title' => 'Resources',
+    'page callback' => 'hbs_resource_page_last',
+    'access arguments' => array('access content'),
+    'type' => MENU_SUGGESTED_ITEM,
+    'file' => 'hbs_resource.pages.inc',
+  );
+
+  $items['resource/%/%taxonomy_term'] = array(
+    'title' => 'Resources',
+    'page callback' => 'hbs_resource_page_last',
+    'page arguments' => array(2),
+    'access arguments' => array('access content'),
+    'type' => MENU_SUGGESTED_ITEM,
+    'file' => 'hbs_resource.pages.inc',
+  );
+
+  $items['resource/other/%taxonomy_vocabulary_machine_name'] = array(
+    'title' => 'Resources',
+    'page callback' => 'hbs_resource_page_last_other',
+    'page arguments' => array(2),
+    'access arguments' => array('access content'),
+    'type' => MENU_SUGGESTED_ITEM,
+    'file' => 'hbs_resource.pages.inc',
+  );
+  $items['resource/feed/%taxonomy_term'] = array(
+    'title' => 'Resources',
+    'page callback' => 'hbs_resource_feed_last',
+    'page arguments' => array(2),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'hbs_resource.pages.inc',
+  );
+
+  $items['resource/feed'] = array(
+    'title' => 'Resources',
+    'page callback' => 'hbs_resource_feed_last',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'hbs_resource.pages.inc',
+  );
+
+  return $items;
+}
+
+
+/**
+ * Implements theme_preprocess_page().
+ */
+function hbs_resource_preprocess_page(&$variables) {
+  $allowed_types = array(
+    'resource' => 'Resource',
+  );
+
+  $item = menu_get_item();
+  $type = (!empty($item['map'][1]) && !empty($item['map'][1]->type)) ? $item['map'][1]->type : arg(0);
+  $is_taxonomy = ($type == 'taxonomy');
+  $type = ($is_taxonomy && !empty($item['map'][2]) && $item['map'][2]->vocabulary_machine_name == "section")? 'page' : $type;
+
+  // We only care about adding this filter list to specific content-type pages (section or node)
+  $is_allowed = (($item['path'] == 'node/%' || $is_taxonomy ) && in_array($type, array_keys($allowed_types)) );
+
+  if (in_array(arg(0), array_keys($allowed_types)) || $is_allowed) {
+    $term_field = 'field_source';
+
+    // Get all the terms for the Sources vocabulary for the given content type
+    $tids = array();
+    $query = db_select('field_data_field_source', 't')
+      ->fields('t', array('field_source_tid', 'entity_id'))
+      ->condition('entity_type', 'node')
+      ->condition('bundle', 'resource');
+
+    $result = $query->execute();
+    while($tid = $result->fetchAssoc()) {
+      $tids[] = $tid[$term_field . '_tid'];
+      $nids_by_tid[$tid[$term_field . '_tid']][] = $tid['entity_id'];
+    }
+
+    $terms = taxonomy_term_load_multiple($tids);
+
+    // If we have valid terms, add the topics psuedo-block to the page
+    if (!empty($terms)) {
+      // If there is no content placed in the Sidebar First region, we'll need to
+      // make sure all the required theme attributes are present.
+      if (empty($variables['page']['sidebar_first'])) {
+        $variables['page']['sidebar_first'] = array(
+          '#sorted' => TRUE,
+          '#region' => 'sidebar_first',
+          '#theme_wrappers' => array('region'),
+        );
+      }
+
+      if ($type == 'resource') {
+        $active = arg(2) ? arg(2) : 'all';
+        // Add the themed output as #markup to the Sidebar First region.
+        $variables['page']['sidebar_first']['sources_filters']['#markup'] = theme('hbs_content_filters', array('terms' => $terms, 'type' => 'resource', 'label' => 'Sources', 'active' => $active, 'block_type' => 'sources'));
+      }
+    }
+  }
+}
+
+/**
+ * Implements theme_preprocess_node().
+ */
+function hbs_resource_preprocess_node(&$variables) {
+  $node = $variables['node'];
+  if ($node->type == 'resource') {
+    $resource_author_name = $vresource_publication_name = NULL;
+    $variables['submitted'] = NULL;
+    if (!empty($node->field_author[LANGUAGE_NONE][0]) || !empty($node->field_publication[LANGUAGE_NONE][0])) {
+      $variables['display_submitted'] = TRUE;
+      $author = $resource_author_name;
+
+      if (!empty($node->field_author[LANGUAGE_NONE][0])) {
+        if (empty($node->field_author[LANGUAGE_NONE][0]['taxonomy_term'])) $node->field_author[LANGUAGE_NONE][0]['taxonomy_term'] = taxonomy_term_load($node->field_author[LANGUAGE_NONE][0]['tid']);
+        $variables['submitted'] .= '<span class="byline-icon"></span>by <span class="byline-author">';
+        $variables['submitted'] .= l($node->field_author[LANGUAGE_NONE][0]['taxonomy_term']->name, 'taxonomy/term/' . $node->field_author[LANGUAGE_NONE][0]['tid']);
+        $variables['submitted'] .= '</span>';
+      }
+ 
+      if (!empty($node->field_author[LANGUAGE_NONE][0]) && !empty($node->field_publication[LANGUAGE_NONE][0])) $variables['submitted'] .= ', ';
+ 
+      if (!empty($node->field_publication[LANGUAGE_NONE][0])) {
+        if (empty($node->field_publication[LANGUAGE_NONE][0]['taxonomy_term'])) $node->field_publication[LANGUAGE_NONE][0]['taxonomy_term'] = taxonomy_term_load($node->field_publication[LANGUAGE_NONE][0]['tid']);
+        $variables['submitted'] .= '<span class="byline-publication">';
+        $variables['submitted'] .= l($node->field_publication[LANGUAGE_NONE][0]['taxonomy_term']->name, 'taxonomy/term/' . $node->field_publication[LANGUAGE_NONE][0]['tid']);
+        $variables['submitted'] .= '</span> ';
+      }
+      $variables['submitted'] .= '<span class="byline-datetime">';
+      $variables['submitted'] .= format_date($node->created, 'custom', 'F j, Y');
+      $variables['submitted'] .= '</span>';
+    }
+  }
+}
+
+function hbs_content_preprocess_hbs_content_filters(&$variables) {
+  // Sort the terms by weight
+  usort($variables['terms'], function($a, $b) {
+    return $a->weight > $b->weight;
+  });
+
+  $variables['footer_url'] = $variables['footer_text'] = NULL;
+  $variables['block_label'] = t('Topics');
+  $variables['vocabulary'] = 'topic';
+  if (!empty($variables['block_type']) && $variables['block_type'] == 'sources') {
+    $variables['footer_path'] = '/' . $variables['type'] . '/other/sources';
+    $variables['footer_text'] = t('Other Sources');
+    $variables['block_label'] = t('Sources');
+    $variables['vocabulary'] = 'sources';
+  }
+}
+

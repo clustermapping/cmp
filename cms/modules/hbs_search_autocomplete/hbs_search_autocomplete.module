@@ -1,0 +1,133 @@
+<?php
+
+/**
+ * first one has to create a callback function that takes a search string as a param
+ * PARAM $search: A string on which we are searching
+ * RETURN an array of items to display (most likely links)
+ */
+function hbs_search_autocomplete_qs_callback($search) {
+  global $base_url;
+  $results = drupal_http_request($base_url . '/data/autocomplete/' . rawurlencode($search));
+
+  $data = json_decode($results->data);
+  $output = array();
+
+  if (!empty($data)) {
+    $output['label'] = t('What are you interested in?');
+  }
+  
+  if (gettype($data) == 'object') {
+    $output['results'][] = l($data->label,  $data->key);
+  } else {
+    foreach ($data as $result) {
+      $output['results'][] = l($result->label,  $result->key);
+    }
+  }
+
+  drupal_json_output($output);
+  drupal_exit();
+}
+
+function hbs_cluster_autocomplete_qs_callback($cluster, $search) {
+  global $base_url;
+  $results = drupal_http_request($base_url . '/data/autocomplete/' . rawurlencode($search));
+
+  $data = json_decode($results->data);
+  $output = array();
+
+  if (!empty($data)) {
+    $output['label'] = t('Dive Deeper: See data for this cluster in ');
+  }
+  if (gettype($data) == 'object') {
+    $key = str_replace('region/', 'region-cluster/'.$cluster.'/', $data->key);
+    $output['results'][] = l($data->label,  $key);
+  } else {
+    foreach ($data as $result) {
+      $key = str_replace('region/', 'region-cluster/'.$cluster.'/', $result->key);
+      $output['results'][] = l($result->label,  $key);
+    }
+  }
+
+  drupal_json_output($output);
+  drupal_exit();
+}
+
+function hbs_comparison_new_autocomplete_qs_callback($search, $referer) {
+  hbs_comparison_autocomplete_qs_callback($search, $referrer, 'new');
+}
+
+function hbs_comparison_autocomplete_qs_callback($search, $referer, $new = false) {
+  global $base_url;
+  $results = drupal_http_request($base_url . '/data/autocomplete/region/' . rawurlencode($search));
+
+  $data = json_decode($results->data);
+  $output = array();
+
+  if (!empty($data)) {
+    $output['label'] = t('What region you want to compare?');
+  }
+
+  if (gettype($data) == 'object') {
+    $result = $data;
+    $id = str_replace('region/', '', $result->id);
+    $url = ($new ? 'compare/new/'. $id .'/'. $_GET['region'] : $result->key);
+    $output['results'][] = l($result->label,  $url, array('attributes' => array('region' => $result->id)));
+
+  } else {
+    foreach ($data as $result) {
+      $id = str_replace('region/', '', $result->id);
+      $url = ($new ? 'compare/new/'. $id .'/'. $_GET['region'] : $result->key);
+      $output['results'][] = l($result->label,  $url, array('attributes' => array('region' => $result->id)));
+    }
+  }
+
+  drupal_json_output($output);
+  drupal_exit();
+}
+
+function hbs_search_region_autocomplete_qs_callback($search, $referer) {
+  global $base_url;
+  $results = drupal_http_request($base_url . '/data/autocomplete/region/' . rawurlencode($search));
+
+  $data = json_decode($results->data);
+  $output = array();
+
+  if (!empty($data)) {
+    $output['label'] = t('What region you want to compare?');
+  }
+
+  if (gettype($data) == 'object') {
+    $output['results'][] = l($data->label,  $data->key);
+  } else {
+    foreach ($data as $result) {
+      $output['results'][] = l($result->label,  $result->key);
+    }
+  }
+
+  drupal_json_output($output);
+  drupal_exit();
+}
+
+
+/**
+ *  Implementation of hook_form_alter().
+ *
+ *  One then needs to implement a form alter some where and do to things.
+ *  add a pre_render for quick_search_process_search
+ *  as well as add the callback to be used.
+ *  both of this should be add to the texfield that will be quick search enabled
+ */
+function hbs_search_autocomplete_form_search_block_form_alter(&$form, &$form_state, $form_id) {
+  variable_set('quick_search_minlength', 1);
+
+  $form['search_block_form']['#pre_render'][] = 'quick_search_process_search';
+  $form['search_block_form']['#attributes']['quick_search_callback'] = 'hbs_search_autocomplete_qs_callback';
+}
+
+function hbs_search_autocomplete_form_search_form_alter(&$form, &$form_state, $form_id) {
+  variable_set('quick_search_minlength', 1);
+
+  $form['basic']['keys']['#pre_render'][] = 'quick_search_process_search';
+  $form['basic']['keys']['#attributes']['quick_search_callback'] = 'hbs_search_autocomplete_qs_callback';
+}
+

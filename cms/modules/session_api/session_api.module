@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ *
+ * Provides a route to check a session against.
+ *
+ * TODO: It may be useful to do some level of source check to prevent random people from checking session ids
+ */
+function session_api_menu() {
+  return array(
+    'session/api/check/%' => array(
+      'page callback' => 'session_api_check',
+      'page arguments' => array(3),
+      'access callback' => true
+    )
+  );
+}
+
+/**
+ * Page callback for the session check, takes a parameter which represents the session key
+ *
+ * Load check to see if a session exists for the given sid
+ */
+function session_api_check($sid) {
+  $user = db_query("SELECT u.*, s.* FROM {users} u INNER JOIN {sessions} s ON u.uid = s.uid WHERE s.sid = :sid", array(':sid' => $sid))->fetchObject();
+
+  if ($user && $user->uid > 0) {
+   drupal_json_output(array(
+    'result' => 'valid',
+    'uid' => $user->uid,
+    ));
+  } else {
+    drupal_access_denied();
+  }
+  exit();
+}

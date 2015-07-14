@@ -1,0 +1,6 @@
+name = Clustermapping Data Admin
+description = Provide basic admin pages for HBS Clustermapping data
+core = 7.x
+package = Clustermapping.us
+version = 7.x-1.0-beta1
+project = hbs_data_admin

@@ -1,0 +1,23 @@
+{
+  "name": "cmus-dataservices",
+  "version": "0.0.0",
+  "description": "Clustermapping.us data web services and charting components",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Phase2 Technology LLC",
+  "license": "ISC",
+  "dependencies": {
+    "restify": "^2.6.1",
+    "underscore": "^1.6.0",
+    "d3": "^3.4.2",
+    "csvtojson": "^0.1.7",
+    "jsts": "^0.13.2",
+    "topojson": "^1.4.6",
+    "q": "^1.0.0",
+    "solr-client": "^0.2.9",
+    "phantomjs": "^1.9.7-1",
+    "simple-json2csv": "0.0.5"
+  }
+}

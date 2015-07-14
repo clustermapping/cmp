@@ -1,0 +1,7 @@
+name = Clustermapping Migration
+description = Provide migration functionality. This module can be disabled when migration is complete.
+package = Clustermapping.us
+core = 7.x
+
+dependencies[] = blog
+dependencies[] = image

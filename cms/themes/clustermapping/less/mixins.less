@@ -1,0 +1,37 @@
+//
+// Mixins
+// --------------------------------------------------
+
+.h-font-size(@fs){
+	font-size: floor(@fs*.5);
+	@media @tablet {font-size: floor(@fs*.8);}
+  @media @normal {font-size: @fs;}
+}
+#grad{
+	.img(@img-url; @v-pos: center; @h-pos: center; @start-color: #555; @end-color: #333; @start-percent: 0%; @end-percent: 100%){
+		background: @start-color;
+		background: url(@img-url) @v-pos @h-pos no-repeat;
+		background: url(@img-url) @v-pos @h-pos no-repeat, -webkit-gradient(linear, left @start-percent, left @end-percent, from(@start-color), to(@end-color)); /* Saf4+, Chrome */
+		background: url(@img-url) @v-pos @h-pos no-repeat, -webkit-linear-gradient(top, @start-color, @start-percent, @end-color, @end-percent); /* Chrome 10+, Saf5.1+ */
+		background: url(@img-url) @v-pos @h-pos no-repeat,    -moz-linear-gradient(top, @start-color @start-percent, @end-color @end-percent); /* FF3.6+ */
+		background: url(@img-url) @v-pos @h-pos no-repeat,     -ms-linear-gradient(top, @start-color @start-percent, @end-color @end-percent); /* IE10 */
+		background: url(@img-url) @v-pos @h-pos no-repeat,      -o-linear-gradient(top, @start-color @start-percent, @end-color @end-percent); /* Opera 11.10+ */
+		background: url(@img-url) @v-pos @h-pos no-repeat,         linear-gradient(top, @start-color @start-percent, @end-color @end-percent); /* W3C */
+	}
+	.blue{
+		#gradient.vertical(lighten(@brand-primary, 15%),darken(@brand-primary, 10%));
+		.img(@img-url; @v-pos: bottom; @h-pos: right;){
+			#grad.img(@img-url, @v-pos, @h-pos,lighten(@brand-primary, 15%),darken(@brand-primary, 10%));
+		}
+	}
+	.white{
+		#gradient.vertical(@white, @gray-lighter);
+		.img(@img-url; @v-pos: bottom; @h-pos: right;){
+			#grad.img(@img-url, @v-pos, @h-pos,@white, @gray-lighter);
+		}
+	}
+}
+
+.bg-transparent(@color, @alpha: 1) {
+  background: rgba( red(@color), green(@color), blue(@color), @alpha);
+}

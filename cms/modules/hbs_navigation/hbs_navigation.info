@@ -1,0 +1,17 @@
+name = Navigation
+description = Provides basic navigational elements and miscellaneous menu callbacks.
+core = 7.x
+package = Clustermapping.us
+version = 7.x-1.0-beta1
+project = hbs_navigation
+dependencies[] = features
+dependencies[] = menu
+features[features_api][] = api:2
+features[menu_custom][] = main-menu
+features[menu_links][] = main-menu_about:node/1550
+features[menu_links][] = main-menu_blog:blog
+features[menu_links][] = main-menu_clusters:cluster
+features[menu_links][] = main-menu_organizations:organizations
+features[menu_links][] = main-menu_regions:region
+features[menu_links][] = main-menu_resources:resource
+project path = profiles/clustermapping/modules

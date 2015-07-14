@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clustermapping perfromance legend</title>
+    <script type="text/javascript" src="/data/viz/bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="/data/viz/bower_components/d3/d3.min.js"></script>
+    <script type="text/javascript" src="/data/viz/bower_components/queue-async/queue.min.js"></script>
+    <script type="text/javascript" src="/data/viz/bower_components/topojson/topojson.js"></script>
+    <script type="text/javascript" src="/data/viz/mythos-vis/dist/mythosvis.js"></script>
+    <script type="text/javascript" src="/data/viz/mythos-vis/src/d3Plot.js"></script>
+    <script type="text/javascript" src="/data/viz/js/lib/chart-utils.js"></script>
+    <link href="/data/viz/mythos-vis/src/style/mythos-vis.css" rel="stylesheet">
+    <link href="/data/viz/css/fonts.css" rel="stylesheet">
+    <link href="/data/viz/css/style.css" rel="stylesheet">
+    <link href="/data/viz/css/chart.css" rel="stylesheet">
+</head>
+<body>
+<div id="perf-legend-wrapper" class="performance-indicator">
+    <strong><span id="perf-legend-description"></span></strong>
+    <span id="perf-legend-ranks" style="height:100%; display:inline-block">
+      <span class="rank-desc-1"><span class="performance-rank rank-1">&nbsp;</span></span>
+      <span class="rank-desc-2"><span class="performance-rank rank-2">&nbsp;</span></span>
+      <span class="rank-desc-3"><span class="performance-rank rank-3">&nbsp;</span></span>
+      <span class="rank-desc-4"><span class="performance-rank rank-4">&nbsp;</span></span>
+      <span class="rank-desc-5"><span class="performance-rank rank-5">&nbsp;</span></span>
+    </span>
+</div>
+<script>
+function getType() {
+    return window.location.hash.substring(1);
+}
+
+var type = getType(),
+    label = 'Ranks are by percentile from ';
+switch(type){
+  case 'economic':
+    label += '1-100 among all 179 U.S. economic areas:';
+    break;
+  case 'msa':
+    label += '1-100 among all 917 U.S. metropolitan and micropolitan statistical areas:';
+    break;
+  case 'county':
+    label += '1-100 among all 3221 U.S. counties:';
+    break;
+  case 'state':
+    label += '1-50 among all 50 U.S. states:';
+    break;
+}
+
+d3.select('#perf-legend-description').text(label);
+if (type == 'state') {
+   d3.select('.rank-desc-1').append('span').classed('rank-label', true).text('1-10 (first quintile)');
+   d3.select('.rank-desc-2').append('span').classed('rank-label', true).text('11-20 (second quint.)');
+   d3.select('.rank-desc-3').append('span').classed('rank-label', true).text('21-30 (third quint.)');
+   d3.select('.rank-desc-4').append('span').classed('rank-label', true).text('31-40 (fourth quint.)');
+   d3.select('.rank-desc-5').append('span').classed('rank-label', true).text('41-50 (fifth quint.)');
+} else {
+   d3.select('.rank-desc-1').append('span').classed('rank-label', true).text('1-20 (first quintile)');
+   d3.select('.rank-desc-2').append('span').classed('rank-label', true).text('21-40 (second quint.)');
+   d3.select('.rank-desc-3').append('span').classed('rank-label', true).text('41-60 (third quint.)');
+   d3.select('.rank-desc-4').append('span').classed('rank-label', true).text('61-80 (fourth quint.)');
+   d3.select('.rank-desc-5').append('span').classed('rank-label', true).text('81-100 (fifth quint.)');
+}
+</script>
+</body>
+</html>

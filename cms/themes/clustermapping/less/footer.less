@@ -1,0 +1,147 @@
+// FOOTER
+
+footer {
+  margin: 0;
+}
+
+footer.footer {
+  color: @gray-light;
+	#gradient.vertical(@gray-dark,@gray-darker);
+  margin: 0;
+  padding: 50px 0;
+  font-size: 11px;
+
+  p {
+    margin-top: 20px;
+  }
+
+  .footer-col {
+    padding-top: 4px;
+
+    &.logo {
+      padding-top:0;
+    }
+  }
+
+  .hbs {
+    display: block;
+    width: 100%;
+    height: 45px;
+    background: transparent url('../img/hbs-logo-color-footer2.png') no-repeat 0 50%;
+  }
+
+  .eda {
+    display: block;
+    width: 100%;
+    height: 40px;
+    background: transparent url('../img/eda-logo.png') no-repeat 0 50%;
+  }
+
+  .utility-links {
+    list-style:none;
+    padding:0;
+    margin:0;
+
+    li {
+      display:inline-block;
+      margin-right:5px;
+      margin-bottom:10px;
+      text-transform:uppercase;
+      font-size:11px;
+
+      a {
+        color: @gray-light;
+        text-decoration:none;
+        margin-right:5px;
+
+        &:hover {
+          color:#fff;
+        }
+      }
+    }
+  }
+
+  a.copyright-report {
+    color: @gray-light;
+    text-decoration: none;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
+footer.first-footer {
+  padding: 20px 0;
+
+  .follow-links {
+    list-style:none;
+    margin: 12px 0;
+
+    display:inline-block;
+
+    li {
+      float:left;
+      margin: 0;
+    }
+
+     a {
+      width:35px;
+      height: 35px;
+      background-color: @brand-primary;
+      display:block;
+      margin: 0 10px 0 0;
+    }
+
+    .facebook a {
+      background: transparent url('../img/fb-icon.png') no-repeat;
+    }
+
+    .twitter a {
+      background: transparent url('../img/twitter-icon.png') no-repeat;
+    }
+
+    .linked-in a {
+      background: transparent url('../img/linked-in-icon.png') no-repeat;
+    }
+    .title {
+      font-size: 13px;
+      font-weight:bold;
+      padding: 10px 16px 0 0;
+      text-transform: uppercase;
+    }
+  }
+
+  .related {
+
+    ul {
+      list-style:none;
+      display:inline-block;
+      margin: 0;
+    }
+
+    li {
+      float:left;
+      margin:0;
+      display: table;
+    }
+
+    a {
+      height:60px;
+      display:table-cell;
+      vertical-align: middle;
+    }
+
+    .title {
+      line-height: 60px;
+      text-transform: uppercase;
+      font-size:13px;
+      font-weight:bold;
+    }
+
+    li.stats a {
+      padding-left: 25px;
+      padding-right: 50px;
+    }
+  }
+}

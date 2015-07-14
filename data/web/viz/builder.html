@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Custom Region Builder</title>
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/map.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: "Source Sans Pro", Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.2;
+            color: #2e3a45;
+            background-color: #ffffff;
+        }
+
+        .graticule {
+            fill: none;
+            stroke: #777;
+            stroke-width: .5px;
+            stroke-opacity: .5;
+        }
+
+
+        .us-counties {
+            fill: #55a;
+            stroke: #228;
+            stroke-linejoin: round;
+            opacity: .5;
+        }
+
+        .highlighted-county {
+            fill: #f55;
+            /*stroke: #f55;*/
+            stroke: none;
+            opacity: .9;
+        }
+
+        .state-boundary {
+            fill: none;
+            stroke: #fff;
+        }
+
+
+        .state {
+            fill: #ddf;
+            stroke: none;
+        }
+
+        #summary {
+            position: fixed;
+            top: 500px;
+            left: 20px;
+            width: 200px;
+            background-color: #ffffff;
+            border: 1px solid #eee;
+            opacity: 0;
+            display: none;
+        }
+
+        #summary h4 {
+            margin: 0;
+            padding: 5px;
+            background-color: #eee;
+            text-align: center;
+        }
+
+        #selected-list {
+            position: fixed;
+            top: 20px;
+            left: 740px;
+            width: 200px;
+            background-color: #ffffff;
+            border: 1px solid #eee;
+            opacity: 0;
+        }
+
+        #selected-list h4 {
+            margin: 0;
+            padding: 5px;
+            background-color: #eee;
+            text-align: center;
+        }
+
+        #selected-list ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            max-height: 500px;
+            overflow-Y:auto;
+        }
+
+        #selected-list ul li {
+            padding: 5px 10px;
+            border-top: 1px solid #eee;
+        }
+
+        button {
+            display: inline-block;
+            margin-bottom: 0;
+            font-weight: 400;
+            text-align: center;
+            vertical-align: middle;
+            cursor: pointer;
+            background-image: none;
+            border: 1px solid transparent;
+            white-space: nowrap;
+            padding: 4px 9px;
+            line-height: 1.42857143;
+            border-radius: 4px;
+        }
+
+        #reset-zoom {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: none;
+        }
+
+        #clear-list, #clear-button {
+            float: right;
+            color: #fff;
+            background-color: #d9534f;
+            border-color: #d43f3a;
+        }
+
+        #save-selected, #save-button {
+            color: #fff;
+            background-color: #428bca;
+            border-color: #357ebd;
+        }
+
+        #save-dialog {
+            position: fixed;
+            padding: 20px;
+            top: 200px;
+            left: 320px;
+            width: 300px;
+            background-color: #ffffff;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            opacity: 0;
+            display: none;
+        }
+
+        #progress-dialog {
+            position: fixed;
+            padding: 20px;
+            top: 200px;
+            left: 320px;
+            width: 350px;
+            background-color: #ffffff;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            opacity: 0;
+            display: none;
+        }
+
+        #save-dialog h4 {
+            margin: 0 0 10px 0;
+            padding: 5px;
+            background-color: #eee;
+            text-align: center;
+        }
+
+        #save-dialog input {
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        .builder-status {
+            border-radius: 4px;
+            background: #fff;
+            border: 1px solid #30b9fc;
+            border: 1px solid rgba(48, 185, 252, 0.2);
+            border-radius: 8px;
+            -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            color: black;
+            font-size: 12px;
+            cursor: pointer;
+            display: inline-block;
+            left: 450px;
+            max-width: 380px;
+            min-height: 32px;
+            opacity: 1;
+            padding: 8px 10px;
+            position: absolute;
+            text-align: center;
+            top: 300px;
+        }
+        #max_counties_text p {
+            margin: 4px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div id="selected-list">
+    <h4>Selected Counties</h4>
+    <ul>
+
+    </ul>
+    <button id="clear-list">Clear Selection</button>
+    <button id="save-selected">Save</button>
+</div>
+
+<div id="summary">
+    <h4>Selected Counties Summary</h4>
+    <div>Total Population: <span id="total-population"></span></div>
+    <div>Total Employment: <span id="total-employment"></span></div>
+    <div>Total Establishments: <span id="total-establishments"></span></div>
+    <div>Avg Payroll: <span id="total-payroll"></span></div>
+    <div>Total GDP: <span id="total-gdp"></span></div>
+</div>
+
+<button id="reset-zoom">Zoom Out</button>
+
+<div id="save-dialog">
+    <h4>Save Custom Region</h4>
+    <label>Region Name:<input name="region_name" size="50"></label><br>
+    <button id="clear-button">cancel</button>
+    <button id="save-button">Save</button>
+</div>
+
+<div id="progress-dialog">
+    <h4>Saving Custom Region...</h4>
+    <div class="progress progress-striped">
+        <div class="progress-bar" role="progressbar" style="width: 60%;">
+            60%
+        </div>
+    </div>
+
+</div>
+
+<script type="text/javascript" src="bower_components/d3/d3.min.js"></script>
+<script type="text/javascript" src="bower_components/topojson/topojson.js"></script>
+<script>
+
+// A modified d3.geo.albersUsaPr to include Puerto Rico.
+function d3AlbersUsaPr() {
+    // ε = 1e-6
+    var ε = 0,
+            lower48Offset = [0, 0],
+            lower48Size = [.91, .5],
+            alaskaScale = .35,
+            alaskaOffset = [-.39, .21],
+            alaskaSize = [.22, .13],
+            hawaiiOffset = [-.47, .13],
+            hawaiiSize = [.12, .08],
+            prOffset = [.3, .25],
+            prSize = [.065, .04];
+
+    var lower48 = d3.geo.albers();
+
+    var alaska = d3.geo.conicEqualArea()
+            .rotate([159, -4])
+            .center([-2, 58.5])
+            .parallels([55, 65]);
+
+    var hawaii = d3.geo.conicEqualArea()
+            .rotate([158, -.5])
+            .center([.5, 19.9])
+            .parallels([8, 18]);
+
+    var puertoRico = d3.geo.conicEqualArea()
+            .rotate([66.5, -0.3])
+            .center([0, 18])
+            .parallels([8, 18]);
+
+    var point,
+            pointStream = {point: function(x, y) { point = [x, y]; }},
+            lower48Point,
+            alaskaPoint,
+            hawaiiPoint,
+            puertoRicoPoint;
+
+    function albersUsaPr(coordinates) {
+        var x = coordinates[0], y = coordinates[1];
+        point = null;
+        (lower48Point(x, y), point)
+        || (alaskaPoint(x, y), point)
+        || (hawaiiPoint(x, y), point)
+        || (puertoRicoPoint(x, y), point);
+        return point;
+    }
+
+    albersUsaPr.invert = function(coordinates) {
+        var k = lower48.scale(),
+                t = lower48.translate(),
+                x = (coordinates[0] - t[0]) / k,
+                y = (coordinates[1] - t[1]) / k;
+        return (y >= .120 && y < .234 && x >= -.425 && x < -.214 ? alaska
+                : y >= .166 && y < .234 && x >= -.214 && x < -.115 ? hawaii
+                : y >= .204 && y < .234 && x >= .320 && x < .380 ? puertoRico
+                : lower48).invert(coordinates);
+    };
+
+    // A naïve multi-projection stream.
+    // The projections must have mutually exclusive clip regions on the sphere,
+    // as this will avoid emitting interleaving lines and polygons.
+    albersUsaPr.stream = function(stream) {
+        var ps = [lower48, alaska, hawaii, puertoRico],
+                streams = ps.map(function(d) { return d.stream(stream);}),
+                build = function(name) { return function() {
+                    var a = arguments;
+                    streams.forEach(function(d) {
+                        d[name].apply(d, a);
+                    });
+                }
+                },
+                toBuild = ['point', 'sphere', 'lineStart', 'lineEnd', 'polygonStart', 'polygonEnd']
+        o = {};
+
+        toBuild.forEach(function(d) {
+            o[d] = build(d);
+        });
+
+        return o;
+    };
+
+    albersUsaPr.precision = function(_) {
+        if (!arguments.length) return lower48.precision();
+        lower48.precision(_);
+        alaska.precision(_);
+        hawaii.precision(_);
+        puertoRico.precision(_);
+        return albersUsaPr;
+    };
+
+    albersUsaPr.scale = function(_) {
+        if (!arguments.length) return lower48.scale();
+        lower48.scale(_);
+        alaska.scale(_ * alaskaScale);
+        hawaii.scale(_);
+        puertoRico.scale(_);
+        return albersUsaPr.translate(lower48.translate());
+    };
+
+    albersUsaPr.translate = function(_) {
+        if (!arguments.length) return lower48.translate();
+        var k = lower48.scale(), x = +_[0], y = +_[1];
+        function _scale(obj, of, sz) {
+            return obj
+                    .translate([x + (of[0] * k), y + (of[1] * k)])
+                    .clipExtent([[x + (of[0] - sz[0]/2) * k + ε,
+                                y + (of[1] - sz[1]/2) * k + ε],
+                        [x + (of[0] + sz[0]/2) * k + ε,
+                                    y + (of[1] + sz[1]/2) * k + ε]])
+                    .stream(pointStream).point;
+        }
+
+        lower48Point = _scale(lower48, lower48Offset, lower48Size);
+        alaskaPoint = _scale(alaska, alaskaOffset, alaskaSize);
+        hawaiiPoint = _scale(hawaii, hawaiiOffset, hawaiiSize);
+        puertoRicoPoint = _scale(puertoRico, prOffset, prSize);
+
+        return albersUsaPr;
+    };
+
+    albersUsaPr.baseProjection = function() {
+        return d3.geo.albers().translate(lower48.translate());
+    };
+
+    albersUsaPr.clips = function() { return [alaska.clipExtent(), hawaii.clipExtent(), puertoRico.clipExtent()]; };
+
+    return albersUsaPr.scale(1070);
+}
+
+function zoomed() {
+    g.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+    g.select(".state-border").style("stroke-width", 1.5 / d3.event.scale + "px");
+    g.select(".county-border").style("stroke-width", .5 / d3.event.scale + "px");
+    zoomControls(d3.event.scale);
+}
+
+var width = 960,
+        height = 600,
+        selected;
+
+var zoom = d3.behavior.zoom()
+    .translate([0, 0])
+    .scale(1)
+    .scaleExtent([1, 8])
+    .on("zoom", zoomed);
+
+var drag = d3.behavior.drag();
+drag.on("drag", function() {
+    d3.event.sourceEvent.stopPropagation(); // silence other listeners
+    svg.style('cursor', 'move')
+});
+drag.on("dragend", function() {
+    svg.style('cursor', 'initial')
+});
+
+var fill = d3.scale.log()
+        .domain([8, 200])
+        .range(["brown", "steelblue"]);
+
+var projection = d3AlbersUsaPr()
+        .translate([width / 2 + 90, height / 2]);
+
+var path = d3.geo.path().projection(projection),
+        basePath = d3.geo.path().projection(projection.baseProjection());
+
+var svg = d3.select("body").append("svg")
+                .attr("width", width)
+                .attr("height", height),
+        g = svg.append("g");
+
+svg.call(zoom).call(drag);
+
+var graticule = d3.geo.graticule()
+        .extent([[-98 - 50, 38 - 50], [-98 + 50, 38 + 50]])
+        .step([5, 5]);
+
+g.append("g").attr("id", "graticule")
+        .append("path").datum(graticule).attr("class", "graticule").attr("d", basePath);
+
+var statesBackground =  g.append("g").attr("class","us-states");
+var counties =g.append("g").attr("class","us-counties");
+var states =  g.append("g").attr("class","us-states");
+d3.select('body').append('div').attr('class', 'builder-status layer info').text('Loading data...')
+var statusDialog = d3.select('.builder-status');
+
+var selectedCounties = {};
+d3.select('#save-selected').on('click', showSave);
+d3.select('#clear-list').on('click', removeAllCounties);
+d3.select('#reset-zoom').on('click', resetZoom);
+d3.select('#save-button').on('click', saveRegion);
+d3.select('#clear-button').on('click', closeSave);
+var countyData;
+d3.json('json/states.json', function(error, us) {
+
+    statesBackground.selectAll("path")
+            .data(topojson.feature(us, us.objects.states).features)
+            .enter().append("path")
+            .attr("class", "state")
+            .attr("d",path);
+    states.selectAll("path")
+            .data(topojson.feature(us, us.objects.states).features)
+            .enter().append("path")
+            .attr("class", "state-boundary")
+            .attr("d",path);
+
+    d3.json("json/countiesEasMsas.json", function(error, c) {
+        counties.selectAll("path")
+                .data(topojson.feature(c, c.objects.counties).features)
+                .enter().append("path")
+                .attr("class", function(d) { return "county-" + d.properties.fips; })
+                .attr("d",path);
+        d3.json('../region/builder', function(e, data) {
+            countyData = d3.nest().key(function(d) { return d.region_code_t;}).rollup(function(ds) { return ds[0];}).map(data, d3.map);
+            counties.selectAll('path')
+                .on("click", clicked)
+                .on("mouseover", clicked)
+                .on('contextmenu', resetZoom)
+                .append('title').text(function (d) {
+                   if (countyData.get(d.id)) return countyData.get(d.id).region_short_name_t;
+                   return d.properties.name;
+                });
+            statusDialog.style('display', 'none');
+        });
+
+    });
+});
+
+var numFormat = d3.format(',f');
+var moneyFormat = d3.format('$,f');
+
+function getUsername() {
+    return window.location.hash.substring(1);
+}
+
+function showSave() {
+    d3.select('#save-dialog').style('display','block');
+    d3.select('#save-dialog').style("opacity", 0).transition().duration(300).style("opacity", 1);
+}
+
+function setProgress(p) {
+    if (isNaN(p)) {
+        d3.select('#progress-dialog .progress-bar').style('width', '100%').text(p);
+    } else {
+        d3.select('#progress-dialog .progress-bar').style('width', p + '%').text(p + '%');
+    }
+}
+
+function saveRegion() {
+    var name = d3.select('#save-dialog input').property('value'), username = getUsername(), request, spec, started = false;
+    closeSave();
+    d3.select('#progress-dialog').style('display','block');
+    d3.select('#progress-dialog').style("opacity", 0).transition().duration(300).style("opacity", 1);
+    setProgress(0);
+    request = d3.xhr('/data/custom')
+            .header("Content-Type", "application/json");
+
+    spec = {
+        name: name,
+        username: username,
+        owner: username,
+        regions: Object.keys(selectedCounties).map(function(c) { return 'region/county/' + c;})
+    };
+
+    request.on('beforesend', function() {
+        setProgress('saving...');
+        started = true;
+    });
+
+    request.post(JSON.stringify(spec), function(err, request) {
+        if (!err) {
+            setTimeout(function() { setProgress(5); },  1000);
+            setTimeout(function() { setProgress(10); }, 2500);
+            setTimeout(function() { setProgress(15); }, 4000);
+            setTimeout(function() { setProgress(20); }, 5500);
+            setTimeout(function() { setProgress(25); }, 7000);
+            setTimeout(function() { setProgress(30); }, 8500);
+            setTimeout(function() { setProgress(35); }, 10000);
+            setTimeout(function() { setProgress(40); }, 11500);
+            setTimeout(function() { setProgress(45); }, 13000);
+            setTimeout(function() { setProgress(50); }, 14500);
+            setTimeout(function() { setProgress(55); }, 16000);
+            setTimeout(function() { setProgress(60); }, 17500);
+            setTimeout(function() { setProgress(65); }, 19000);
+            setTimeout(function() { setProgress(70); }, 20500);
+            setTimeout(function() { setProgress(75); }, 22000);
+            setTimeout(function() { setProgress(80); }, 23500);
+            setTimeout(function() { setProgress(85); }, 25000);
+            setTimeout(function() { setProgress(90); }, 26500);
+            setTimeout(function() { setProgress(95); }, 28000);
+            setTimeout(function() { setProgress("Region saved, starting processing..."); }, 30000);
+            setTimeout(function() { setProgress("Data Processing, redirecting..."); }, 32000);
+            setTimeout(function () {
+                var windowLocation = window.location;
+                if (window.parent) {
+                    windowLocation = window.parent.location;
+                }
+                windowLocation.href = '/users/' + username;
+            }, 34000);
+        } else {
+            console.log(err);
+            setProgress('An error occurred, reloading...');
+            setTimeout(function() {
+                window.location.reload();
+            }, 2000);
+        }
+    });
+}
+
+function closeSave() {
+    d3.select('#save-dialog').style("opacity", 1).transition().duration(300).style("opacity", 0);
+    d3.select('#save-dialog').transition().delay(300).style('display','none');
+}
+
+function updateSummary() {
+    var keys = Object.keys(selectedCounties),
+            county, pop = 0, emp = 0, est = 0, payroll = 0, gdp = 0;
+
+
+    keys.forEach(function(c, i) {
+        county = countyData.get(c);
+        if (county) {
+            pop += county.total_population_tf;
+            emp += county.emp_tl;
+            est += county.est_tl;
+            payroll = payroll + ((county.private_wage_tf - payroll)/(i +1));
+            gdp += county.gross_domestic_product_tf;
+        }
+    });
+    d3.select('#total-population').text(numFormat(pop));
+    d3.select('#total-employment').text(numFormat(emp));
+    d3.select('#total-establishments').text(numFormat(est));
+    d3.select('#total-payroll').text(moneyFormat(payroll));
+    d3.select('#total-gdp').text(moneyFormat(gdp));
+    if (keys.length == 0) {
+        d3.select('#summary').style("opacity", 1).transition().duration(300).style("opacity", 0).style('display', (selected ? 'block': 'none'));
+    } else if (d3.select('#summary').style("opacity") == 0) {
+        d3.select('#summary').style("opacity", 0).transition().duration(300).style("opacity", 1).style('display', (selected ? 'block': 'none'));
+    }
+}
+
+function drawList() {
+    var keys = Object.keys(selectedCounties);
+    d3.select('#selected-list h4').text(function() { return 'Selected Counties ('+ keys.length +')';});
+    var items = d3.select('#selected-list ul')
+            .selectAll('li')
+            .data(keys, function(d) { return d; });
+    items.enter().append('li').text(function(d) {
+        return selectedCounties[d] + ' (' + d + ')';
+    }).style("opacity", 0).transition().duration(300).style("opacity", 1);
+    items.exit().style("opacity", 1).transition().duration(300).style("opacity", 0).remove();
+    if (keys.length == 0) {
+        d3.select('#selected-list').style("opacity", 1).transition().duration(300).style("opacity", 0);
+    } else if (d3.select('#selected-list').style("opacity") == 0) {
+        d3.select('#selected-list').style("opacity", 0).transition().duration(300).style("opacity", 1);
+    }
+    updateSummary();
+}
+
+function addCounty(d) {
+    var c = countyData.get(d.id);
+    selectedCounties[d.id] = (c ? c.region_short_name_t : d.properties.name);
+    drawList();
+}
+
+function removeCounty(d) {
+    if (selectedCounties[d.id]) {
+        delete selectedCounties[d.id];
+    }
+    drawList();
+}
+
+function removeAllCounties() {
+    Object.keys(selectedCounties).forEach(function(k) {
+        delete selectedCounties[k];
+    });
+    drawList();
+    d3.selectAll('.highlighted-county').classed('highlighted-county', false);
+    statusDialog.style('display', 'none');
+}
+
+function resetZoom() {
+    d3.event.preventDefault();
+    g.transition()
+        .duration(500)
+        .call(zoom.translate([0, 0]).scale(1).event);
+}
+
+function zoomControls(scale) {
+    d3.select('#reset-zoom').style('display', (scale > 1 ? 'block': 'none'));
+    g.style("stroke-width", 1 / scale + "px")
+}
+
+function bbox(ids) {
+    var bbox, d, bounds;
+    ids.forEach(function(id) {
+        d = d3.selectAll('.county-' + id);
+        bounds = path.bounds(d.data()[0]);
+        if (!bbox) {
+            bbox = bounds;
+        } else {
+            if (bbox[0][0] > bounds[0][0]) bbox[0][0] = bounds[0][0];
+            if (bbox[0][1] > bounds[0][1]) bbox[0][1] = bounds[0][1];
+            if (bbox[1][0] < bounds[1][0]) bbox[1][0] = bounds[1][0];
+            if (bbox[1][1] < bounds[1][1]) bbox[1][1] = bounds[1][1];
+        }
+    });
+    return bbox;
+}
+
+function clicked(d) {
+    var MAX_COUNTIES = 399;
+    if (d3.event.defaultPrevented || (d3.event.type == 'mouseover' && !d3.event.shiftKey)) return;
+
+    var el = d3.select(this);
+    selected = !Object.keys(selectedCounties).length;
+    
+    if (!el.classed('highlighted-county') || d3.event.type == 'mouseover') {
+        if (Object.keys(selectedCounties).length >= MAX_COUNTIES) {
+            var disclaimerText = d3.select('#max_counties_text').html();
+            statusDialog.html(disclaimerText)
+                .style({ display: 'inline-block', left: '320px', top: '175px' })
+                .on('click', function(e) {
+                    statusDialog.style('display', 'none');
+                });
+            return;
+        }
+        addCounty(d);
+        el.classed("highlighted-county", true);
+    } else {
+        removeCounty(d);
+        el.classed("highlighted-county", false);
+    }
+}
+
+</script>
+<div id="max_counties_text">
+<p>Right now, the custom region builder tool can only support regions with less than 400 counties.</p>
+<p>If you need to study a larger region, you can make multiple, smaller custom regions and combine the results.</p>
+<p>You can also search by region to get data for larger areas, like states or MSAs, or you can compare regions using our region comparison tool (use instructions available <a href="http://clustermapping.us/blog/2015/01/08/us-cluster-mapping-portal-announces-soft-launch-regional-comparison-tool" target="_blank">here</a>).</p>
+<p>If you have any questions about how to make the custom region builder tool best meet your needs, please feel free to write to us at <a target="_blank" href="mailto:cmp@hbs.edu">cmp@hbs.edu</a>.</p>
+</div>
+</body>
+</html>

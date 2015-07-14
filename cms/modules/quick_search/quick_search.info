@@ -1,0 +1,5 @@
+name = Quick Search
+description = Provide suggestions for search from various content types and fields
+
+
+core = 7.x

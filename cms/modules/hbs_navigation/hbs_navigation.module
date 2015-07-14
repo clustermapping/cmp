@@ -1,0 +1,71 @@
+<?php
+/**
+ * @file
+ * Drupal needs this blank file.
+ */
+
+
+function hbs_navigation_preprocess_page(&$variables) {
+  if ($GLOBALS['theme'] != 'clustermapping') return;
+
+  $variables['account_links'] = NULL;
+  $user = $GLOBALS['user'];
+  if (user_is_logged_in()) {
+    $variables['account_links'] = '
+      <li>
+        <div class="dropdown pull-right">
+          <a href="#" data-toggle="dropdown">Hello, <em>' . $user->name . '</em><span class="glyphicon-small">&#x25BC;</span></a>
+          <ul role="menu" class="menu dropdown-menu">
+            <li class="first leaf">' . l(t('<span class="glyphicon glyphicon-user"></span>Profile'), 'user', array('html' => TRUE)) . '</li>
+            <li class="first leaf">' . l(t('<span class="glyphicon glyphicon-log-out">| </span>Logout'), 'user/logout', array('html' => TRUE)) . '</li>
+          </ul>
+        </div>
+      </li>
+    ';
+  }
+  else {
+    $variables['account_links'] = '
+      <li class="register">' . l(t('Register'), 'user/register') . '</li>
+      <li class="or"><div>or</div></li>
+      <li>' . l(t('Sign in'), 'user') . '</li>
+    ';
+  }
+}
+
+
+function hbs_navigation_preprocess_menu_link(&$variables) {
+  if ($variables['element']['#theme'] == 'menu_link__main_menu') {
+    $item = menu_get_item();
+    if (arg(0) == $variables['element']['#href']) {
+      $variables['element']['#attributes']['class'][] = 'active';
+      $variables['element']['#localized_options']['attributes']['class'] = array('active');
+    }
+    elseif ($variables['element']['#href'] == 'organizations' && !empty($item['map'][2]) && $item['map'][2]->vocabulary_machine_name == 'organization_type') {
+      $variables['element']['#attributes']['class'][] = 'active';
+      $variables['element']['#localized_options']['attributes']['class'] = array('active');
+    }
+    elseif ($variables['element']['#href'] == 'organizations' && $item['path'] == 'organization-type') {
+      $variables['element']['#attributes']['class'][] = 'active';
+      $variables['element']['#localized_options']['attributes']['class'] = array('active');
+    }
+    elseif ($item['path'] == 'node/%') {
+      $node = $item['map'][1];
+      if ($node->type == $variables['element']['#href']) {
+        $variables['element']['#attributes']['class'][] = 'active';
+        $variables['element']['#localized_options']['attributes']['class'] = array('active');
+      }
+      elseif ($node->type == 'organization' && $variables['element']['#href'] == 'organizations') {
+        $variables['element']['#attributes']['class'][] = 'active';
+        $variables['element']['#localized_options']['attributes']['class'] = array('active');
+      }
+      elseif ($node->type == 'page' && !empty($node->field_section) && $variables['element']['#title'] == 'About') {
+        $variables['element']['#attributes']['class'][] = 'active';
+        $variables['element']['#localized_options']['attributes']['class'] = array('active');
+      }
+    }
+    elseif (arg(0) == 'related' && $variables['element']['#href'] == 'region') {
+      $variables['element']['#attributes']['class'][] = 'active';
+      $variables['element']['#localized_options']['attributes']['class'] = array('active');
+    }
+  }
+}

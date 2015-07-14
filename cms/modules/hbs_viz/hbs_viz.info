@@ -1,0 +1,7 @@
+name = Clustermapping.us Data Visualisations
+description = Displays D3 Charts
+core = 7.x
+package = Clustermapping.us
+version = 7.x-1.0-beta1
+dependencies[] = block
+dependencies[] = libraries

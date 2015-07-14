@@ -1,0 +1,17 @@
+name = Homepage
+description = Provide a homepage and configurations options for the homepage.
+core = 7.x
+package = Clustermapping.us
+version = 7.x-1.0-beta1
+project = hbs_homepage
+dependencies[] = ctools
+dependencies[] = features
+dependencies[] = hbs_blog
+dependencies[] = strongarm
+dependencies[] = text
+features[ctools][] = strongarm:strongarm:1
+features[features_api][] = api:2
+features[field_instance][] = node-page-body
+features[variable][] = field_bundle_settings_node__page
+features[variable][] = site_frontpage
+project path = profiles/clustermapping/modules

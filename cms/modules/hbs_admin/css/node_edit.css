@@ -1,0 +1,57 @@
+.role-authenticated-user #switch_edit-body-und-0-value,
+.role-authenticated-user #edit-body-und-0-format {
+  /*display: none !important;*/
+}
+
+.form-item-field-address-und-0-country label,
+.form-item-field-address-und-0-administrative-area label {
+  display: block;
+}
+
+.chosen-container-single .chosen-single,
+.chosen-container .chosen-drop {
+  padding: 8px 0 8px 8px;
+  margin-top: 3px;
+}
+.chosen-container-single .chosen-single div b {
+  background-position: 0 12px;
+}
+.chosen-container-active.chosen-with-drop .chosen-single div b {
+  background-position: -18px 12px;
+}
+
+.form-select, .form-select:focus, .form-select:active {
+  background-position: 12px -6px;
+}
+
+div.form-select, div.form-select:focus, div.form-select:active {
+  background: transparent none;
+}
+select.form-select, select.form-select:focus, select.form-select:active {
+  background-color: transparent;
+  background-image: none;
+  background: -moz-linear-gradient(center top , #FFFFFF 20%, #F6F6F6 50%, #EEEEEE 52%, #F4F4F4 100%) repeat scroll 0 0 padding-box rgba(0, 0, 0, 0);
+  border: 1px solid #AAAAAA;
+  border-radius: 5px;
+  box-shadow: 0 0 3px #FFFFFF inset, 0 1px 1px rgba(0, 0, 0, 0.1);
+  color: #444444;
+  margin: 3px 0 0;
+}
+
+[dir="ltr"] div.form-select {
+  padding-right: 0;
+}
+
+.form-wrapper > legend {
+  padding-left: 16px;
+  padding-bottom: 4px;
+}
+
+.field-type-phone .form-type-phone .form-item {
+  margin-right: 16px;
+}
+
+#node_organization_form_group_contact .fieldset-wrapper div.field-type-text {
+  display: inline-block;
+  margin-right: 16px;
+}

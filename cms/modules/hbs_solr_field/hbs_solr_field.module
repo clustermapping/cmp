@@ -1,0 +1,196 @@
+<?php
+/**
+ * @file
+ * An field using dolr lookups for autocomplete.
+ */
+
+/**
+ * Implements hook_field_info().
+ *
+ * Provides the description of the field.
+ */
+function hbs_solr_field_field_info() {
+  return array(
+    'hbs_solr_field_solr_reference' => array(
+      'label' => t('Solr Reference'),
+      'description' => t('Autocomplete Solr Reference.'),
+      'default_widget' => 'hbs_solr_field_solr_reference',
+      'default_formatter' => 'hbs_solr_field_link'
+    ),
+  );
+}
+
+
+/**
+ * Implements hook_field_is_empty().
+ */
+function hbs_solr_field_field_is_empty($item, $field) {
+  return empty($item['solr_reference']);
+}
+
+function hbs_solr_field_field_formatter_info() {
+  return array(
+    'hbs_solr_field_link' => array(
+      'label' => t('Simple link formatter'),
+      'field types' => array('hbs_solr_field_solr_reference'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function hbs_solr_field_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+
+  switch ($display['type']) {
+    case 'hbs_solr_field_link':
+      foreach ($items as $delta => $item) {
+        $path_prefix = NULL;
+        $parts = explode('/', $item['solr_id']);
+        if ($instance['field_name'] == 'field_regions') $path_prefix = 'region/' . $parts[1] . '/';
+        $url = (strstr($item['solr_key'], $path_prefix) ? '' : $path_prefix) . $item['solr_key'];
+        $element[$delta] = array(
+          '#type' => 'html_tag',
+          '#tag' => 'a',
+          '#value' => l($item['solr_reference'], $url, array('attributes' => array('class' => $item['solr_key'] ) )),
+        );
+      }
+      break;
+  }
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_widget_info().
+ */
+function hbs_solr_field_field_widget_info() {
+  return array(
+    'hbs_solr_field_cluster_reference' => array(
+      'label' => t('Cluster reference'),
+      'field types' => array('hbs_solr_field_solr_reference'),
+    ),
+    'hbs_solr_field_region_reference' => array(
+       'label' => t('Region reference'),
+       'field types' => array('hbs_solr_field_solr_reference'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_widget_form().
+ */
+function hbs_solr_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  $reference = isset($items[$delta]['solr_reference']) ? $items[$delta]['solr_reference'] : '';
+  $id = isset($items[$delta]['solr_id']) ? $items[$delta]['solr_id'] : '';
+  $key = isset($items[$delta]['solr_key']) ? $items[$delta]['solr_key'] : '';
+
+  $widget = $element;
+  $widget['#delta'] = $delta;
+
+  $widget += array(
+    '#type' => 'textfield',
+    '#default_value' => $reference,
+  );
+
+  $widget['#pre_render'][] = 'quick_search_process_search';
+  $widget['#attributes']['quick_search_callback'] = 'hbs_solr_field_autocomplete_qs_callback_'. ('hbs_solr_field_region_reference' == $instance['widget']['type']?  'region' : 'cluster');
+  $element['solr_reference'] = $widget;
+
+  $class = str_replace('_', '-', $element['#field_name'] . '-' . $langcode . '-' . $delta . '-solr-reference');
+  $element['solr_id'] = array(
+    '#type' => 'hidden',
+    '#default_value' => $id,
+    '#attributes' => array('class' => 'data-id ' . $class),
+  );
+  $element['solr_key'] = array(
+    '#type' => 'hidden',
+    '#default_value' => $key,
+    '#attributes' => array('class' => 'data-key ' . $class),
+  );
+
+  drupal_add_js(drupal_get_path('module', 'hbs_solr_field') . '/js/hbs_solr_field.js');
+  return $element;
+}
+
+function hbs_solr_field_autocomplete_qs_callback_region($search) {
+  _hbs_solr_field_callback($search, 'region' ,'/data/autocomplete/region/');
+}
+
+function hbs_solr_field_autocomplete_qs_callback_cluster($search) {
+  _hbs_solr_field_callback($search, 'cluster' ,'/data/autocomplete/cluster/');
+}
+
+/**
+ * Implements hook_apachesolr_field_mappings().
+ */
+function hbs_solr_field_apachesolr_field_mappings() {
+  $mappings = array(
+    'hbs_solr_field_solr_reference' => array(
+      'indexing_callback' => 'hbs_solr_field_indexing_callback',
+      'multiple' => TRUE,
+      'index_type' => 'string',
+      'map callback' => 'hbs_solr_field_map_callback',
+      'facets' => TRUE,
+    ),
+  );
+
+  return $mappings;
+}
+
+/**
+ * Implements hook_apachesolr_map_callback().
+ */
+function hbs_solr_field_map_callback($facets, $options) {
+  $map = array();
+  $allowed_values = array();
+  return $map;
+}
+
+function _hbs_solr_field_callback($search, $type, $path) {
+  global $base_url;
+  $results = drupal_http_request($base_url . $path . urlencode($search));
+
+  $data = json_decode($results->data);
+
+  $output = array();
+
+  if (!empty($data)) $output['label'] = t('Select a ' . $type);
+
+  if (gettype($data) == 'object') {
+    $data = array($data);
+  }
+  foreach ($data as $result) {
+    $output['results'][] = '<a id="' . $result->id . '" href="javascript:" data-key="' . $result->key . '" >' . $result->label . '</a>';
+  }
+
+  drupal_json_output($output);
+  drupal_exit();
+}
+
+/**
+ * Map function to return the desired value for solr fields
+ */
+function _hbs_solr_field_extract_solr_ids($n) {
+  return $n['solr_id'];
+}
+
+/**
+ * Callback function from hbs_solr_field_apachesolr_field_mappings().
+ */
+function hbs_solr_field_indexing_callback($node, $field_name, $index_key, $field_info) {
+  $fields = array();
+  if (!empty($node->{$field_name})) {
+    $fields[] = array(
+      'key' => 'tm_' . $field_name,
+      'value' => implode(' ', array_map("_hbs_solr_field_extract_solr_ids", $node->{$field_name}[LANGUAGE_NONE])),
+    );
+  }
+  return $fields;
+}
+
+
+/**
+ * @} End of "defgroup hbs_solr_field".
+ */

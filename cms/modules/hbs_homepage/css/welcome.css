@@ -1,0 +1,51 @@
+#homepage-welcome {
+  margin-top: 20px;
+  display: none;
+  position: absolute;
+  z-index: 1000;
+  width: 100%;
+}
+  #homepage-welcome .container {
+    /*width: 650px;*/
+    padding: 0 65px;
+  }
+  #homepage-welcome h4 {
+    display: none;
+  }
+  #homepage-welcome p {
+    font-size: 15px;
+    line-height: 1.5em;
+    padding: 0 0 25px;
+  }
+  #homepage-welcome .logo-right {
+    text-align: right;
+  }
+
+  #homepage-welcome .logos {
+    margin: 25px 0 50px;
+  }
+
+  #homepage-welcome .homepage-welcome{
+    background-color: #fff;
+    border-radius: 0;
+    border-left: #b3e742 solid 3px;
+  }
+
+  #welcome-trigger {
+    color: #fff;
+    cursor: pointer;
+    padding: 15px 0;
+    width: 100%;
+    display: block;
+    text-align: center;
+    text-decoration: none;
+  }
+#homepage-welcome .section-menu .glyphicon {
+  top: 3px;
+}
+
+@media (max-width: 767px) {
+  #homepage-welcome .container {
+    width: 100%;
+  }
+}

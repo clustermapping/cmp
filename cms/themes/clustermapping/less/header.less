@@ -1,0 +1,478 @@
+// HEADER
+
+// Typography
+// -------------------------
+
+
+h1,.h1, h2,.h2, h3,.h3, h4,.h4, h5,.h5, h6,.h6{
+	color: @gray-darker;
+	font-style: italic;
+	a{
+		text-decoration: none;
+	}
+}
+
+
+h1, .h1 {
+  font-style: normal;
+  font-weight: 900;
+  .h-font-size(@font-size-h1);
+}
+.node {
+  h1, .h1 {
+    font-style: normal;
+    font-weight: 900;
+    .h-font-size(@font-size-h1-node);
+  }
+}
+h2, .h2 {
+	color: @brand-primary;
+	.h-font-size(@font-size-h2);
+	margin-bottom: 0;
+	padding-bottom: 7px;
+	border-bottom: 5px solid @gray-light;
+}
+h3, .h3 {.h-font-size(@font-size-h3);}
+h4, .h4 {
+  //color: @brand-primary;
+  font-style: normal;
+  font-size: @font-size-h4;
+}
+h5, .h5 {
+  font-style: normal;
+  font-weight: 700;
+  font-size: @font-size-h5;
+}
+h6, .h6 {	font-size: @font-size-h6;}
+
+// Links
+
+a {
+	text-decoration: underline;
+	.transition(color ease-out .25s);
+  &:hover,
+  &:focus {
+
+  }
+}
+
+
+// Buttons
+// -------------------------
+.btn{
+	// font-family: @headings-font-family;
+	text-transform: uppercase;
+	padding: 9px 15px;
+	border: 0 solid #000;
+  &:focus{
+    outline: none;
+  }
+	&.btn-lg{
+		font-size: @font-size-large;
+    font-weight: 400;
+		padding: 9px 20px;
+		//text-transform:none;
+	}
+
+	&.btn-default{
+    border: 1px solid @gray-light;
+		#gradient.vertical(@white, #e2e2e2);
+    &.disabled{
+      border-color:@gray-light;
+    }
+	}
+
+	&.btn-primary{
+		#gradient.vertical(lighten(@brand-primary, 7.8%),@brand-primary);
+	}
+
+	&.btn-success{
+		#gradient.vertical(lighten(@brand-success, 18%),@brand-success);
+	}
+
+  &.btn-info{
+    #gradient.vertical(#66ccff,#1ba1e4);
+    border: solid 1px #5ec8fc;
+    color: @white;
+  }
+
+	&.btn-inverse{
+		color:#fff;
+		#gradient.vertical(@gray,@gray-darker);
+	}
+}
+a.btn-xs{
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: @border-radius-base;
+}
+// Forms
+// -------------------------
+.form-control[disabled],
+fieldset[disabled] .form-control{
+  opacity: 0.5;
+}
+
+#orgs-and-search {
+  // background: #ffffff; /* Old browsers */
+  // background: -moz-linear-gradient(top, #ffffff 0%, #f7f7f8 76%, #ffffff 100%); /* FF3.6+ */
+  // background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(76%,#f7f7f8), color-stop(100%,#ffffff)); /* Chrome,Safari4+ */
+  // background: -webkit-linear-gradient(top, #ffffff 0%,#f7f7f8 76%,#ffffff 100%); /* Chrome10+,Safari5.1+ */
+  // background: -o-linear-gradient(top, #ffffff 0%,#f7f7f8 76%,#ffffff 100%); /* Opera 11.10+ */
+  // background: -ms-linear-gradient(top, #ffffff 0%,#f7f7f8 76%,#ffffff 100%); /* IE10+ */
+  // background: linear-gradient(to bottom, #ffffff 0%,#f7f7f8 76%,#ffffff 100%); /* W3C */
+  // filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ffffff',GradientType=0 );
+  min-width: 390px;
+  #header-orgs {
+    border-bottom: 1px solid #DFE0E0;
+    overflow: hidden;
+    height: 38px;
+    margin-bottom: 3px;
+    div {
+      margin: 8px 0 5px;
+      padding: 0;
+      span {
+        float: left;
+        font-family: @font-family-header;
+        font-size: 11px;
+        list-style-type: none;
+        margin: 0;
+        a {
+          color: @gray;
+          display: block;
+          padding: 4px 0 4px 18px;
+          text-decoration: none;
+        }
+      }
+      #hbs-org-list-item {
+        a {
+          background: url("../img/hbs-seal-sm.png") no-repeat scroll 0 0 rgba(0, 0, 0, 0);
+        }
+      }
+      #eda-org-list-item {
+        float: right;
+        margin-right: 0;
+        a {
+          background: url("../img/eda-seal-sm.png") no-repeat scroll 0 0 rgba(0, 0, 0, 0);
+          padding-left: 22px;
+        }
+      }
+    }
+  }
+  #header-search-form {
+    color: @gray-darker;
+    display: block;
+    float: right;
+    font-family: @font-family-header;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.04em;
+    margin: 0;
+    text-transform: uppercase;
+    form {
+      margin-top: 0;
+      border-left: none;
+      label {
+        margin: 10px 6px 5px 0;
+      }
+      .input-group {
+        border: 0 none;
+        border-collapse: separate;
+        border-radius: 0;
+        display: table;
+        position: relative;
+        .input-group-btn{
+          width: 0%;
+        }
+        .form-control {
+          background: url("../img/bg-search-sm.png") repeat-x scroll 0 0 rgba(0, 0, 0, 0);
+          border: 1px solid #98989A;
+          border-radius: 4px;
+          float: right;
+          font-size: 13px;
+          height: 36px;
+          width: 300px;
+
+        }
+      }
+      .form-group{
+        margin-bottom: 0;
+      }
+      .btn.btn-primary,
+      .btn.btn-default {
+        background: url("../img/icon-mag-glass.png") no-repeat scroll 50% 50% rgba(0, 0, 0, 0);
+        border: 0 none;
+        font-size: 11px;
+        overflow: hidden;
+        padding: 10px 0;
+        position: absolute;
+        right: 4px;
+        text-indent: 1000%;
+        top: 1px;
+        width: 35px;
+      }
+    }
+  }
+}
+
+// Forms
+// -------------------------
+::-webkit-input-placeholder {
+  font-style: italic;
+  font-size: @font-size-large;
+}
+:-moz-placeholder {
+  font-style: italic;
+  font-size: @font-size-large;
+}
+::-moz-placeholder {
+  font-style: italic;
+  font-size: @font-size-large;
+}
+:-ms-input-placeholder {
+  font-style: italic;
+  font-size: @font-size-large;
+}
+.form-control{
+  font-size: @font-size-large;
+  padding: 2px 2px 2px 4px;
+}
+
+.slogan .lead {
+  font-family: @headings-font-family;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.beta-wrapper{
+  
+  a{
+
+  }
+} 
+
+#header-search-form .form-control::-webkit-input-placeholder { font-size: 13px; font-weight: normal; }
+#header-search-form .form-control:-moz-placeholder { font-size: 13px; font-weight: normal; }
+#header-search-form .form-control::-moz-placeholder { font-size: 13px; font-weight: normal; }
+#header-search-form .form-control:-ms-input-placeholder { font-size: 13px; font-weight: normal; }
+
+
+.navbar{
+	font-weight: 500;
+	&.navbar-inverse{
+		background-color: @gray-dark;
+		.navbar-text {
+			font-size: @font-size-large;
+			color:@white;
+		}
+	}
+}
+
+ul li.leaf {
+	margin: 0 0 0 12px;
+  letter-spacing: 0.05em;
+}
+
+
+
+header {
+	background-color: @gray-lighter;
+	border: 0px solid transparent;
+  #banner {
+    .col-sm-4.search-column {
+      padding-left: 0;
+      padding-right: 0;
+    }
+    padding: 22px 0;
+  	.navbar-header {
+  		float: none;
+      padding: 5px 0;
+  		.logo {
+  			margin: 0;
+  		}
+  		.slogan {
+        margin-left: 40px;
+        margin-top: 15px;
+        float: left;
+        .beta-btn{
+          margin-bottom: 5px;
+        }
+        .lead{
+    			font-style: italic;
+    			color: #2c3949;
+    			//margin-top: 40px;
+    			//margin-left: 40px;
+    			float: left;
+        }
+  		}
+  	}
+
+    .search-form,
+    .form-search {
+  		margin-top:12px;
+  		border: 2px solid @gray-lighter;
+  		.btn.btn-default {
+  			background: #fff url('../img/mag-glass.png') no-repeat 50% 50%;
+  			width: 35px;
+  			border:0;
+  			padding: 10px 0;
+  			font-size:11px;
+  			whitespace:nowrap;
+  			text-indent:1000%;
+  			overflow:hidden;
+  		}
+  		.input-group{
+  			border: 2px solid #e3e4e9;
+  			border-radius: 4px;
+  			input{
+  				-webkit-box-shadow: none;
+  				-moz-box-shadow: none;
+  				box-shadow: none;
+  			}
+  		}
+  		.form-control {
+  			height: 33px;
+  			border: 0;
+  		}
+  	}
+  }
+
+	#navbar{
+		#grad.blue;
+    min-height: 18px;
+    border: none;
+    font-size: @font-size-larger;
+    font-weight: 600;
+    line-height: 1.1;
+
+		nav{
+      text-shadow: 1px 1px 1px @gray-darker;
+      ul.menu{
+        color: red;
+  			margin-left: 0;
+  			li{
+          margin-left: 0;
+  				&.first{
+  					margin-left: 0;
+  				}
+  				a{
+  					color: @white;
+  					//font-size: @font-size-large;
+  					text-shadow: 1px 1px 1px @gray-darker;
+  					text-transform: uppercase;
+  					letter-spacing: 0.05em;
+            line-height: 20px;
+  					padding: 18.5px;
+  					margin: 0;
+  					//border-bottom: 5px solid transparent;
+  					background-color: transparent;
+  					text-decoration: none;
+
+  					.transition(~"background-color ease-out .25s, color ease-out .25s");
+  					&:hover{
+  						//border-bottom: 5px solid @brand-primary;
+              background-color: rgba(27, 155, 218, 1.0);
+              // background-color: rgba(28, 48, 121, 0.44); // Original, prior to HBS-114
+  						color:  @white;
+  					}
+  					&.active{
+  						background-color: @white;
+              text-shadow: none;
+  						//border-bottom: 5px solid @brand-info;
+  						color: @gray-darker;
+  					}
+  				}
+  			}
+      }
+      #welcome-trigger{
+        width: auto;
+        text-transform: uppercase;
+        padding: 17.5px 0 17.5px 12px;
+
+        span.glyphicon{
+          color: #66ccff;
+        }
+      }
+		}
+    .user-login{
+      ul {
+        margin-bottom: 0;
+        li {
+          display: inline-block;
+          padding: 16px 0 18px 12px;
+          color: @white;
+          font-weight: 400;
+          &.register {
+            border-right: #1d336d solid 1px;
+            padding-right: 30px;
+          }
+          &.or {
+            padding-top: 10px;
+            padding-bottom: 0;
+            padding-left: 0;
+            margin-left: -18px;
+            div {
+              #gradient.vertical(#1d336d, @blue);
+              width: 30px;
+              height: 30px;
+              line-height: 24px;
+              border-radius: 25px;
+              text-align: center;
+              line-height: 1.7em;
+              font-style: italic;
+            }
+          }
+          em {
+            color: @white;
+            font-style: normal;
+            font-weight: bolder;
+          }
+          a {
+            text-decoration: none;
+            color: @blue-lightest;
+          }
+          .glyphicon-small {
+            font-weight: normal;
+            padding-left: 6px;
+            font-size: 12px;
+          }
+          .dropdown-menu {
+            top: 42px;
+            li {
+              padding: 0;
+            }
+            a {
+              color: @gray;
+              padding: 3px 20px;
+              text-decoration: none;
+              text-shadow: none;
+              .transition(color ease-out .25s);
+              &:hover,
+              &:focus {
+                background: transparent;
+                color: @blue-light;
+              }
+              span.glyphicon {
+                padding-right: 8px;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+body.front {
+  #page-header {
+    display: none;
+  }
+}
+
+#page-header {
+  .header-subtitle {
+    font-size: 14px;
+    font-weight: normal;
+  }
+}
+

@@ -1,0 +1,151 @@
+<?php
+/**
+ * @file
+ * Code for the Homepage feature.
+ */
+
+include_once 'hbs_homepage.features.inc';
+
+/**
+ * Implements hook_menu().
+ */
+function hbs_homepage_menu() {
+  $items['homepage'] = array(
+    'page callback' => 'hbs_homepage_homepage',
+    'access arguments' => array('access content'),
+    'type' => MENU_SUGGESTED_ITEM,
+    'file' => 'hbs_homepage.pages.inc',
+  );
+
+  $items['admin/config/content/homepage'] = array(
+    'title' => 'Homepage',
+    'description' => 'Configuration for the homepage',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hbs_homepage_config_form'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'hbs_homepage.pages.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function hbs_homepage_theme() {
+  return array (
+    'hbs_homepage_template' => array(
+      'template' => 'templates/hbs_homepage', // template file called hbs_homepage.tpl.php
+      'arguments' => array('map' => NULL, 'about' => NULL, 'blogs' => NULL),
+    ),
+    'hbs_homepage_about_block' => array(
+      'template' => 'templates/hbs_homepage_about_block', // template file called hbs_homepage_about_block.tpl.php
+      'arguments' => array('term' => NULL),
+    ),
+    'hbs_homepage_stories' => array(
+      'template' => 'templates/hbs_homepage_stories', // template file called hbs_homepage_stories.tpl.php
+      'arguments' => array('term' => NULL),
+    ),
+    'hbs_homepage_welcome' => array(
+      'template' => 'templates/hbs_homepage_welcome', // template file called hbs_homepage_welcome.tpl.php
+      'arguments' => array('node' => NULL),
+    ),
+    'hbs_homepage_welcome_default' => array(
+      'template' => 'templates/hbs_homepage_welcome_default', // This template will contain the HTML of the default welcome message
+    ),
+  );
+}
+
+/**
+ * Implements hoook_preprocess_page().
+ */
+function hbs_homepage_preprocess_page(&$variables) {
+  $variables['show_welcome'] = FALSE;
+  if (drupal_is_front_page()) {
+    $variables['show_welcome'] = TRUE;
+    module_load_include('inc', 'hbs_homepage', 'hbs_homepage.pages');
+    drupal_add_js(drupal_get_path('module', 'hbs_homepage') .'/js/hbs_homepage.js');
+    drupal_add_js(libraries_get_path('queue'). '/queue.min.js');
+    drupal_add_js(libraries_get_path('d3'). '/d3.min.js');
+    drupal_add_css(drupal_get_path('module', 'hbs_homepage') . '/css/welcome.css');
+    drupal_add_library('system', 'jquery.cookie');
+    $variables['welcome'] = _hbs_homepage_welcome_message();
+  }
+}
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function hbs_homepage_preprocess_node(&$variables) {
+
+  $variables['isfront'] = drupal_is_front_page();
+  if($variables['isfront']){
+    switch ($variables['type']) {
+      case 'story':
+        $variables['classes_array'][] = 'col-sm-' . round( 12 / $variables['elements']['#count'] );
+        $variables['classes_array'][] = 'step';
+        $variables['classes_array'][] = 'story-' . $variables['elements']['#weight'];
+        break;
+      case 'blog':
+        $variables['isjumbotron']= 0;
+        if(!empty($variables['elements']['#jumbotron'])){
+          $variables['isjumbotron'] =1;
+          $variables['content']['field_image'] = field_view_field('node', $variables['node'], 'field_image');
+
+          if( !empty($variables['content']['field_image']) ){
+            $variables['content']['field_image'][0]['#item']['attributes'] = array('class' => 'img-responsive');
+          }
+        }
+
+        break;
+    }
+  }
+}
+
+
+function hbs_homepage_preprocess_hbs_homepage_template(&$variables) {
+  $variables['search']['content']['search_block_form']['#attributes']['placeholder'] = 'Cluster, region, city, zip, or keyword';
+  $variables['search']['content']['actions']['#attributes']['class'][] = 'form-submit';
+  $variables['search']['content']['actions']['submit']['#value'] = 'asdasdf';
+}
+
+/**
+ * Helper function to get the desired template message content.
+ */
+function _hbs_homepage_messages($key) {
+  $message = variable_get('hbs_homepage_' . $key .'_messages', NULL);
+  if (!empty($message) && empty($arg1)) {
+    return check_markup($message['value'], $message['format']);
+  }
+  return NULL;
+}
+function _hbs_homepage_title($key) {
+  $title = variable_get('hbs_homepage_' . $key .'_title', NULL);
+  if (!empty($title)) {
+    return $title;
+  }
+  return NULL;
+}
+
+function _hbs_homepage_welcome_message_default() {
+  return '
+          <div class="col-md-5 col-md-offset-1">
+            <div class="video-wrapper">
+              <iframe src="//www.youtube.com/embed/j8e6CwV1hWA" frameborder="0" allowfullscreen></iframe>
+            </div>
+          </div>
+          <div class="col-md-5">
+            <h2>Welcome</h2>
+
+            <div class="row logos">
+              <div class="col-md-8 logo-left">
+                <img class="img-responsive" src="/profiles/clustermapping/modules/hbs_homepage/templates/images/horiz_isc_ShieldLeft_rgb.png">
+              </div>
+              <div class="col-md-4 logo-right">
+                <img class="img-responsive" src="/profiles/clustermapping/modules/hbs_homepage/templates/images/logo_modal_eda.jpg">
+              </div>
+            </div>
+            <p>Welcome to the newly redesigned U.S. Cluster Mapping Website. Here policy makers, economic development professionals, and researchers will find powerful data and tools to understand clusters, improve institutions, and locate appropriate partners across the country.</p>
+          </div>';
+}

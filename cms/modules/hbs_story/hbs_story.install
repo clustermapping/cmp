@@ -1,0 +1,7 @@
+<?php
+
+  function hbs_story_update_7001(&$sandbox) {
+    field_delete_field('field_story_map_key');
+    field_purge_batch(10);
+    cache_clear_all();
+  }

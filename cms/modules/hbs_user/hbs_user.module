@@ -1,0 +1,361 @@
+<?php
+/**
+ * @file
+ * hbs_user module file.
+ */
+
+/**
+ * Implements hook_user_view().
+ */
+function hbs_user_user_view($account, $view_mode) {
+  // Removes member reference from user profile display.
+  $account->content['field_member_reference']['#access'] = false;
+}
+
+/**
+ * Implements hook_node_insert().
+ */
+function hbs_user_node_insert($node) {
+  // @todo - commenting this out for now because
+  // user object save dies if the node doesn't exist yet.
+  //_hbs_user_node($node);
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function hbs_user_node_update($node) {
+  _hbs_user_node($node);
+}
+
+/**
+ * Helper function to return text for member profile reference.
+ *
+ * @param int $uid
+ *   User ID from user page.
+ *
+ * @return string
+ *   Block of html markup for the user profile.
+ */
+function _hbs_user_profile_member_text($uid) {
+
+  // Set default text.
+  $content = "<p><h3>Welcome to your User Account page on ClusterMapping.us.</h3></p>
+  <p>All registered users are encouraged to fill out a Member Profile. Member Profiles
+  can be associated with Organizations in our Organization Directory.<p>";
+
+  // Check to see if there is a user ref for this user.
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node', '=')
+    ->propertyCondition('type', 'member', '=')
+    ->fieldCondition('field_user', 'uid', $uid, '=');
+  $entities = $query->execute();
+
+  // If there are no linked member profiles.
+  if (count($entities) === 0) {
+    $content .= "<p><strong>We've noticed that you have not filled out your Member Profile yet, would you like to " .
+    l(t('proceed to fill out your information?'),'node/add/member') . "</strong></p>";
+  }
+  // If there is a linked member profile.
+  else {
+    // Get node ID.
+    // There will only ever be one.
+    foreach ($entities['node'] AS $key => $val) {
+      $url = 'node/' . $key;
+    }
+    $content .= "<p><strong>Thank you for filling out your " . l(t('Member Profile'), $url,
+      array('query' => drupal_get_destination())) . ". You may return to " . l(t('edit'), $url . '/edit',
+      array('query' => drupal_get_destination())) . " it at any time</strong></p>";
+  }
+
+  // Custom Region area.
+  $content .= _hbs_user_build_custom_region_list($uid);
+
+  // Region Compare area.
+  $content .= _hbs_user_build_region_compare_list($uid);
+
+  // Return content to user profile.
+  return $content;
+}
+
+/**
+ * Helper function on node insert/update.
+ *
+ * @param $node
+ *   A Node object.
+ */
+function _hbs_user_node($node) {
+  global $user;
+
+  // If node type is member and not an admin, proceed.
+  if ($node->type == 'member' && !in_array('administrator', $user->roles)) {
+    // Get uid from field.
+    $uid = $node->field_user[$node->language]['0']['uid'];
+    if ($uid) {
+      // Load user account to save member node reference.
+      $existing = user_load($uid);
+      $edit = (array) $existing;
+      $edit['field_member_reference'][LANGUAGE_NONE][0]['nid'] = $node->nid;
+      user_save($existing, $edit);
+    }
+  }
+}
+
+/**
+ * Helper function to load custom regions from data services by user_id
+ *
+ * @param $user_id
+ *  Drupal user id
+ *
+ * @return mixed
+ *  array of custom region objects
+ */
+
+function _hbs_load_custom_regions_by_user($user_id) {
+    global $base_url;
+    global $user;
+    $alias = drupal_get_path_alias('user/' . $user_id);
+    $alias = str_replace('users/', '', $alias);
+    $api_base_url = variable_get('hbs_dashboard_api_base_url', $base_url);
+    $result = drupal_http_request($api_base_url . '/data/custom/' . $alias);
+    $data = json_decode($result->data, TRUE);
+    return $data;
+}
+
+/**
+ * Helper function to return custom region data.
+ *
+ * @param int $uid
+ *   User ID from user page.
+ *
+ * @return string
+ *   Block of html markup for the user profile containing custom region data.
+ */
+function _hbs_user_build_custom_region_list($uid) {
+  global $base_url, $user;
+  $data = _hbs_load_custom_regions_by_user($uid);
+  $content = '';
+  if (is_array($data)) {
+    $content .= '<h3>' . t('Custom Regions') . '</h3>';
+    $content .= '<p>Below you can find your saved custom regions. Regions marked as "Data Processing..." will be available shortly (usually within 30m), reload this page to see updated status</p><ul>';
+    foreach($data AS $region) {
+        if (isset($region['key_t'])) {
+            $url = $base_url . '/region/custom/' . $region['key_t'];
+            $content .= '<li>'
+              . l($region['region_short_name_t'] . ' (' . $region['region_count_tl'] .  ' counties) ', $url)
+              . ' - <a href="" class="custom_region_rename" key_t="'. $region['key_t'] . '" title="'. $region['region_short_name_t'] . '"> Rename </a>'
+              . ' - <a href="" class="custom_region_delete" key_t="'. $region['key_t'] . '" title="'. $region['region_short_name_t'] . '"> Delete </a>'
+            . ' </li>';
+        } else {
+            $content .= '<li>' . $region['region_short_name_t']
+            . ' - <a href="" class="custom_region_delete" key_t="'. $region['region_code_t'] . '" title="'. $region['region_short_name_t'] . '"> Delete </a>' ;
+        }
+    }
+    $content .= '</ul>';
+  }
+  $content .= '<p> ' . l('Add new Custom Region', $base_url . '/region_builder') . '</p>';
+
+  $content .= '
+<div class="modal fade" id="custom_region_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="custom_region_modal_title">Rename Custom Region</h4>
+      </div>
+      <div class="modal-body" id="custom_region_modal_body"> </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="custom_region_btn_ok"> OK </button>
+        <button type="button" class="btn btn-default" data-dismiss="modal"> Cancel </button>
+      </div>
+    </div>
+  </div>
+</div>
+';
+
+  drupal_add_js('(function($){
+  $("a.custom_region_delete").on("click", function(e) {
+    e.preventDefault();
+    var region_key = $(this).attr("key_t");
+    var region_name = $(this).attr("title").split(" by ")[0];
+    $("#custom_region_modal").modal().css("padding-top", "200px");
+    $("#custom_region_modal_title").text("Delete Custom Region");
+    $("#custom_region_modal_body").html(\'<p> Please confirm that you are sure to delete: <b>\' + region_name + \'</b></p>\');
+    $("#custom_region_modal_body").append(\'<div class="alert alert-warning" style="margin:15px 0 0;"> This action cannot be undone. </div>\');
+
+    $("#custom_region_btn_ok").off("click").on("click", function(e) {
+      $(this).text("Deleting...");
+      $.post("' . $api_base_url . '/data/custom/delete/" + region_key)
+      .then(function(result) {
+        document.location.pathname = "/user";
+      });
+    });
+
+
+  });
+
+  $("a.custom_region_rename").on("click", function(e) {
+    e.preventDefault();
+    var region_key = $(this).attr("key_t");
+    var region_name = $(this).attr("title").split(" by ")[0];
+
+    $("#custom_region_modal_title").text("Rename Custom Region");
+    $("#custom_region_modal").modal().css("padding-top", "200px");
+
+    $("#custom_region_modal_body").html($(\'<label>\').text("Name"));
+    $("#custom_region_modal_body").append($(\'<input>\').attr("class", "form-control").attr("id", "custom_region_name"));
+    $("#custom_region_modal_body").append(\'<div class="alert alert-info" style="margin:15px 0 0;"> If you are renaming a custom region, please allow for 5+ minutes of reprocessing time. </div>\');
+    $("#custom_region_name").val(region_name).select().focus();
+    
+    $("#custom_region_btn_ok").off("click").on("click", function(e) {
+      var new_name = $("#custom_region_name").val();
+      if (new_name != region_name) {
+        $(this).text("Saving...");
+        var region;
+        $.getJSON("' . $api_base_url . '/data/custom/' . $user->name . '")
+        .then(function(result){
+          for (var i = 0; i < result.length; i++) {
+            if (result[i].key_t == region_key) {
+              region = result[i];
+              return result[i];
+            }
+          }
+        })
+        .then(function() {
+          $.post("' . $api_base_url . '/data/custom/delete/" + region_key)
+          .then(function(result) {
+            $.post("' . $api_base_url . '/data/custom", {
+              name: new_name,
+              owner: "' . $user->name . '",
+              regions: region.regions_txt
+            })
+            .then(function(result) {
+              document.location.pathname = "/user";
+            });
+          });
+        })
+      }
+      $("#custom_region_modal").modal("hide");
+    });
+  });
+})(jQuery)', array(
+        'type' => 'inline',
+        'scope' => 'footer',
+      ));
+  return $content;
+}
+
+/**
+ * Helper function to return custom region data.
+ *
+ * @param int $uid
+ *   User ID from user page.
+ *
+ * @return string
+ *   Block of html markup for the user profile containing custom region data.
+ */
+function _hbs_user_build_region_compare_list($uid) {
+  global $base_url, $user;
+  $alias = drupal_get_path_alias('user/' . $uid);
+  $alias = str_replace('users/', '', $alias);
+  $api_base_url = variable_get('hbs_dashboard_api_base_url', $base_url);
+  $result = drupal_http_request($api_base_url . '/data/compare/' . $alias);
+  $data = json_decode($result->data, TRUE);
+
+  $content = '';
+  if (is_array($data)) {
+    $content .= '<h3>' . t('Region Comparisons') . '</h3>';
+    $content .= '<p>Below you can find your saved Region Comparisons.</p><ul>';
+    foreach($data AS $row) {
+        if (isset($row['code'])) {
+            $content .= '<li>'
+              . l($row['name'], $base_url . '/compare/' . $row['code'])
+              . ' - <a href="" class="region_compare_rename" code="'. $row['code'] . '" title="'. $row['name'] . '"> Rename </a>'
+              . ' - <a href="" class="region_compare_delete" code="'. $row['code'] . '" title="'. $row['name'] . '"> Delete </a>'
+            . ' </li>';
+        }
+    }
+    $content .= '</ul>';
+  }
+  // $content .= '<p> ' . l('Add new Region Comparison ', $base_url . '/compare') . '</p>';
+
+  $content .= '
+<div class="modal fade" id="region_compare_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="region_compare_modal_title">Rename Region Comparison</h4>
+      </div>
+      <div class="modal-body" id="region_compare_modal_body"> </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="region_compare_btn_ok"> OK </button>
+        <button type="button" class="btn btn-default" data-dismiss="modal"> Cancel </button>
+      </div>
+    </div>
+  </div>
+</div>
+';
+
+  drupal_add_js('(function($){
+  $("a.region_compare_delete").on("click", function(e) {
+    e.preventDefault();
+    var code = $(this).attr("code");
+    var region_name = $(this).attr("title").split(" by ")[0];
+    $("#region_compare_modal").modal().css("padding-top", "200px");
+    $("#region_compare_modal_title").text("Delete Region Comparison");
+    $("#region_compare_modal_body").html(\'<p> Please confirm that you are sure to delete: <b>\' + region_name + \'</b></p>\');
+    $("#region_compare_modal_body").append(\'<div class="alert alert-warning" style="margin:15px 0 0;"> This action cannot be undone. </div>\');
+
+    $("#region_compare_btn_ok").off("click").on("click", function(e) {
+      $(this).text("Deleting...");
+        var data = { code: code, owner: "' . $alias . '"};
+        $.post("' . $api_base_url . '/data/compare/delete", data)
+        .then(function(result) {
+          document.location.pathname = "/user";
+        })
+    });
+  });
+
+  $("a.region_compare_rename").on("click", function(e) {
+    e.preventDefault();
+    var code = $(this).attr("code");
+    var region_name = $(this).attr("title").split(" by ")[0];
+
+    $("#region_compare_modal_title").text("Rename Region Comparison");
+    $("#region_compare_modal").modal().css("padding-top", "200px");
+
+    $("#region_compare_modal_body").html($(\'<label>\').text("Name"));
+    $("#region_compare_modal_body").append($(\'<input>\').attr("class", "form-control").attr("id", "region_compare_name"));
+    $("#region_compare_name").val(region_name).select().focus();
+    
+    $("#region_compare_btn_ok").off("click").on("click", function(e) {
+      var new_name = $("#region_compare_name").val();
+      if (new_name != region_name) {
+        $(this).text("Renaming...");
+        $.getJSON("' . $api_base_url . '/data/compare/' . $user->name . '/" + code)
+        .then(function(result){
+          var data = result[0];
+          data.name = new_name;
+          data.code = undefined;
+          data.id = undefined;
+          $.post("' . $api_base_url . '/data/compare", data).then(function(){
+            var data = { code: code, owner: "' . $alias . '"};
+            $.post("' . $api_base_url . '/data/compare/delete/", data)
+            .then(function(result) {
+              document.location.pathname = "/user";
+            });
+          });
+        });
+      } else {
+        $("#region_compare_modal").modal("hide");
+      }
+    });
+  });
+})(jQuery)', array(
+        'type' => 'inline',
+        'scope' => 'footer',
+      ));
+  return $content;
+}

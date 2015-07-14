@@ -1,0 +1,218 @@
+<?php
+/**
+ * @file
+ * Module file for hbs_viz.
+ */
+
+/**
+ * Implements hook_block_info().
+ *
+ * This hook declares what blocks are provided by the module.
+ */
+function hbs_viz_block_info() {
+  // This hook returns an array, each component of which is an array of block
+  // information. The array keys are the 'delta' values used in other block
+  // hooks.
+
+  // The required block information is a block description, which is shown
+  // to the site administrator in the list of possible blocks. You can also
+  // provide initial settings for block weight, status, etc.
+
+  // Many options are defined in hook_block_info():
+  $charts = array('bar', 'scatterplot', 'map', 'dashboard_map', 'scorecard', 'gauge', 'datatable', 'clustergrid');
+  foreach ($charts as $key => $name) {
+    $blocks['hbs_viz_' . $name] = array(
+      // info: The name of the block.
+      'info' => t('Clustermapping.us: D3 @name Charts', array('@name' => ucfirst($name))),
+      // Block caching options (per role, per user, etc.)
+      'cache' => DRUPAL_CACHE_PER_PAGE, // default
+      'status' => FALSE,
+      'region' => 'content',
+      'pages' => 'region/state/*'
+    );
+  }
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ *
+ * This hook generates the contents of the blocks themselves.
+ */
+function hbs_viz_block_view($delta = '') {
+  $type = str_replace('hbs_viz_', '', $delta);
+  $markup = '<div class="' . $type  . '-wrapper"></div>';
+  $js = array(
+    hbs_viz_get_js_path('d3') . '/d3.min.js',
+    drupal_get_path('module', 'hbs_viz') . '/js/' . str_replace('_viz_', '-', $delta) . '.js',
+    drupal_get_path('module', 'hbs_viz') . '/js/hbs-viz.js'
+  );
+  $css = array(drupal_get_path('module', 'hbs_viz') . '/css/hbs-viz.css');
+  $jsVars = array( 'delta' => str_replace('_', '-', $delta));
+
+  switch ($type) {
+    case 'map':
+      array_push($js,
+        hbs_viz_get_js_path('topojson'). '/topojson.js',
+        hbs_viz_get_js_path('queue'). '/queue.min.js',
+        hbs_viz_get_js_path('mythos-vis') . '/dist/mythosvis.js',
+        hbs_viz_get_js_path('mythos-vis') . '/src/d3Plot.js',
+        //drupal_get_path('module', 'hbs_viz') . '/js/charts/d3Map.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/utility/d3AlbersUsaPr.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/utility/d3MapMenu.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/charts/d3SmallBarChart.js'
+      );
+      $jsVars['year'] = 2013;
+      $jsVars['region_type'] = 'state';
+      $jsVars['mapJson'] = '/' . drupal_get_path('module', 'hbs_viz') .'/json/states.json';
+      $jsVars['countryJson'] = '/' . drupal_get_path('module', 'hbs_viz') .'/json/stoutput.json';
+      $jsVars['countyJson'] = '/' . drupal_get_path('module', 'hbs_viz') .'/json/countiesEasMsas.json';
+    case 'bar':
+    case 'scatterplot':
+    case 'gauge':
+      array_unshift($js,
+        drupal_get_path('module', 'hbs_viz') . '/js/utility/d3Helper.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/utility/d3Axis.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/utility/d3Behaviors.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/utility/d3Legend.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/charts/d3BarChart.js',
+        //drupal_get_path('module', 'hbs_viz') . '/js/charts/d3Plot.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/charts/d3Gauge.js'
+      );
+
+      if( empty($jsVars['dataJson']) ) $jsVars['dataJson'] =  '/data/region/state/all/all';
+
+    break;
+    case 'dashboard_map':
+      array_unshift($js,
+        hbs_viz_get_js_path('topojson'). '/topojson.js',
+        hbs_viz_get_js_path('queue'). '/queue.min.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/charts/d3Map.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/utility/d3AlbersUsaPr.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/charts/d3SmallBarChart.js'
+      );
+      $jsVars['year'] = 2013;
+      $jsVars['region_type'] = 'state';
+      $jsVars['mapJson'] = '/' . drupal_get_path('module', 'hbs_viz') .'/json/us.json';
+      $jsVars['countryJson'] = '/' . drupal_get_path('module', 'hbs_viz') .'/json/stoutput.json';
+      $jsVars['countyJson'] = '/' . drupal_get_path('module', 'hbs_viz') .'/json/countiesEasMsas.json';
+      array_unshift($js,
+        drupal_get_path('module', 'hbs_viz') . '/js/utility/d3Helper.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/utility/d3Axis.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/utility/d3Behaviors.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/utility/d3Legend.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/charts/d3BarChart.js',
+        //drupal_get_path('module', 'hbs_viz') . '/js/charts/d3Plot.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/charts/d3Gauge.js'
+      );
+
+      if( empty($jsVars['dataJson']) ) $jsVars['dataJson'] =  '/data/region/state/all/all';
+    break;
+    case 'datatable':
+
+      $jsVars = array();
+    break;
+    case 'clustergrid':
+      $markup ='';
+    break;
+    default:
+      array_unshift($js,
+        drupal_get_path('module', 'hbs_viz') . '/js/utility/d3Helper.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/utility/d3Legend.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/charts/d3Scorecard.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/charts/d3Sparkline.js',
+        drupal_get_path('module', 'hbs_viz') . '/js/utility/d3Axis.js'
+      );
+
+      $jsVars['dataJson'] = '/data/region/state/all/all';
+      break;
+  }
+
+  $block['content'] = array(
+    '#markup' => $markup,
+    '#attached' => array(
+      'js' => $js,
+      'css' => $css,
+    ),
+  );
+
+  drupal_add_js(
+    array(
+      (str_replace('_viz', '', $delta)) => $jsVars
+    ),
+    'setting'
+  );
+
+  return $block;
+}
+
+/**
+ * Get the location of the js library.
+ *
+ * @return
+ *   The location of the library, or FALSE if the library isn't installed.
+ */
+function hbs_viz_get_js_path($library) {
+  $path = FALSE;
+  if (function_exists('libraries_get_path')) {
+    $path = libraries_get_path($library);
+    if (!file_exists($path)) {
+      $path = FALSE;
+    }
+  }
+  elseif (file_exists('sites/all/libraries/' . $library)) {
+    $path = 'sites/all/libraries/' . $library;
+  }
+  return $path;
+}
+
+/**
+ * Implements hook_js_alter().
+ * We need to ensure that d3, topojson, and queue are always loaded early.
+ */
+
+function hbs_viz_js_alter(&$js) {
+  $libraries = array('sites/all/libraries/d3/d3.min.js', 'sites/all/libraries/topojson/topojson.js', 'sites/all/libraries/queue/queue.min.js');
+
+  foreach($libraries as $lib) {
+    if (!empty($js[$lib])) {
+      $js[$lib]['weight'] = -100;
+    }
+  }
+}
+
+/**
+ * @} End of "defgroup hbs_viz".
+ */
+
+function hbs_viz_preprocess_page(&$variables){
+  if (arg(0) == 'organizations') _hbs_viz_set_map_options_org_types($variables);
+}
+
+function _hbs_viz_set_map_options_org_types(&$variables) {
+  $types = array();
+  $vocabulary = taxonomy_vocabulary_machine_name_load('organization_type');
+  $organization_types = taxonomy_get_tree($vocabulary->vid);
+
+  // Add a fake organization to be 'All'
+  array_unshift($organization_types, (object) array('tid' => 0, 'name' => 'All'));
+
+  foreach ($organization_types as $tid => $organization_type) {
+    $types[] = array(
+      'colors' => array(
+          'max' => '#32cfff',
+          'min' => '#faeaff',
+          'zero' => '#e8f8ff',
+        ),
+      'key' => $organization_type->tid,
+      'label' => $organization_type->name,
+      'machine_name' => strtolower(str_replace(' ', '-', $organization_type->name)),
+      'format' => 'function()',
+    );
+  }
+  drupal_add_js(array('hbs_viz' => array(
+      'organization_types' => $types,
+      'isOrgDashboard' => (arg(0) == 'organizations'),
+    )), 'setting');
+}

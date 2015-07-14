@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= name %> Chart</title>
+    <script type="text/javascript" src="<%= base %>/viz/bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/bower_components/d3/d3.min.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/bower_components/queue-async/queue.min.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/bower_components/topojson/topojson.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/mythos-vis/dist/mythosvis.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/mythos-vis/src/d3Plot.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/js/lib/chart-utils.js"></script>
+    <link href="<%= base %>/viz/mythos-vis/src/style/mythos-vis.css" rel="stylesheet" type="text/css">
+    <link href="<%= base %>/viz/css/fonts.css" rel="stylesheet" type="text/css">
+    <link href="<%= base %>/viz/css/style.css" rel="stylesheet" type="text/css">
+    <link href="<%= base %>/viz/css/chart.css" rel="stylesheet" type="text/css">
+</head>
+<div id="controls">
+    <div class="download-controls"></div>
+    <div class="cluster-controls"></div>
+    <div class="year-control"></div>
+</div>
+<div id="legend-wrapper"></div>
+<div id="chart"></div>
+<p id="chart-legend"></p>
+<p class="chart-credits">Source: <a href="http://clustermapping.us/" target="_top">U.S. Cluster Mapping Project</a>, Institute for Strategy and Competitiveness, Harvard Business School. <a href="/content/data-sources-and-limitations" target="_top">Data Sources</a></p>
+<script type="text/javascript">window.hbsBaseUrl = '<%= base %>'</script>
+<script type="text/javascript" src="<%= base %>/viz/js/<%= name %>.js"></script>
+<script type="text/javascript" src="<%= base %>/viz/bootstrap/js/button.js"></script>
+</body>
+</html>

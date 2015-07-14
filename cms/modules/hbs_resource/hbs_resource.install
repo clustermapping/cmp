@@ -1,0 +1,91 @@
+<?php
+
+/**
+ * @file hbs_resource.install
+ * Provide initial settings and configurations for HBS resources.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function hbs_resource_install() {
+  // Set configuration settings for blog posts
+  variable_set('pathauto_node_resource_pattern', 'resource/[node:title]');
+  variable_set('node_submitted_resource', 0);
+}
+
+/**
+ * Add specific taxonomy terms for Topics and Sources.
+ */
+function hbs_resource_update_7001() {
+  // Topics
+  $names = array(
+    'Regional Studies',
+    'Cluster Studies ',
+    'National Competitiveness and Policy',
+    'Academic Research',
+    'Other',
+  );
+  $vocabulary = taxonomy_vocabulary_machine_name_load('topic');
+  $weight = 0;
+  foreach ($names as $name) {
+    $term = taxonomy_get_term_by_name($name, 'topic');
+    if (empty($term)) {
+      taxonomy_term_save((object) array(
+        'name' => $name,
+        'vid' => $vocabulary->vid,
+        'weight' => $weight ++,
+      ));
+    }
+  }
+
+  // Sources
+  $names = array(
+    'U.S. Cluster Mapping',
+    'Other Sources',
+  );
+  $vocabulary = taxonomy_vocabulary_machine_name_load('sources');
+  $weight = 0;
+  foreach ($names as $name) {
+    $term = taxonomy_get_term_by_name($name, 'sources');
+    if (empty($term)) {
+      taxonomy_term_save((object) array(
+        'name' => $name,
+        'vid' => $vocabulary->vid,
+        'weight' => $weight ++,
+      ));
+    }
+  }
+}
+
+/**
+ * Remove the unwanted 'Other Sources' taxonomy term.
+ */
+function hbs_resource_update_7002() {
+  $terms = taxonomy_get_term_by_name('Other Sources', 'sources');
+  foreach ($terms as $tid => $term) {
+    taxonomy_term_delete($tid);
+  }
+}
+
+/**
+ * Create Topic and Sources page aliases to be more SEO-aware.
+ */
+function hbs_resource_update_7003() {
+  foreach (array('topic', 'sources') as $vocabulary_name) {
+    $vocabulary = taxonomy_vocabulary_machine_name_load($vocabulary_name);
+    $terms = taxonomy_get_tree($vocabulary->vid);
+    foreach ($terms as $term) {
+      $alias = trim(strtolower($term->name));
+      $alias = str_replace("'", "", $alias);
+      $alias = str_replace(".", "", $alias);
+      $alias = preg_replace("/[\W]+/ ", "-", $alias);
+
+      $path = array(
+        'source' => 'resource/' . $vocabulary_name . '/' . $term->tid,
+        'alias' => 'resource/' . $vocabulary_name . '/' . $alias,
+      );
+      path_save($path);
+    }
+  }
+}

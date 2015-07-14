@@ -1,0 +1,5 @@
+name = Clustermapping.us Dashboard
+description = Menu hooks for dashboard
+core = 7.x
+package = Clustermapping.us
+version = 7.x-1.0-beta1

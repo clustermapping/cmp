@@ -1,0 +1,130 @@
+<?php
+/**
+ * @file
+ * Code for the Community feature.
+ */
+
+include_once 'hbs_community.features.inc';
+
+/**
+ * Implements hook_menu().
+ */
+function hbs_community_menu() {
+  $items['organizations'] = array(
+    'title' => 'Organizations',
+    'page callback' => 'hbs_organizations_page',
+    'access arguments' => array('access content'),
+    'type' => MENU_SUGGESTED_ITEM,
+    'file' => 'hbs_community.pages.inc',
+  );
+  $items['community'] = array(
+    'title' => 'Community',
+    'page callback' => 'hbs_community_page',
+    'access arguments' => array('access content'),
+    'type' => MENU_SUGGESTED_ITEM,
+    'file' => 'hbs_community.pages.inc',
+  );
+  $items['canada'] = array(
+    'title' => 'Canada',
+    'page callback' => 'hbs_community_page',
+    'page arguments' => array('canada'),
+    'access arguments' => array('access content'),
+    'type' => MENU_SUGGESTED_ITEM,
+    'file' => 'hbs_community.pages.inc',
+  );
+  $items['mexico'] = array(
+    'title' => 'Mexico',
+    'page callback' => 'hbs_community_page',
+    'page arguments' => array('mexico'),
+    'access arguments' => array('access content'),
+    'type' => MENU_SUGGESTED_ITEM,
+    'file' => 'hbs_community.pages.inc',
+  );
+
+  $items['admin/config/content/community'] = array(
+    'title' => 'Organizations pages',
+    'description' => 'Configuration for the Organizations pages (main, Canada, and Mexico)',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hbs_community_config_form'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'hbs_community.pages.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function hbs_community_theme() {
+  return array (
+    'hbs_community_template' => array(
+      'template' => 'templates/hbs_community', // template file called hbs_community.tpl.php
+      'arguments' => array('map' => NULL, 'blogs' => NULL),
+    ),
+    'hbs_organizations_template' => array(
+      'template' => 'templates/hbs_organizations', // template file called hbs_organizations.tpl.php
+      'arguments' => array('map' => NULL, 'blogs' => NULL),
+    ),
+  );
+}
+
+/**
+ * Implements hoook_preprocess_page().
+ */
+function hbs_community_preprocess_page(&$variables) {
+  module_load_include('inc', 'hbs_community', 'hbs_community.pages');
+}
+
+/**
+ * Implements hoook_preprocess_html().
+ */
+function hbs_community_preprocess_html(&$variables) {
+  if (arg(0) == 'canada' || arg(0) == 'mexico') {
+    $variables['classes_array'][] = ' page-organizations';
+  }
+}
+
+/**
+ * Implements hoook_preprocess_node().
+ */
+function hbs_community_preprocess_node(&$variables) {
+  $variables['iscommunity'] = (arg(0) == 'community');
+  if ($variables['iscommunity']) $variables['content']['body'][0]['#markup'] = '<p>' . views_trim_text(array('max_length' => 200, 'word_boundary' => TRUE, 'ellipsis' => TRUE), strip_tags($variables['content']['body'][0]['#markup'])) . '</p>';
+}
+
+/**
+ * Implements hoook_preprocess_views_view().
+ */
+function hbs_community_preprocess_views_view(&$variables) {
+  $pages = array('organizations', 'canada', 'mexico');
+  if (in_array(arg(0), $pages)) {
+    $variables['rows'] = str_replace('<h2>Registry</h2>', '<h2>Registry of Organizations</h2>', $variables['rows']);
+  }
+}
+
+/**
+ * Implementation of hook_views_pre_view().
+ */
+function hbs_community_views_pre_view(&$view) {
+  $country = arg(0); // Assume arg(0) is a country; if it's not one of a specific country, then we will never do anything with it anyway. So this variable is a little misleading here, but won't be if the next conditional is met.
+  if ($country == 'canada' || $country == 'mexico') {
+
+    // For the Organizations block, add a filter to limit the region by the current country.
+    // TODO: Figure out a filter for doing this for the 'recent_members' view.
+    if ($view->name == 'community' && $view->current_display == 'recent_orgs') {
+
+      $view_filters = $view->display_handler->get_option('filters');
+
+      $view_filters['country'] = array(
+        'id' => 'country',
+        'table' => 'field_data_field_regions',
+        'field' => 'field_regions_solr_key',
+        'value' => "region/country/$country",
+      );
+
+      $view->display_handler->override_option('filters', $view_filters);
+    }
+  }
+}

@@ -1,0 +1,8 @@
+name = HBS Solr Field
+description = Provides solr suggestions for reference field
+package = Clustermapping.us
+core = 7.x
+version = 7.x-1.0-beta1
+
+dependencies[] = quick_search
+

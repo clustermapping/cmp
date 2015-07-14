@@ -1,0 +1,29 @@
+<?php
+/**
+ * @file hbs_migrate.module
+ * Provide basic hooks and module functionality for HBS migrated content.
+ */
+
+/**
+ * Implements hook_node_delete().
+ */
+function hbs_migrate_node_delete($node) {
+  // Make sure this node ID is removed from our lookup table
+  // in case we ever migrate/import it again.
+  db_delete('hbs_migrate')
+    ->condition('nid', $node->nid)
+    ->condition('type', $node->type)
+    ->execute();
+}
+
+/**
+ * Implements hook_user_delete().
+ */
+function hbs_migrate_user_delete($user) {
+  // Make sure this node ID is removed from our lookup array
+  // in case we ever migrate/import it again.
+  $imported_users = variable_get('hbs_migrate_imported_users', array());
+  $key = array_search($user->uid, $imported_users);
+  unset($imported_users[$key]);
+  variable_set('hbs_migrate_imported_users', $imported_users);
+}

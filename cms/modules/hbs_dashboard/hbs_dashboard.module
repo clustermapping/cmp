@@ -1,0 +1,634 @@
+<?php
+/**
+ * @file
+ * Module file for hbs_dashboard.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function hbs_dashboard_menu() {
+  // Landing Pages
+  $items['compare'] = array(
+    'title' => 'Custom Region Comparison',
+    'page callback' => '_hbs_dashboard_comparison_page_callback',
+    'page arguments' => array(),
+    'access callback' => TRUE,
+    'file' => 'hbs_dashboard.compare.inc',
+  );
+
+  $items['compare/save'] = array(
+    'title' => 'Comparison',
+    'page callback' => '_hbs_dashboard_comparison_save_callback',
+    'access callback' => TRUE,
+    'file' => 'hbs_dashboard.compare.inc',
+  );
+
+  $items['compare/delete/%'] = array(
+    'title' => 'Comparison',
+    'page callback' => '_hbs_dashboard_comparison_delete_callback',
+    'page arguments' => array(2, 3),
+    'access callback' => TRUE,
+    'file' => 'hbs_dashboard.compare.inc',
+  );
+
+  $items['cluster'] = array(
+    'title' => 'Clusters',
+    'page callback' => '_hbs_dashboard_cluster_landing_page_callback',
+    'access callback' => TRUE,
+    'file' => 'hbs_dashboard.pages.inc',
+  );
+
+  $items['region'] = array(
+    'title' => 'Regions',
+    'page callback' => '_hbs_dashboard_region_landing_page_callback',
+    'access callback' => TRUE,
+    'file' => 'hbs_dashboard.pages.inc',
+  );
+
+  $items['region_builder'] = array(
+      'title' => 'Custom Region Builder',
+      'page callback' => '_hbs_dashboard_region_builder_page_callback',
+      'access callback' => TRUE,
+      'file' => 'hbs_dashboard.pages.inc',
+  );
+
+  $items['region/%/%hbs_region'] = array(
+    'title callback' => '_hbs_dashboard_region_title_callback',
+    'title arguments' => array(2),
+    'page callback' => '_hbs_dashboard_region_page_callback',
+    'page arguments' => array(2),
+    'load arguments' => array(1),
+    'access callback' => TRUE,
+    'file' => 'hbs_dashboard.pages.inc',
+  );
+
+  $items['region/%/%hbs_region/chart'] = array(
+    'title callback' => '_hbs_dashboard_region_title_callback',
+    'title arguments' => array(2, 3),
+    'page callback' => '_hbs_dashboard_region_chart_callback',
+    'page arguments' => array(2),
+    'load arguments' => array(1),
+    'access callback' => TRUE,
+    'file' => 'hbs_dashboard.pages.inc',
+  );
+
+  $items['region/%/%hbs_region/clusters/jobcreation'] = array(
+    'title callback' => '_hbs_dashboard_region_title_callback',
+    'title arguments' => array(2, 3),
+    'page callback' => '_hbs_dashboard_region_jobcreation_callback',
+    'page arguments' => array(2),
+    'load arguments' => array(1),
+    'access callback' => TRUE,
+    'file' => 'hbs_dashboard.pages.inc',
+  );
+  $items['region/%/%hbs_region/clusters/employment'] = array(
+    'title callback' => '_hbs_dashboard_region_title_callback',
+    'title arguments' => array(2, 3),
+    'page callback' => '_hbs_dashboard_region_employment_callback',
+    'page arguments' => array(2),
+    'load arguments' => array(1),
+    'access callback' => TRUE,
+    'file' => 'hbs_dashboard.pages.inc',
+  );
+
+  $items['region/%/%hbs_region/clusters/wages'] = array(
+    'title callback' => '_hbs_dashboard_region_title_callback',
+    'title arguments' => array(2, 3),
+    'page callback' => '_hbs_dashboard_region_wages_callback',
+    'page arguments' => array(2),
+    'load arguments' => array(1),
+    'access callback' => TRUE,
+    'file' => 'hbs_dashboard.pages.inc',
+  );
+
+  $items['region/%/%hbs_region/scorecard/wages'] = array(
+    'title callback' => '_hbs_dashboard_region_title_callback',
+    'title arguments' => array(2, 3),
+    'page callback' => '_hbs_dashboard_region_scorecard_wages_callback',
+    'page arguments' => array(2),
+    'load arguments' => array(1),
+    'access callback' => TRUE,
+    'file' => 'hbs_dashboard.pages.inc',
+  );
+
+  $items['cluster/%hbs_cluster'] = array(
+    'title callback' => '_hbs_dashboard_cluster_title_callback',
+    'title arguments' => array(1),
+    'page callback' => '_hbs_dashboard_cluster_page_callback',
+    'page arguments' => array(1),
+    'access callback' => TRUE,
+    'file' => 'hbs_dashboard.pages.inc',
+  );
+
+  // Regions sub-pages
+  $subpages = array(
+    'performance'         => t('Performance & Drivers'),
+    'cluster_portfolio' => t('Region\'s Clusters'),
+    'subregions'          => t('Sub-Regions'),
+    'organizations'       => t('Organizations'),
+  );
+  foreach ($subpages as $path => $title) {
+    $url_path = str_replace('_', '-', $path);
+    $items['region/%/%hbs_region/' . $url_path] = array(
+      'title callback' => '_hbs_dashboard_region_title_callback',
+      'title arguments' => array(2, 3),
+      'page callback' => '_hbs_dashboard_region_' . $path . '_callback',
+      'page arguments' => array(1,2),
+      //'load arguments' => array(1),
+      'access callback' => TRUE,
+      'file' => 'hbs_dashboard.pages.inc',
+    );
+  }
+
+  // Cluster sub-pages
+  $subpages = array(
+    'top_regions'     => t('Top Regions'),
+    'subclusters'     => t('Subclusters'),
+    'organizations'   => t('Organizations'),
+  );
+  foreach ($subpages as $path => $title) {
+    $url_path = str_replace('_', '-', $path);
+    $items['cluster/%hbs_cluster/' . $url_path] = array(
+      'title callback' => '_hbs_dashboard_cluster_title_callback',
+      'title arguments' => array(1),
+      'page callback' => '_hbs_dashboard_cluster_' . $path . '_callback',
+      'page arguments' => array(1),
+      'access callback' => TRUE,
+      'file' => 'hbs_dashboard.pages.inc',
+    );
+  }
+
+  $items['cluster/%hbs_cluster/subclusters/%hbs_subcluster'] = array(
+      'title callback' => '_hbs_dashboard_cluster_title_callback',
+      'title arguments' => array(1,3),
+      'page callback' => '_hbs_dashboard_cluster_subcluster_summary_callback',
+      'page arguments' => array(1,3),
+      'access callback' => TRUE,
+      'file' => 'hbs_dashboard.pages.inc',
+    );
+
+  $items['region-cluster/%hbs_cluster/%/%hbs_region'] = array(
+    'title callback' => '_hbs_dashboard_region_cluster_title_callback',
+    'title arguments' => array(1,2,3),
+    'page callback' => '_hbs_dashboard_region_cluster_page_callback',
+    'page arguments' => array(1,3),
+    'load arguments' => array(2),
+    'access callback' => TRUE,
+    'file' => 'hbs_dashboard.pages.inc',
+  );
+
+
+  // Region cluster sub-pages
+  $subpages = array(
+    'subregions' => t('Sub-Regions'),
+    'subclusters' => t('Subclusters'),
+    'organizations' => t('Organizations'),
+  );
+
+  foreach ($subpages as $path => $title) {
+    $url_path = str_replace('_', '-', $path);
+    $items['region-cluster/%hbs_cluster/%/%hbs_region/' . $url_path] = array(
+      'title callback' => '_hbs_dashboard_region_cluster_title_callback',
+      'title arguments' => array(1,3),
+      'page callback' => '_hbs_dashboard_region_cluster_' . $path . '_callback',
+      'page arguments' => array(1,3),
+      'load arguments' => array(2),
+      'access callback' => TRUE,
+      'file' => 'hbs_dashboard.pages.inc',
+    );
+  }
+
+  $relatedpages = array(
+    'blog'          => t('Blog Posts'),
+    'organization'  => t('Organizations'),
+    'resource'      => t('Resources'),
+  );
+  foreach ($relatedpages as $path => $title) {
+    $items['region/%/%hbs_region/related/' . $path] = array(
+      'title callback' => '_hbs_dashboard_cluster_title_callback',
+      'title arguments' => array(2, 3),
+      'page callback' => '_hbs_dashboard_region_related_callback',
+      'page arguments' => array(2, 4),
+      'load arguments' => array(1),
+      'access callback' => TRUE,
+      'file' => 'hbs_dashboard.pages.inc',
+    );
+  }
+
+  $items['admin/config/hbsdata/messages'] = array(
+    'title' => 'Dashboard messages',
+    'description' => 'Create and manage the messages to display on different dashboard pages (like Clusters and Regions)',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hbs_dashboard_admin_page'),
+    'type' => MENU_NORMAL_ITEM,
+    'access arguments' => array('administer site configuration'),
+    'file' => 'hbs_dashboard.admin.inc',
+    'weight' => 10,
+  );
+  $items['admin/config/hbsdata/tooltips'] = array(
+    'title' => 'Tooltip messages',
+    'description' => 'Create and manage the tooltip messages to display',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hbs_dashboard_tooltip_admin_page'),
+    'type' => MENU_NORMAL_ITEM,
+    'access arguments' => array('administer site configuration'),
+    'file' => 'hbs_dashboard.admin.inc',
+    'weight' => 11,
+  );
+
+  return $items;
+}
+
+function _hbs_load_helper($url) {
+  global $base_url;
+  $api_base_url = variable_get('hbs_dashboard_api_base_url', $base_url);
+  $result = drupal_http_request($api_base_url . $url);
+  $data = json_decode($result->data, TRUE);
+
+  return $data;
+}
+
+function hbs_region_load($id, $region_type) {
+  $years = _hbs_load_helper('/data/meta/years');
+  return _hbs_load_helper('/data/region/' . $region_type . '/' . $id . '/' . max($years));
+}
+
+function hbs_cluster_load($id) {
+    return _hbs_load_helper('/data/meta/cluster/' . $id);
+}
+
+function hbs_region_cluster_load($id) {
+    return _hbs_load_helper('/data/meta/cluster/' . $id);
+}
+
+function hbs_subcluster_load($id) {
+    return _hbs_load_helper('/data/meta/cluster/' . arg(1) . '/' . $id);
+}
+
+
+
+/**
+ * Implements hook_theme().
+ */
+function hbs_dashboard_theme($existing, $type, $theme, $path) {
+  $items = array (
+    'hbs_comparison_template' => array(
+      'template' => 'hbs_comparison', // template file called hbs_comparison.tpl.php
+      'arguments' => array('map' => NULL, 'scorecard' => NULL, 'indicators' => NULL, 'chart' => NULL), // Place here the variables you want to send to the template
+    ),
+    'hbs_region_dashboard_template' => array(
+      'template' => 'hbs_region_dashboard', // template file called hbs_region_dashboard.tpl.php
+      'arguments' => array('map' => NULL, 'scorecard' => NULL, 'indicators' => NULL, 'chart' => NULL), // Place here the variables you want to send to the template
+    ),
+    'hbs_cluster_dashboard_template' => array(
+      'template' => 'hbs_cluster_dashboard', // template file called hbs_cluster_dashboard.tpl.php
+      'arguments' => array('map' => NULL, 'scorecard' => NULL, 'indicators' => NULL, 'chart' => NULL), // Place here the variables you want to send to the template
+    ),
+      'hbs_region_builder' => array(
+          'template' => 'hbs_region_builder', // template file called hbs_cluster_dashboard.tpl.php
+          'arguments' => array('map' => NULL, 'scorecard' => NULL, 'indicators' => NULL, 'chart' => NULL), // Place here the variables you want to send to the template
+      ),
+    'hbs_chart_dashboard_template' => array(
+      'template' => 'hbs_chart_dashboard', // template file called hbs_cluster_dashboard.tpl.php
+      'arguments' => array('map' => NULL, 'scorecard' => NULL, 'indicators' => NULL, 'chart' => NULL), // Place here the variables you want to send to the template
+    ),
+    'hbs_region_subpage' => array(
+      'template' => 'hbs_region_subpage', // template file called hbs_region_subpage.tpl.php
+      'arguments' => array('columns' => array(), 'column1' => NULL, 'column2' => NULL),
+    ),
+    'hbs_cluster_subpage' => array(
+      'template' => 'hbs_cluster_subpage', // template file called hbs_region_subpage.tpl.php
+      'arguments' => array('columns' => array(), 'column1' => NULL, 'column2' => NULL),
+    ),
+    'hbs_cluster_landing' => array(
+      'template' => 'hbs_cluster_landing', // template file called hbs_cluster_landing.tpl.php
+      'arguments' => array('columns' => array(), 'column1' => NULL, 'column2' => NULL),
+    ),
+
+    'hbs_region_cluster_dashboard_template' => array(
+      'template' => 'hbs_region_cluster_dashboard',
+      'arguments' => array('map' => NULL, 'scorecard' => NULL, 'indicators' => NULL, 'chart' => NULL), // Place here the variables you want to send to the template
+    ),
+  );
+
+  $subthemes = array(
+    'region' => array('performance', 'cluster_composition', 'subregions', 'organizations'),
+    'cluster' => array('top_regions', 'subclusters', 'subcluster_summary', 'organizations'),
+    'region_cluster' => array('subregions', 'subclusters'),
+  );
+
+  foreach ($subthemes as $type => $subtheme) {
+    foreach ($subtheme as $subtheme_name) {
+      $key = 'hbs_' . $type . '_subpage_' . $subtheme_name;
+      $items[$key] = array(
+        'template' => 'templates/' . $key,
+        'arguments' => array($type . '_object' => array()),
+      );
+    }
+  }
+
+  return $items;
+}
+
+function _hbs_dashboard_region_title_callback($data = NULL, $chart = NULL) {
+  $title = $data['region_short_name_t'];
+
+  return $title;
+}
+
+function _hbs_dashboard_cluster_title_callback($data = NULL) {
+  $title = (isset($data['name_t']))? $data['name_t'] : 'Clusters' ;
+
+  return $title;
+}
+
+function _hbs_dashboard_region_cluster_title_callback($data = NULL) {
+  $title = (isset($data['name_t']))? $data['name_t'] : 'Clusters' ;
+  return $title;
+}
+
+/**
+ * Helper function to get the desired template message content.
+ */
+function _hbs_dashboard_messages($key) {
+  $message = variable_get('hbs_dashboard_' . $key, NULL);
+  if (!empty($message) && empty($arg1)) {
+    return check_markup($message['value'], $message['format']);
+  }
+  return NULL;
+}
+
+
+function hbs_dashboard_preprocess_page(&$variables){
+  if( (strtoupper(arg(0)) == 'REGION' || strtoupper(arg(0)) == 'CLUSTER' || strtoupper(arg(0)) == 'REGION-CLUSTER') && ! is_null(arg(1)) && arg(1) != 'related'){
+    /*$subtitle = '';
+    $subtitle .= ( strtoupper(arg(0)) == 'REGION' ? 'Region ' : 'National Cluster ');
+    $subtitle .= ( strtoupper(arg(3)) == 'CHART' ? 'Charting' : 'Dashboard');
+
+    $temp = arg(2);
+    if (!empty($temp)) {
+      $subtitle = strtoupper($temp);
+    }*/
+
+    // $variables['title_prefix']= '<h5>' . $subtitle . '</h5>';
+
+    $variables['classes_array'][] = 'page-' . strtolower(arg(0)) . '-sub';
+    // Add the Dashboard subnav
+    if( arg(2) != 'subclusters' || arg(3) == NULL  ){
+      $variables['add_content_nav'] = _hbs_dashboard_header_subnav();
+    }
+
+  }
+
+  $item = menu_get_item();
+
+  $variables['dashboard_messages'] = array();
+
+  global $theme; // we only want this button to appear on the main theme, not the admin theme.
+  if (!drupal_is_front_page() && $theme == 'clustermapping'){
+    $variables['add_content_menu'] = menu_tree('menu-add-content');
+  }
+
+  drupal_add_js(drupal_get_path('module', 'hbs_dashboard') . '/js/hbs_breadcrumb.js');
+  drupal_add_js(drupal_get_path('module', 'hbs_dashboard') . '/js/select2.js');
+  drupal_add_css(drupal_get_path('module', 'hbs_dashboard') . '/css/select2.css');
+
+  drupal_add_js(array('hbs_content' => array('tooltip1' => variable_get('hbs_dashboard_tooltip_text_1', NULL))), 'setting');
+  drupal_add_js(array('hbs_content' => array('tooltiptitle1' => variable_get('hbs_dashboard_tooltip_title_1', NULL))), 'setting');
+}
+
+/**
+ * Helper function to return the base array for the dashboard header subnav links.
+ * This is formated like a standard Drupal custom menu link set, and we *could* just
+ * use that, but these links will change over time and will need to be contextual, so
+ * we'll need a function to generate the link values eventually.
+ */
+function _hbs_dashboard_header_subnav() {
+  $item = menu_get_item();
+  $current_path = '';
+
+  switch(arg(0)) {
+    case 'region':
+      // TODO: Change how $current_path is determined since the related Organizations subpage
+      // tab does not follow the same path scheme as the rest. Also check the conditional in
+      // hbs_dashboard_preprocess_page() to set the display of this subnav.
+      $current_path = implode('/', array_slice($item['original_map'], 0, 3));
+      $links = array(
+        'menu-1001' => array(
+          'attributes' => array('title' => '', 'html' => TRUE),
+          'href' => $current_path,
+          'title' => '<span class="glyphicon glyphicon-ok"></span>Summary',
+        ),
+        'menu-1002' => array(
+          'attributes' => array('title' => '', 'html' => TRUE),
+          'href' => $current_path . '/performance',
+          'title' => '<span class="glyphicon glyphicon-certificate"></span>Performance & Drivers',
+        ),
+        'menu-1003' => array(
+          'attributes' => array ('title' => '', 'html' => TRUE),
+          'href' => $current_path . '/cluster-portfolio',
+          'title' => '<span class="glyphicon glyphicon-stats"></span>Cluster Portfolio',
+        ),
+        'menu-1004' => array(
+          'attributes' => array ('title' => '', 'html' => TRUE),
+          'href' => $current_path . '/subregions',
+          'title' => '<span class="glyphicon glyphicon-map-marker"></span>Sub-Regions',
+        ),
+        'menu-1005' => array(
+          'attributes' => array('title' => '', 'html' => TRUE),
+          'href' => 'related/organization/region/' . arg(1) .'/'. arg(2),
+          'title' => '<span class="glyphicon glyphicon-briefcase"></span>Organizations',
+        ),
+      );
+      if(arg(1) == "county"){
+        unset($links['menu-1004']);
+      }
+      break;
+    case 'cluster':
+      // TODO: We recently (March 24) linked the organizations tab to a path outside
+      // of the regular /cluster/cluster_id/* path scheme, so the links don't appear here
+      // because of a check in hbs_dashboard_preprocess_page(). That's why this isn't
+      // showing up on pages like /related/organization/cluster/aerospace_vehicles_and_defense
+      // Otherwise the tabs would show but the links would be incorrect. The TODO here is to change
+      // how $current_path is determined for EACH subtab link.
+      $current_path = implode('/', array_slice($item['original_map'], 0, 2));
+      $links = array(
+        'menu-1001' => array(
+            'attributes' => array('title' => '', 'html' => TRUE),
+            'href' => $current_path,
+            'title' => '<span class="glyphicon glyphicon-ok"></span>Summary',
+          ),
+        'menu-1002' => array(
+          'attributes' => array('title' => '', 'html' => TRUE),
+          'href' => $current_path . '/top-regions',
+          'title' => '<span class="glyphicon glyphicon-certificate"></span>Top Regions',
+        ),
+        'menu-1003' => array(
+          'attributes' => array ('title' => '', 'html' => TRUE),
+          'href' => $current_path . '/subclusters',
+          'title' => '<span class="glyphicon glyphicon-stats"></span>Subclusters',
+        ),
+        'menu-1004' => array(
+          'attributes' => array ('title' => '', 'html' => TRUE),
+          'href' => 'related/organization/cluster/' . arg(1),
+          'title' => '<span class="glyphicon glyphicon-map-marker"></span>Organizations',
+        ),
+      );
+
+      break;
+    case 'region-cluster':
+      $current_path = implode('/', array_slice($item['original_map'], 0, 4));
+      $links = array(
+        'menu-1001' => array(
+          'attributes' => array('title' => '', 'html' => TRUE),
+          'href' => $current_path,
+          'title' => '<span class="glyphicon glyphicon-ok"></span>Summary',
+        ),
+        'menu-1003' => array(
+          'attributes' => array ('title' => '', 'html' => TRUE),
+          'href' => $current_path . '/subregions',
+          'title' => '<span class="glyphicon glyphicon-map-marker"></span>Sub-Regions',
+        ),
+        'menu-1004' => array(
+          'attributes' => array ('title' => '', 'html' => TRUE),
+          'href' => $current_path . '/subclusters',
+          'title' => '<span class="glyphicon glyphicon-stats"></span>Subclusters',
+        ),
+        'menu-1005' => array(
+          'attributes' => array('title' => '', 'html' => TRUE),
+          'href' => 'related/organization/region-cluster/' . arg(1) . '/' . arg(2) . '/' . arg(3),
+          'title' => '<span class="glyphicon glyphicon-briefcase"></span>Organizations',
+        ),
+      );
+      break;
+
+  }
+  $output = '<ul class="nav nav-tabs region-tabs">';
+
+  $count = 0;
+  foreach ($links as $key => $link) {
+    $attributes = $link['attributes'];
+
+    // Set link classes
+    $classes = array();
+    if ($count == 0) $classes[] = 'first';
+    if (count($link) + 1 == $count) $classes[] = 'last';
+    if (implode('/', arg()) == $link['href']) $classes = array('active');
+
+    // Create the tab/link
+    $output .= '<li class="' . $key . ' ' . implode(' ', $classes) . '">'
+            . l($link['title'], $link['href'], $attributes) . '</li>' . "\n";
+
+    $count ++;
+  }
+
+  $output .= '</ul>';
+
+  return $output;
+}
+
+function hbs_dashboard_preprocess_node(&$variables) {
+  $variables['isdashboard'] = (strtoupper(arg(0)) == 'REGION' || strtoupper(arg(0)) == 'CLUSTER' || strtoupper(arg(0)) == 'REGION-CLUSTER');
+}
+
+function hbs_dashboard_preprocess_hbs_chart_dashboard_template(&$variables) {
+  $landing_type = arg(0);
+  $arg1 = arg(1);
+  $message = variable_get('hbs_dashboard_' . $landing_type . '_welcome', NULL);
+  if (!empty($message) && empty($arg1)) {
+    $variables['dashboard_welcome'] = array(
+      '#markup' => check_markup($message['value'], $message['format']),
+    );
+  }
+
+  $message = variable_get('hbs_dashboard_' . $landing_type . '_call_to_action', NULL);
+  if (!empty($message) && empty($arg1)) {
+    $variables['call_to_action'] = array(
+      '#markup' => check_markup($message['value'], $message['format']),
+    );
+  }
+}
+
+function hbs_dashboard_preprocess_hbs_cluster_landing(&$variables) {
+  $landing_type = arg(0);
+  $arg1 = arg(1);
+  $message = variable_get('hbs_dashboard_' . $landing_type . '_welcome', NULL);
+  if (!empty($message) && empty($arg1)) {
+    $variables['dashboard_welcome'] = array(
+      '#markup' => check_markup($message['value'], $message['format']),
+    );
+  }
+}
+
+function hbs_dashboard_preprocess_hbs_region_builder(&$variables) {
+  $variables['message'] = ($variables['logged_in']) ? 'region_region_builder_top': 'region_region_builder_top_logged_out';
+}
+
+/**
+ * Implements hook_token_info().
+ */
+function hbs_dashboard_token_info() {
+  $info['tokens']['tooltip']['id'] = array(
+    'name' => t('tooltip id'),
+    'description' => t('Returns the tool tip icon markup)'),
+  );
+  return $info;
+}
+/* Now we need to actually return the contents (or replacement value) of this token and
+* this is done in the hook_tokens():
+*/
+/**
+* Implements hook_tokens().
+*/
+function hbs_dashboard_tokens($type, $tokens, array $data = array(), array $options = array()) {
+  $replacements = array();
+
+  if ($type == 'tooltip' && !empty($data['tooltip'])) {
+    if (isset($tokens['city'])) {
+      $replacements[$tokens['id']] = hbs_dashboard_filter_tooltip($tokens['id']);
+    }
+  }
+
+  return $replacements;
+}
+
+function hbs_dashboard_filter_info() {
+  $filters['tooltip'] = array(
+    'title' => t('Create tool tip icons'),
+    'description' => t('Adds a tooltip icon and modal window'),
+    'process callback' => 'hbs_dashboard_filter_tooltip',
+    'tips callback' => '_hbs_dashboard_tooltip_tips',
+    'cache' => TRUE,
+  );
+  return $filters;
+}
+
+function hbs_dashboard_filter_tooltip($content) {
+  $content = preg_replace_callback('/(\[tooltip\:\d\]?)/', '_hbs_dashboard_filter_tooltip', $content);
+  return $content;
+}
+
+function _hbs_dashboard_filter_tooltip($args) {
+  $content = NULL;
+  $token = trim($args[1], '[]');
+  list(, $id) = explode(':', $token);
+  $title = variable_get('hbs_dashboard_tooltip_title_' . $id, NULL);
+  $text = variable_get('hbs_dashboard_tooltip_text_' . $id, NULL);
+  if (!empty($text)) {
+    $text = str_replace('"', '\\"', $text);
+    $content = '<a data-container="body" data-toggle="popover" data-placement="bottom" data-original-title="' . $title . '" data-html="true" data-content="' . $text . '"><span class="glyphicon glyphicon-info-sign"></span></a>';
+  }
+  return $content;
+}
+
+function _hbs_dashboard_tooltip_tips($filter, $format, $long = FALSE) {
+  $output = '<h4>' . t('Using tool tip codes') . '</h4>';
+  $output .= '<p>' . t('Simply place a token like [tooltip:1] where you want the ( i ) tool tip icon to appear.') . '</p>';
+  return $output;
+}
+
+
+/**
+ * @} End of "defgroup hbs_dashboard".
+ */

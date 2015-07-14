@@ -1,0 +1,18 @@
+<?php
+/**
+ * @file
+ * Drupal needs this blank file.
+ */
+
+function hbs_add_content_links_preprocess_menu_link(&$variables) {
+	global $user;
+
+  if($variables['element']["#theme"] == "menu_link__menu_add_content"){
+  	$variables['element']['#href'] = ($user->uid?  "": "/user?destination=") . $variables['element']['#href'] ;
+	}
+}
+
+function hbs_add_content_links_preprocess_page(&$variables) {
+	global $user;
+  $type = isset($variables['node'])? $variables['node']->type : arg(0);
+}

@@ -1,0 +1,6 @@
+name = HBS External Search
+description = Provides external search capabilities to primary site search
+package = Clustermapping.us
+core = 7.x
+files[] = tests/hbs_extsearch.test
+

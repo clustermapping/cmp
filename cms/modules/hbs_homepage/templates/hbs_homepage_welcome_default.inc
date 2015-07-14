@@ -1,0 +1,1 @@
+hbs_homepage_welcome_default HTML goes here

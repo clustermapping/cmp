@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * @file hbs_navigation.install
+ * Provide initial settings and configurations for HBS navigation.
+ */
+
+/**
+ * Removes the default Home link from the main menu
+ */
+function hbs_navigation_update_7001() {
+  menu_link_delete(NULL, '<front>');
+}
+
+/**
+ * Removes (disables) unwanted links from the main menu that Features leaves behinds.
+ */
+function hbs_navigation_update_7002() {
+  $links = array('About', 'Methodology', 'Blog', 'Home');
+  db_update('menu_links')
+    ->fields(array(
+        'hidden' => 1,
+      ))
+    ->condition('menu_name', 'main-menu')
+    ->condition('link_title', $links, 'IN')
+    ->execute();
+  drupal_flush_all_caches();
+}

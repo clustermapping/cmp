@@ -1,0 +1,5 @@
+name="Session API"
+description="Provides a simple api for services to check the validity of a session."
+package = Clustermapping.us
+project = session_api
+core="7.x"

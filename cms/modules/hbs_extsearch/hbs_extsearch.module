@@ -1,0 +1,98 @@
+<?php 
+
+/**
+ * @file hbs_extsearch.module
+ * TODO: Enter file description here.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function hbs_extsearch_menu() {
+  $items['exturllist'] = array(
+    'title' => 'Example Page',
+    'page callback' => 'hbs_extsearch_nutchlist',
+    'access arguments' => array('access content'),
+    'type' => MENU_SUGGESTED_ITEM,
+  );
+
+  return $items;
+}
+
+/**
+ * Callback function to retern a newline-delimited list of URLs found as various 
+ * fields in certain content types.
+ */
+function hbs_extsearch_nutchlist() {
+  $urls = array();
+
+  $tables = array(
+    'field_data_field_website' => 'field_website_value',
+    'field_data_field_url' => 'field_url_value',
+  );
+  foreach ($tables as $table => $field) {
+    $results = db_select($table, 't')
+      ->fields('t', array($field))
+      ->execute();
+    while ($result = $results->fetchAssoc()) {
+      $url = trim($result[$field]);
+      $url = (strpos($url, 'http') === 0) ? $url : 'http://' . ltrim($url, '/');
+      $urls[$url] = $url;
+    }
+  }
+  
+  $output = implode("\n", $urls);
+  drupal_add_http_header('Content-Type', 'text/plain');
+  print $output;
+  drupal_exit();
+}
+
+/**
+ * Modify the query to Solr to return additional fields required to process external results.
+ */
+function hbs_extsearch_apachesolr_query_alter(&$query) {
+  $query->addParam('fl', 'index_source');
+}
+
+/**
+ * Handle any processing necessary on the docs that are from nutch.
+ *
+ * Format the site and date for a "byline"
+ */
+function hbs_extsearch_apachesolr_process_results(&$results, $query) {
+  foreach ($results as &$result) {
+    if($result['fields']['index_source'] == 'nutch') {
+      $result['module'] = t('External');
+      $url = parse_url($result['link']);
+      $source = $url['scheme'] . '://' . $result['fields']['name'];
+      $result['user'] = l($result['fields']['name'], $source, array('absolute' => TRUE));
+      $result['date'] = isset($result['fields']['changed']) ? $result['fields']['changed'] : 0;      
+    }
+    else {
+      $result['module'] = t('Clustermapping.us');
+    }
+  }
+}
+
+/**
+ * Elaborate the data displayed on a Nutch search result
+ * 
+ *    - Indicate that the date is when it was last indexed
+ */
+function hbs_extsearch_preprocess_search_result(&$variables) {
+  if ($variables['result']['fields']['index_source'] == 'nutch') {
+    $variables['info_split']['date'] = t('Indexed on') . ' ' . $variables['info_split']['date'];
+    $variables['info'] = implode(' - ', $variables['info_split']);
+  }
+}
+
+/**
+ * Make sure someone deleting the index from the Drupal UI does not delete 
+ * any of the nutch crawled content
+ */
+function hbs_extsearch_apachesolr_delete_by_query_alter(&$query) {
+  if ($query == '*:*') {
+    $query = '*:* NOT index_source:nutch';    
+  }
+}
+

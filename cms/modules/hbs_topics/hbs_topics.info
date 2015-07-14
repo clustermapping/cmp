@@ -1,0 +1,13 @@
+name = HBS Topics
+description = Provides a Topics vocabulary for Clustermapping.us content.
+core = 7.x
+package = Clustermapping.us
+version = 7.x-1.0-beta1
+project = hbs_topics
+dependencies[] = features
+dependencies[] = options
+dependencies[] = taxonomy
+features[features_api][] = api:2
+features[field_base][] = field_topic
+features[taxonomy][] = topic
+project path = profiles/clustermapping/modules

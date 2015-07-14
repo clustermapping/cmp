@@ -1,0 +1,69 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+function hbs_migrate_schema() {
+  $schema['hbs_migrate'] = array(
+    'description' => 'Table that contains map of original IDs to new node IDs.',
+    'fields' => array(
+      'oldid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The original ID of the content item.',
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {node}.nid of the new node item.',
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Content type of the new item',
+      ),
+      'src' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The import source (db or csv)',
+      ),
+    ),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function hbs_migrate_install() {
+  // Make sure the files directory path already exists
+  $dirs = array('images/blog', 'files/blog');
+  foreach ($dirs as $dir) {
+    $uri = file_default_scheme() . '://' . $dir;
+    file_prepare_directory($uri);
+  }
+}
+
+/**
+ * Add a 'src' column to the import lookup table.
+ */
+function hbs_migrate_update_7001() {
+  $field = array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The import source (db, csv, etc.)',
+    );
+  db_add_field('hbs_migrate', 'src', $field);
+  db_query('UPDATE {hbs_migrate} SET src=:src', array(':src' => 'db'));
+  db_query('UPDATE {hbs_migrate} SET src=:src WHERE type=:type', array(':src' => 'csv', ':type' => 'organization'));
+}
+

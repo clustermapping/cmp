@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the External Resource feature.
+ */
+
+include_once 'external_resource.features.inc';

@@ -1,0 +1,78 @@
+<?php
+/**
+ * @file
+ * Code for the Clustermapping blogs feature.
+ */
+
+include_once 'hbs_blog.features.inc';
+/**
+ * @file hbs_blog.module
+ * Provide basic hooks and module functionality for HBS blog posts.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function hbs_blog_menu() {
+  $items['blog/topic/%taxonomy_term'] = array(
+    'title' => 'Blogs',
+    'page callback' => 'hbs_blog_page_last',
+    'page arguments' => array(2),
+    'access arguments' => array('access content'),
+    'type' => MENU_SUGGESTED_ITEM,
+    'file' => 'hbs_blog.pages.inc',
+  );
+  $items['blog/feed/%taxonomy_term'] = array(
+    'title' => 'Blogs',
+    'page callback' => 'hbs_blog_feed_last',
+    'page arguments' => array(2),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'hbs_blog.pages.inc',
+  );
+
+  return $items;
+}
+
+
+/**
+ * Implements hook_menu_alter().
+ */
+function hbs_blog_menu_alter(&$items) {
+  // Example - disable the page at node/add
+  $items['blog']['page callback'] = 'hbs_blog_page_last';
+  $items['blog']['file'] = 'hbs_blog.pages.inc';
+  $items['blog']['file path'] = drupal_get_path('module', 'hbs_blog');
+}
+
+function hbs_blog_preprocess_node(&$variables) {
+  $node = $variables['node'];
+  $image_types = array('blog', 'resource');
+  if (in_array($node->type, $image_types)) {
+    $variables['image'] = NULL;
+    if (!empty($node->field_image)) {
+      $vars = array(
+        'style_name' => 'thumbnail',
+        'style_name' => 'medium',
+        'path' => $node->field_image[LANGUAGE_NONE][0]['uri'],
+        'attributes' => array(
+          'data-src' => file_create_url($node->field_image[LANGUAGE_NONE][0]['uri']),
+        ),
+      );
+      $variables['image'] = theme('image_style', $vars);
+
+      $vars['style_name'] = 'full';
+      $variables['image_full'] = theme('image_style', $vars);
+      unset($variables['content']['field_image']);
+    }
+  }
+
+  // Fix the blog topic links
+  if ($node->type == 'blog' && !empty($variables['content']['field_blog_topic'])) {
+    foreach ($variables['content']['field_blog_topic'] as $key => $value) {
+      if (is_int($key) && !empty($value['#href'])) {
+        $variables['content']['field_blog_topic'][$key]['#href'] = str_replace('blog-topic', 'blog/topic', drupal_get_path_alias($value['#href']));
+      }
+    }
+  }
+}

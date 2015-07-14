@@ -1,0 +1,202 @@
+<?php
+/**
+ * @file
+ * Code for the Organizations feature.
+ */
+
+include_once 'hbs_organizations.features.inc';
+include_once 'hbs_organizations.apachesolr.inc';
+
+function hbs_organizations_menu() {
+  $items = array();
+
+  $items['admin/content/import_org'] = array(
+    'title' => 'Import Organizations',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hbs_organizations_import_organizations_from_csv'),
+    'access arguments' => array('import clustermapping organizations'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'hbs_organizations.admin.inc',
+    'weight' => 10,
+  );
+
+  return $items;
+}
+
+function hbs_organizations_permission() {
+  return array(
+    'import clustermapping organizations' => array(
+      'title' => t('Import Clustermapping Organizations'),
+      'description' => t('Import or update Organizations from a CSV file.'),
+    ),
+  );
+}
+
+function hbs_organizations_preprocess_node(&$variables) {
+
+  if ($variables['node']->type == 'organization') {
+    drupal_add_css(drupal_get_path('module', 'hbs_organizations') . '/hbs_organizations.css');
+
+    if (empty($variables['content']['body']) || empty($variables['content']['body'][0]['#markup'])) {
+      $variables['content']['body'] = array('#markup' => '<p class="no-data">' . t('No description available.') . '</p>');
+    }
+
+    $members = array();
+    foreach ($variables['field_members'] as $key => $member) {
+      if (!empty($member['node'])) $members[$key] = node_view($member['node'], 'teaser');
+    }
+
+    $variables['members'] = NULL;
+    if (!empty($members)) {
+      $len = count($members);
+      $members1 = array_slice($members, 0, ceil($len / 2));
+      $members2 = array_slice($members, ceil($len / 2));
+
+      $variables['members'] = '<div class="content members-list"><div class="container"><div class="row"><div class="col-md-6">'
+        . render($members1)
+        . '</div>'
+        . '<div class="col-md-6">'
+        . render($members2)
+        . '</div></div></div></div>';
+    }
+    else {
+      $variables['members'] = '<p class="no-data">There is no member information available.</p>';
+    }
+
+    $variables['address'] = NULL;
+    if (!empty($variables['field_address'][0])) {
+      $variables['address'] = $variables['field_address'][0];
+    }
+    elseif(!empty($variables['field_address'][LANGUAGE_NONE][0])) {
+      $variables['address'] = $variables['field_address'][LANGUAGE_NONE][0];
+    }
+
+    $variables['name'] = (empty($variables['field_first_name'][0]['value'])) ? '' : $variables['field_first_name'][0]['value'] . ' ' . $variables['field_last_name'][0]['value'];
+    $variables['email'] = (empty($variables['field_email'][0]['value'])) ? '' : '<a href="' . $variables['field_email'][0]['value'] . '">' . $variables['field_email'][0]['value'] . '</a>';
+
+    $variables['columns'] = 12;
+    if (!empty($variables['name']) || !empty($variables['email']) || !empty($variables['members']) || !empty($variables['address'])) {
+      $variables['columns'] = 8;
+    }
+  }
+}
+
+function hbs_organizations_preprocess_page(&$variables) {
+  $item = menu_get_item();
+  $type = (!empty($item['map'][2]) && !empty($item['map'][2]->vocabulary_machine_name)) ? $item['map'][2]->vocabulary_machine_name : arg(2);
+
+  if ($item['path'] == 'organization-type' || ($item['path'] == 'taxonomy/term/%' && $type == 'organization_type')) {
+    $variables['classes_array'][] = 'page-organization-type';
+    if (empty($variables['page']['sidebar_first'])) {
+      $variables['page']['sidebar_first'] = array(
+        '#sorted' => TRUE,
+        '#region' => 'sidebar_first',
+        '#theme_wrappers' => array('region'),
+      );
+    }
+    $view_block = views_embed_view('hbs_organization_categories', 'block_1');
+    $view_block = str_replace('<ul', '<h4>Organization Registry</h4><ul', $view_block);
+    $variables['page']['sidebar_first']['organizations'] = array('#markup' => $view_block);
+  }
+}
+
+function hbs_organizations_preprocess_hbs_community_template(&$variables) {
+  $item = menu_get_item();
+  if ($item['path'] == 'organizations') {
+    $message = variable_get('hbs_dashboard_organizations_welcome', NULL);
+    if (!empty($message['value'])) {
+      $variables['dashboard_welcome'] = array(
+        '#markup' => check_markup($message['value'], $message['format']),
+      );
+    }
+  }
+}
+
+/**
+ * Implements hook_taxonomy_term_view().
+ * We use this to populate the term content object since these nodes use Term references rather than direct term tagging.
+ */
+function hbs_organizations_taxonomy_term_view($term, $view_mode, $langcode) {
+  if ($term->vocabulary_machine_name == 'organization_type' || $term->vocabulary_machine_name == 'blog_topic') {
+    $nids = hbs_organizations_taxonomy_select_nodes($term->tid, TRUE, FALSE, array('t.sticky' => 'DESC', 't.created' => 'DESC'), TRUE);
+    $nodes = node_load_multiple($nids);
+    $term->content += node_view_multiple($nodes, 'section_teaser');
+  }
+}
+
+function hbs_organizations_taxonomy_select_nodes($tid, $pager = TRUE, $limit = FALSE, $order = array('t.sticky' => 'DESC', 't.created' => 'DESC'), $alphabetize = FALSE) {
+  if (!variable_get('taxonomy_maintain_index_table', TRUE)) {
+    return array();
+  }
+  $query = db_select('taxonomy_index', 't');
+  $query->addTag('node_access');
+  $query->condition('tid', $tid);
+  if ($pager) {
+    $count_query = clone $query;
+    $count_query->addExpression('COUNT(t.nid)');
+
+    $query = $query->extend('PagerDefault');
+    if ($limit !== FALSE) {
+      $query = $query->limit($limit);
+    }
+    $query->setCountQuery($count_query);
+  }
+  else {
+    if ($limit !== FALSE) {
+      $query->range(0, $limit);
+    }
+  }
+
+    $query->addField('t', 'nid');
+    $query->addField('t', 'tid');
+
+  if ($alphabetize) {
+    $query->join('node', 'n', 'n.nid = t.nid'); //JOIN node with term
+    $query->addField('n', 'title');
+    $query->orderBy('n.title', 'ASC');
+  }
+  else {
+    foreach ($order as $field => $direction) {
+      $query->orderBy($field, $direction);
+      // ORDER BY fields need to be loaded too, assume they are in the form
+      // table_alias.name
+      list($table_alias, $name) = explode('.', $field);
+      $query->addField($table_alias, $name);
+    }
+  }
+  return $query->execute()->fetchCol();
+}
+
+
+function hbs_organizations_node_presave($node) {
+  //Create $address var if we have a field with data.
+  if ($address = @$node->field_address[$node->language][0]) {
+    // Build address string.
+    $address_string =
+      $address['thoroughfare'] . ' ' .
+      $address['locality'] . ' ' .
+      $address['administrative_area'] . ' ' .
+      $address['postal_code'];
+
+    // Geocode address string.
+    $point = geocoder('google',$address_string);
+    $geoJSON = $point->out('json');
+    $data = json_decode($geoJSON);
+
+    if (is_array($data->coordinates)) {
+      // Populate location field.
+      // Do not overwrite fields if they contain data.
+      if (!trim($node->field_location[$node->language][0]['lat']) && !trim($node->field_location[$node->language][0]['lng'])) {
+        $lat = $data->coordinates[1];
+        $lng = $data->coordinates[0];
+        $node->field_location[$node->language][0]['lat'] = $lat;
+        $node->field_location[$node->language][0]['lng'] = $lng;
+
+        $lat_rad = deg2rad($lat);
+        $node->field_location[$node->language][0]['lat_sin'] = sin($lat_rad);
+        $node->field_location[$node->language][0]['lat_cos'] = cos($lat_rad);
+        $node->field_location[$node->language][0]['lng_rad'] = deg2rad($lng);
+      }
+    }
+  }
+}

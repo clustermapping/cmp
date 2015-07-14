@@ -1,0 +1,27 @@
+<?php
+
+/**
+ * Add a taxonomy term for Federal Labs Organizations.
+ */
+function hbs_organizations_update_7001() {
+  $vid = db_query("SELECT vid FROM {taxonomy_vocabulary} WHERE machine_name=:type", array(':type' => 'organization_type'))->fetchField();
+
+  $term = taxonomy_get_term_by_name('Federal Labs Organizations');
+
+  if (empty($term)) {
+    $term = new stdClass();
+    $term->name = 'Federal Labs Organizations';
+    $term->vid = $vid;
+    taxonomy_term_save($term);
+  }
+}
+
+/**
+ * Remove null fields that prevent node reference saves
+ */
+function hbs_organizations_update_7002() {
+  db_delete('field_data_field_website')
+    ->condition('field_website_value', NULL, 'IS')
+    ->execute();
+  drupal_flush_all_caches();
+}

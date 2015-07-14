@@ -1,0 +1,61 @@
+name = Clustermapping.us
+description = A Bootstrap Sub-theme for Clustermapping.us.
+core = 7.x
+base theme = bootstrap
+
+; Regions
+regions[navigation]     = 'Navigation'
+regions[header]         = 'Top Bar'
+regions[highlighted]    = 'Highlighted'
+regions[help]           = 'Help'
+regions[content]        = 'Content'
+regions[sidebar_first]  = 'Primary'
+regions[sidebar_second] = 'Secondary'
+regions[post_content]   = 'Post Content'
+regions[footer_first]  = 'Footer First'
+regions[footer]  = 'Footer'
+
+; Stylesheets
+stylesheets[all][] = css/style.css
+
+;**********************************
+; METHOD 1: Bootstrap Source Files
+;**********************************
+;
+; ; Scripts
+;
+; scripts[] = 'bootstrap/js/affix.js'
+; scripts[] = 'bootstrap/js/alert.js'
+  scripts[] = 'bootstrap/js/button.js'
+; scripts[] = 'bootstrap/js/carousel.js'
+  scripts[] = 'bootstrap/js/collapse.js'
+  scripts[] = 'bootstrap/js/dropdown.js'
+  scripts[] = 'bootstrap/js/modal.js'
+  scripts[] = 'bootstrap/js/tooltip.js'
+  scripts[] = 'bootstrap/js/popover.js'
+; scripts[] = 'bootstrap/js/scrollspy.js'
+; scripts[] = 'bootstrap/js/tab.js'
+; scripts[] = 'bootstrap/js/transition.js'
+; Settings inherited by base theme, uncomment to override.
+settings[toggle_name] = 0
+settings[toggle_search] = 1
+; Disable the CDN as we are using our own source files.
+settings[bootstrap_cdn] = ''
+settings[bootstrap_region_well-sidebar_first] = ''
+
+scripts[] = 'js/scripts.js'
+
+
+; Navbar
+settings[bootstrap_navbar_position] = 'top'
+settings[bootstrap_navbar_inverse] = 0
+
+;*************************
+; METHOD 2: Bootstrap CDN
+;*************************
+;
+; ; Settings inherited by base theme, uncomment to override.
+; ;settings[toggle_name] = 0
+; ;settings[toggle_search] = 1
+; ;settings[cdn_bootstrap] = 1
+; ;settings[bootstrap_cdn] = 3.0.0

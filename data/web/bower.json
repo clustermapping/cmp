@@ -1,0 +1,26 @@
+{
+  "name": "clustermapping.us-viz",
+  "version": "0.0.0",
+  "authors": [
+    "Phase2"
+  ],
+  "main": "index.html",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "app/bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "d3": "~3.4.3",
+    "queue-async": "~1.0.7",
+    "topojson": "~1.4.9",
+    "jquery": "~2.1.0",
+    "leaflet": "~0.7.3",
+    "leaflet.markercluster": "~0.4.0"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "processing",
+  "version": "0.0.0",
+  "description": "",
+  "main": "import.js",
+  "dependencies": {
+    "csvtojson": "^0.1.7",
+    "d3": "^3.4.9",
+    "dev-null": "^0.1.1",
+    "jsts": "^0.13.4",
+    "shapefile": "^0.3.0",
+    "underscore": "^1.6.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

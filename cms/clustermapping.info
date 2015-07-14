@@ -1,0 +1,123 @@
+name = HBS Clustermapping.us
+distribution_name = HBS Clustermapping.us
+description = HBS Cluster Mapping CMS
+core = 7.x
+
+
+;********;
+;* Core *;
+;********;
+
+; Drupal Core
+dependencies[] = blog
+dependencies[] = menu
+dependencies[] = image
+dependencies[] = list
+dependencies[] = number
+dependencies[] = options
+dependencies[] = path
+dependencies[] = taxonomy
+dependencies[] = search
+dependencies[] = field
+dependencies[] = field_ui
+dependencies[] = file
+dependencies[] = syslog
+dependencies[] = update
+
+
+;**********************;
+;* HBS Clustermapping *;
+;**********************;
+dependencies[] = dashboard_features
+dependencies[] = external_resource
+dependencies[] = hbs_admin
+dependencies[] = hbs_blog
+dependencies[] = hbs_content
+dependencies[] = hbs_data_admin
+dependencies[] = hbs_homepage
+dependencies[] = hbs_community
+dependencies[] = hbs_dashboard
+dependencies[] = hbs_extsearch
+dependencies[] = hbs_migrate
+dependencies[] = hbs_navigation
+dependencies[] = hbs_organizations
+dependencies[] = hbs_resource
+dependencies[] = hbs_search_autocomplete
+dependencies[] = hbs_section
+dependencies[] = hbs_story
+dependencies[] = hbs_topics
+dependencies[] = hbs_user
+dependencies[] = hbs_viz
+dependencies[] = hbs_solr_field
+dependencies[] = hbs_add_content_links
+dependencies[] = session_api
+dependencies[] = hbs_footer
+
+
+;*******************;
+;* Contrib modules *;
+;*******************;
+dependencies[] = addressfield
+dependencies[] = apachesolr
+dependencies[] = apachesolr_search
+dependencies[] = breakpoints
+dependencies[] = captcha
+dependencies[] = image_captcha
+dependencies[] = chosen
+dependencies[] = ckeditor
+dependencies[] = corresponding_node_references
+dependencies[] = ctools
+dependencies[] = date
+dependencies[] = date_popup
+dependencies[] = entity
+dependencies[] = features
+dependencies[] = filter_perms
+dependencies[] = field_group
+dependencies[] = geocoder
+dependencies[] = geolocation
+dependencies[] = geophp
+dependencies[] = googleanalytics
+dependencies[] = imce
+dependencies[] = jquery_update
+dependencies[] = memcache
+dependencies[] = metatag
+dependencies[] = metatags_quick
+dependencies[] = navbar
+dependencies[] = node_reference
+dependencies[] = pathauto
+dependencies[] = pathauto_persist
+dependencies[] = phone
+dependencies[] = recaptcha
+dependencies[] = recaptcha_mailhide
+dependencies[] = references
+dependencies[] = references_dialog
+dependencies[] = robotstxt
+dependencies[] = strongarm
+dependencies[] = token
+dependencies[] = url
+dependencies[] = views
+dependencies[] = views_autocomplete_filters
+dependencies[] = views_bulk_operations
+dependencies[] = views_data_export
+dependencies[] = views_ui
+dependencies[] = xmlsitemap
+dependencies[] = xmlsitemap_menu
+dependencies[] = xmlsitemap_modal
+dependencies[] = xmlsitemap_node
+dependencies[] = xmlsitemap_taxonomy
+dependencies[] = workbench
+dependencies[] = workbench_moderation
+
+
+;***********************;
+;* Development modules *;
+;***********************;
+dependencies[] = devel
+dependencies[] = diff
+
+
+;*************;
+;* Libraries *;
+;*************;
+
+dependencies[] = libraries

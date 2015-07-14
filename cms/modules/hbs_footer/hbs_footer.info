@@ -1,0 +1,7 @@
+name = Clustermapping Footer
+description = Manage the site footer
+core = 7.x
+package = Clustermapping.us
+version = 7.x-1.0
+project = hbs_footer
+dependencies[] = block

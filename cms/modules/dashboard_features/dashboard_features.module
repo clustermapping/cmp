@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Dashboard Features feature.
+ */
+
+include_once 'dashboard_features.features.inc';

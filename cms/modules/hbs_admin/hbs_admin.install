@@ -1,0 +1,77 @@
+<?php
+
+
+/**
+ * HBS-12: Update CKEditor settings to only display simple buttion options.
+ */
+function hbs_admin_update_7001() {
+  $results = end(
+    db_select('ckeditor_settings', 's')
+      ->fields('s')
+      ->condition('name', 'Advanced')
+      ->execute()
+      ->fetchAll()
+    );
+
+  $settings = unserialize($results->settings);
+  $new_toolbar = "[\n    ['Bold','Italic','Underline'],\n    ['NumberedList','BulletedList'],\n    ['Link','Unlink']\n]\n    ";
+  $settings['toolbar'] = $new_toolbar;
+
+  $settings = serialize($settings);
+
+  db_update('ckeditor_settings')
+    ->fields(array('settings' => $settings))
+    ->condition('name', 'Advanced')
+    ->execute();
+}
+
+/**
+ * HBS-12: Update CKEditor settings to add a link button.
+ */
+function hbs_admin_update_7002() {
+  $results = end(
+    db_select('ckeditor_settings', 's')
+      ->fields('s')
+      ->condition('name', 'Advanced')
+      ->execute()
+      ->fetchAll()
+    );
+
+  $settings = unserialize($results->settings);
+  $new_toolbar = "[\n    ['Bold','Italic','Underline'],\n    ['NumberedList','BulletedList'],\n    ['Link','Unlink']\n]\n    ";
+  $settings['toolbar'] = $new_toolbar;
+
+  $settings = serialize($settings);
+
+  db_update('ckeditor_settings')
+    ->fields(array('settings' => $settings))
+    ->condition('name', 'Advanced')
+    ->execute();
+
+  variable_set('hbs_admin_hide_filter_for_all', TRUE);
+}
+
+/**
+ * Enable IMCE module.
+ */
+function hbs_admin_update_7003() {
+  // Ensure that all modules are enabled for this profile
+  module_load_install('clustermapping');
+  module_enable(_clustermapping_module_list());
+}
+
+/**
+ * Disable Shortcut module.
+ */
+function hbs_admin_update_7004() {
+  module_disable(array('shortcut'));
+}
+
+/**
+ * Enable HBS Footer Module
+ */
+function hbs_admin_update_7005() {
+  // Ensure that all modules are enabled for this profile
+  module_load_install('clustermapping');
+  module_enable(_clustermapping_module_list());
+}

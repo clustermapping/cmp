@@ -1,0 +1,75 @@
+<?php
+/**
+ * @file
+ * Code for the Administration feature.
+ */
+
+include_once 'hbs_admin.features.inc';
+
+/**
+ * Preprocess page hook.
+ */
+function hbs_admin_preprocess_page(&$variables) {
+  // If this is a cluster or region page, modify some node/add URLs to add some additional context parameters.
+  $item = menu_get_item();
+  if ($item['path'] == 'region/%/%' || $item['path'] == 'cluster/%') {
+    $setting = array(
+      'hbs_admin' => array(
+        'original_path' => implode('/', $item['original_map']),
+      ),
+    );
+    drupal_add_js($setting, 'setting');
+    drupal_add_js(drupal_get_path('module', 'hbs_admin') . '/js/node_links.js');
+  }
+}
+
+/**
+ * Implements hook_form_alter.
+ * This is used to make modifications to various node_edit forms.
+ */
+function hbs_admin_form_alter(&$form, &$form_state, $form_id) {
+  if (strpos($form_id, '_node_form') !== FALSE) {
+    if (!empty($_GET['context'])) {
+      $param = check_plain($_GET['context']);
+      $params = explode('/', $param);
+      switch ($params[0]) {
+        case 'region':
+        case 'cluster':
+          $fields = array('region' => 'field_regions', 'cluster' => 'field_clusters');
+          if (empty($form['field_regions']['und'][0]['solr_reference']['#default_value'])) {
+            $form[$fields[$params[0]]][LANGUAGE_NONE][0]['solr_reference']['#default_value'] = $param;
+          }
+          break;
+
+        default:
+          # code...
+          break;
+      }
+    }
+    // Change the button text to be a little more clear what it does
+    if (!empty($form['field_members'][LANGUAGE_NONE]['add_more']['#value'])) $form['field_members'][LANGUAGE_NONE]['add_more']['#value'] = t('Add another Member');
+
+    // Add a pre_render callback attribute so we can add placeholder values on the field_telephone form
+    if (!empty($form['field_telephone'])) {
+      $form['field_telephone']['#pre_render'] = array('hbs_admin_field_telephone_prerender');
+    }
+
+    // Add a role-based CSS class to the body field elements to conditionally hide these elements
+    global $user;
+    $role = (variable_get('hbs_admin_hide_filter_for_all', FALSE)) ? 'role-authenticated-user' : 'role-' . str_replace(' ', '-', end($user->roles));
+    $form['#attributes']['class'][] = $role;
+    drupal_add_css(drupal_get_path('module', 'hbs_admin') . '/css/node_edit.css');
+  }
+}
+
+/**
+ * Prerender callback function to add placeholders on certain sub-fields in the telephone field widget.
+ */
+function hbs_admin_field_telephone_prerender($form) {
+  $children = array_intersect_key($form[LANGUAGE_NONE], element_children($form[LANGUAGE_NONE]));
+  foreach ($children as $key => $value) {
+    $form[LANGUAGE_NONE][$key]['number']['#attributes']['placeholder'] = t('Phone number');
+    $form[LANGUAGE_NONE][$key]['extension']['#attributes']['placeholder'] = t('Extension');
+  }
+  return $form;
+}

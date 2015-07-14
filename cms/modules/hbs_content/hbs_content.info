@@ -1,0 +1,4 @@
+name = Clustermapping.us Default Content
+description = Manage the initial default content, such as About Us and Methodology pages.
+core = 7.x
+package = Clustermapping.us

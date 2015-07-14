@@ -1,0 +1,79 @@
+<?php
+
+/**
+ * @file hbs_blog.install
+ * Provide initial settings and configurations for HBS blog posts.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function hbs_blog_install() {
+  // Set configuration settings for blog posts
+  variable_set('pathauto_node_blog_pattern', 'blog/[node:created:custom:Y]/[node:created:custom:m]/[node:created:custom:d]/[node:title]');
+  variable_set('node_submitted_blog', 0);
+}
+
+/**
+ * Enable all modules within the profile so we can enable hbs_content and remove the filters from the hbs_blog module.
+ */
+function hbs_blog_update_7001() {
+  // Ensure that all modules are enabled for this profile
+  module_load_install('clustermapping');
+  module_enable(_clustermapping_module_list());
+}
+
+function hbs_blog_update_7002() {
+  variable_set('node_submitted_blog', 1);
+}
+
+/**
+ * Create all the taxonomy terms for the new Blog Topic vocabulary.
+ */
+function hbs_blog_update_7003() {
+  variable_set('node_submitted_blog', 1);
+  // Ensure that all modules are enabled for this profile
+  module_load_install('clustermapping');
+  module_enable(_clustermapping_module_list());
+
+  // Create taxonomy terms for Blog Topic vocabulary
+  $names = array(
+    'Regional Economies',
+    'Clusters',
+    'Entrepreneurship and Innovation',
+    'National Competitiveness and Policy',
+    'Events',
+    'Site News',
+  );
+  $vocabulary = taxonomy_vocabulary_machine_name_load('blog_topic');
+  $weight = 0;
+  foreach ($names as $name) {
+    $term = taxonomy_get_term_by_name($name, 'blog_topic');
+    if (empty($term)) {
+      taxonomy_term_save((object) array(
+        'name' => $name,
+        'vid' => $vocabulary->vid,
+        'weight' => $weight ++,
+      ));
+    }
+  }
+}
+
+/**
+ * Create Blog Topic page aliases to be more SEO-aware.
+ */
+function hbs_blog_update_7004() {
+  $vocabulary = taxonomy_vocabulary_machine_name_load('blog_topic');
+  $terms = taxonomy_get_tree($vocabulary->vid);
+  foreach ($terms as $term) {
+    $alias = trim(strtolower($term->name));
+    $alias = str_replace("'", "", $alias);
+    $alias = preg_replace("/[\W]+/ ", "-", $alias);
+
+    $path = array(
+      'source' => 'blog/topic/' . $term->tid,
+      'alias' => 'blog/topic/' . $alias,
+    );
+    path_save($path);
+  }
+}

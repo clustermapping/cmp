@@ -1,0 +1,563 @@
+<?php
+
+/**
+ * @file hbs_content.module
+ * TODO: Enter file description here.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function hbs_content_menu() {
+  $items = array();
+
+  $items['node/%node/hbs_export'] = array(
+    'title' => 'Export',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hbs_content_export_node', 1),
+    'access arguments' => array('access devel information'),
+    'file' => 'hbs_content.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 101,
+  );
+
+  $items['taxonomy/term/%taxonomy_term/hbs_export'] = array(
+    'title' => 'Export',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hbs_content_export_term', 2),
+    'access arguments' => array('access devel information'),
+    'file' => 'hbs_content.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 101,
+  );
+
+  $items['learn'] = array(
+    'title' => 'Export',
+    'page callback' => '_hbs_content_learn',
+    'access arguments' => array('access content'),
+  );
+
+  return $items;
+}
+
+/**
+ * Helper funciton to generate a machine name from the title/name of the item to export.
+ * The Drupal core stuff to create a machine name is a little too complicated (namely, it
+ * uses FAPI to generate them in a form processor), and that's overkill for this simple
+ * exporter.
+ */
+function _hbs_content_machine_name($name, $hyphenate = FALSE) {
+  $space = ($hyphenate) ? '-' : '_';
+
+  // Create a machine name that's good enough for exporting
+  $machine_name = strtolower($name);
+  $machine_name = preg_replace('@[^a-z0-9_]+@', $space, $machine_name);
+  $machine_name = trim($machine_name, $space);
+
+  return $machine_name;
+}
+
+/**
+ * Implements theme_preprocess_html().
+ */
+function hbs_content_preprocess_html(&$variables) {
+  $item = menu_get_item();
+  if ($item['path'] == 'organization-type') {
+    $variables['classes_array'][] = 'page-taxonomy';
+  }
+}
+
+/**
+ * Implements theme_preprocess_page().
+ */
+function hbs_content_preprocess_page(&$variables) {
+  drupal_add_js(drupal_get_path('module', 'hbs_content') .'/js/hbs_content.js');
+  drupal_add_js(drupal_get_path('module', 'hbs_content') .'/js/hbs_content_ie_alert.js');
+
+  $variables['show_welcome_link'] = FALSE;
+  $variables['header_title_title'] = NULL;
+
+  // Set some variables for the share links to use. Everything needs to be URL encoded...
+  $variables['this_page'] = urlencode(url(drupal_get_path_alias(current_path()), array('absolute' => TRUE)));
+  $variables['page_title'] = urlencode(drupal_get_title());
+  $variables['page_summary'] = NULL;
+  if (!empty($variables['node'])) {
+    $variables['page_summary'] = urlencode(strip_tags($variables['node']->body[LANGUAGE_NONE][0]['safe_value']));
+  }
+
+  $allowed_types = array(
+    'blog' => 'Blog',
+    'resource' => 'Resource',
+    'external_resource' => 'External Resource',
+    'page' => 'Basic page',
+  );
+
+  $variables['account_links'] = (empty($variables['account_links'])) ? NULL : $variables['account_links'];
+
+  $item = menu_get_item();
+  $type = (!empty($item['map'][1]) && !empty($item['map'][1]->type)) ? $item['map'][1]->type : arg(0);
+  $isTax = ($type == 'taxonomy');
+  $type = ($isTax && !empty($item['map'][2]) && $item['map'][2]->vocabulary_machine_name == "section")? 'page' : $type;
+
+  // We only care about adding this filter list to specific content-type pages (section or node)
+  $is_allowed = (($item['path'] == 'node/%' || $isTax ) && in_array($type, array_keys($allowed_types)) );
+
+  $manual_sort = FALSE;
+  if (in_array(arg(0), array_keys($allowed_types)) || $is_allowed) {
+    $termField = 'field_section';
+    switch ($type) {
+      case 'page':
+        $termField = 'field_section';
+        $manual_sort = 'field_data_field_weight';
+        break;
+      case 'blog':
+        $termField = 'field_blog_topic';
+        break;
+      default:
+        $termField = 'field_topic';
+    }
+
+    // Get all the terms for the Topic vocabulary for the given content type
+    $tids = array();
+    $query = db_select('field_data_' . $termField, 't')
+      ->fields('t', array($termField . '_tid', 'entity_id'))
+      ->condition('t.entity_type', 'node')
+      ->condition('t.bundle', $type);
+
+    if ($manual_sort) {
+      $query->leftJoin($manual_sort, 'ms', 't.entity_id=ms.entity_id');
+      $query->fields('ms', array('field_weight_value'));
+      $query->orderBy('ms.field_weight_value', 'ASC');
+    }
+
+    $result = $query->execute();
+    while($tid = $result->fetchAssoc()) {
+      $tids[$tid[$termField . '_tid']] = $tid[$termField . '_tid'];
+      $nidsBytid[ $tid[$termField . '_tid'] ][] = $tid['entity_id'];
+    }
+
+    // Always sort the Term menus in numeric order by TID
+    rsort($tids);
+
+    $terms = taxonomy_term_load_multiple($tids);
+
+    // If we have valid terms, add the topics psuedo-block to the page
+    if (!empty($terms)) {
+      // If there is no content placed in the Sidebar First region, we'll need to
+      // make sure all the required theme attributes are present.
+      if (empty($variables['page']['sidebar_first'])) {
+        $variables['page']['sidebar_first'] = array(
+          '#sorted' => TRUE,
+          '#region' => 'sidebar_first',
+          '#theme_wrappers' => array('region'),
+        );
+      }
+
+      if ($type == 'page') {
+        $output = '';
+
+        $learn_nid = variable_get('hbs_content_learn_nid', NULL);
+        $is_learn = !empty($item['map'][1]->field_section);
+
+        if (arg(1) == $learn_nid || $is_learn) {
+          $variables['show_welcome_link'] = TRUE;
+          module_load_include('inc', 'hbs_homepage', 'hbs_homepage.pages');
+          drupal_add_js(drupal_get_path('module', 'hbs_content') .'/js/hbs_content.js');
+          drupal_add_css(drupal_get_path('module', 'hbs_homepage') . '/css/welcome.css');
+          $variables['welcome'] = _hbs_homepage_welcome_message();
+
+          $output .= _hbs_content_welcome();
+        }
+
+        foreach ($terms as $tid => $term) {
+          $term->path = taxonomy_term_uri($term);
+          $term->path = '/' . drupal_get_path_alias( $term->path['path'] );
+          $nodes = node_load_multiple($nidsBytid[$tid]);
+          $output .= theme('hbs_content_section_menu', array('term' => $term, 'nodes' => $nodes, 'label' => $allowed_types[$type]));
+        }
+        $variables['page']['sidebar_first']['section_menu']['#markup'] = $output;
+      }
+      else {
+        $active = (arg(2)) ? arg(2) : 'all';
+        // Add the themed output as #markup to the Sidebar First region.
+        $variables['page']['sidebar_first']['content_filters']['#markup'] = theme('hbs_content_filters', array('terms' => $terms, 'type' => $type, 'label' => $allowed_types[$type], 'active' => $active));
+      }
+    }
+
+  }
+
+  $variables['title_row_classes'] = (drupal_is_front_page()) ? NULL : 'row-header';
+  $variables['special_title'] = (empty($variables['special_title'])) ? FALSE : $variables['special_title'];
+
+  switch(arg(0)) {
+    case 'cluster':
+      if( is_null(arg(1)) ) drupal_set_title('Clusters');
+      break;
+    case 'region':
+      if( is_null(arg(1)) ) drupal_set_title('Regions');
+    case 'node':
+      if (variable_get('hbs_content_learn_nid', NULL) == $variables['node']->nid) {
+        // drupal_set_title('Learn');
+        $variables['special_title'] = TRUE;
+        $variables['title_row_classes'] = 'row-header row-header-learn';
+      }
+      break;
+  }
+
+  // Set header titles for specific types of pages.
+  $variables['header_prefix'] = NULL;
+  $type_names = array(
+    'resource' => 'Resources',
+    'blog' => 'Blog Posts',
+    'organization' => 'Organizations',
+  );
+  // dpm($item['path']);
+  switch ($item['path']) {
+    case 'compare':
+      $variables['header_title'] = 'Custom Region Comparison ' . $type_names[arg(1)];
+      break;
+    case 'related/%/region-cluster/%':
+    case 'related/%/cluster':
+    case 'related/%/region/%':
+      $variables['special_title'] = TRUE;
+      $args = array_slice($item['map'], 2);
+      $subtitle = trim(str_replace('_', ' ', join(' ', $args)));
+      $variables['header_title'] = 'Related ' . $type_names[arg(1)];
+      $variables['title_prefix']= '<h5>' . $subtitle . '</h5>';
+      drupal_set_title($variables['header_title']);
+      break;
+    case 'cluster/related':
+      $variables['special_title'] = TRUE;
+      $subtitle = trim(str_replace('_', ' ', $item['map'][3]));
+      $variables['header_title'] = 'Related ' . $type_names[arg(2)];
+      drupal_set_title($variables['header_title']);
+      $variables['title_prefix']= '<h5>' . $subtitle . '</h5>';
+      break;
+    case 'organization-type':
+      $type = (object) array('name' => NULL);
+      $cluster = array('name_t' => NULL);
+      $subtitle = array();
+      $args = arg();
+
+      if (!empty($args[1])) {
+        if ($args[1] != 'all') {
+          // $type = array_shift(taxonomy_get_term_by_name($args[1]));
+          $name  = str_replace('-', ' ', $args[1]);
+          $type = array_shift(taxonomy_get_term_by_name($name, 'organization_type'));
+          $subtitle[] = $type->name;
+        }
+        else {
+          $subtitle[] = 'All Organization Types';
+        }
+      }
+
+      if (!empty($args[2])) {
+        if ($args[2] != 'all') {
+          $cluster = hbs_cluster_load($args[2]);
+          $subtitle[] = $cluster['name_t'];
+        }
+        else {
+          $subtitle[] = 'All Clusters';
+        }
+      }
+
+      $subtitle = implode(' / ', $subtitle);
+      $variables['special_title'] = (empty($subtitle));
+      $variables['header_title'] = 'Organizations';
+      drupal_set_title($variables['header_title']);
+      $variables['title_prefix']= '<h5>' . $subtitle . '</h5>';
+      break;
+    case 'organizations':
+      $variables['header_title'] = t('Organizations');
+      break;
+    case 'community':
+      $variables['header_title'] = t('Community');
+      break;
+    case 'region':
+      $variables['header_title'] = t('Regions');
+      break;
+    case 'region_builder':
+      $variables['header_title'] = t('Custom Region Builder');
+      break;
+    case 'cluster':
+      $variables['header_title'] = t('Clusters');
+      break;
+    case 'cluster/%':
+      $variables['header_title'] = t('Clusters');
+      $variables['special_title'] = TRUE;
+      $variables['title_prefix']= '<h5>Cluster Dashboard: Summary</h5>';
+      $variables['header_title'] = $item['map'][1]['name_t'];
+      break;
+    case 'cluster/%/top-regions':
+    case 'cluster/%/subclusters':
+    case 'cluster/%/subclusters/%':
+    case 'cluster/%/organizations':
+      $variables['title_prefix']= '<h5>Cluster Dashboard</h5>';
+      $variables['special_title'] = TRUE;
+      $variables['header_title'] = $item['map'][1]['name_t'];
+      if(!empty($item['map'][3])){
+        $variables['title_prefix'] = '<h5>Subcluster Page</h5>';
+        $variables['header_title'] = $item['map'][3]['sub_name_t'] .' Subcluster';
+        $variables['title_suffix'] = '<h4 class="title-suffix"><a href="/cluster/' . $item['map'][1]['key_t'] . '">' . $item['map'][1]['name_t'] . ' Cluster</a></h4>';
+        $variables['tabs'] = array();
+
+      }else if (!empty($item['map'][2])) {
+        $variables['title_prefix'] = '<h5>Cluster Dashboard:  ' . $item['map'][2] . '</h5>';
+      }
+      drupal_set_breadcrumb(array());
+      break;
+    case 'region-cluster/%/%/%':
+    case 'region-cluster/%/%/%/subclusters':
+    case 'region-cluster/%/%/%/subregions':
+
+      switch($item['path']){
+        case 'region-cluster/%/%/%/subclusters':
+          $tab = ':  Subclusters';
+          break;
+        case 'region-cluster/%/%/%/subregions':
+          $tab = ':  Sub-Regions';
+          break;
+        default:
+          $tab = ':  Summary';
+      }
+
+      $variables['title_prefix']= '<h5>Region-cluster Dashboard' . $tab . '</h5>';
+      $variables['header_title'] = $item['page_arguments'][0]['name_t'];
+      $variables['title_suffix'] = '<h4 class="title-suffix"><a href="/region/' . $item['map'][3]['region_type_t'] . '/' .  $item['map'][3]['key_t']  . '">In: ' . $item['map'][3]['region_name_t'] . '</a></h4>';
+
+      drupal_set_breadcrumb(array());
+      break;
+    case 'blog':
+      $variables['header_title'] = t('Blog');
+      break;
+    case 'blog/%':
+      $variables['special_title'] = TRUE;
+      $variables['title_prefix']= '<h5>' . $item['page_arguments'][0]->name . '\'s blog</h5>';
+      $variables['header_title'] = t('Blog');
+      break;
+    case 'blog/topic/%':
+      $term = $item['map'][2];
+      $variables['header_title'] = t('Blog');
+      $variables['title_prefix']= '<h5>' . $term->name . '</h5>';
+      break;
+    case 'node/%':
+      if ($item['map'][1]->type == 'blog') {
+        $variables['special_title'] = TRUE;
+        $variables['header_title'] = t('Blog');
+      }
+      elseif ($item['map'][1]->type == 'resource') {
+        $variables['special_title'] = TRUE;
+        $variables['header_title'] = t('Resources');
+      }
+      elseif ($item['map'][1]->type == 'organization') {
+        $variables['special_title'] = TRUE;
+        $variables['header_title'] = t('Organizations');
+      }
+      elseif ($item['map'][1]->type == 'member') {
+        $variables['special_title'] = TRUE;
+        $variables['header_title'] = t('Member');
+        drupal_set_breadcrumb(array());
+      }
+      elseif ($item['map'][1]->title == 'Learn') {
+        $variables['special_title'] = TRUE;
+        $variables['header_title'] = t('Learn');
+      }
+      elseif ($item['map'][1]->type == 'page') {
+        if (!empty($item['map'][1]->field_section[LANGUAGE_NONE][0]['tid'])) {
+          $section = taxonomy_term_load($item['map'][1]->field_section[LANGUAGE_NONE][0]['tid']);
+          $variables['special_title'] = TRUE;
+          $variables['header_prefix']= '<h5>' . $section->name . '</h5>';
+          $variables['header_title'] = t('About');
+        }
+        else {
+          $variables['special_title'] = TRUE;
+          $variables['header_title'] = $item['map'][1]->title;
+        }
+      }
+      break;
+    case 'resource':
+      $variables['header_title'] = t('Resources');
+      break;
+    case 'resource/%/%':
+      $term = $item['map'][2];
+      $variables['header_title'] = t('Resources');
+      $variables['title_prefix']= '<h5>' . $term->name . '</h5>';
+      break;
+    case 'resource/other/%':
+      $variables['header_title'] = t('Resources');
+      $variables['title_prefix']= '<h5>Other: ' . $item['map'][2]->name . '</h5>';
+      break;
+    case 'taxonomy/term/%':
+      $vocabulary = taxonomy_vocabulary_machine_name_load($item['map'][2]->vocabulary_machine_name);
+      $vocabulary_name = ($vocabulary->machine_name == 'organization_type') ? 'Organizations' : $vocabulary->name;
+      $variables['header_title'] = $vocabulary_name;
+      $variables['title_prefix'] = '<h5>' . $item['map'][2]->name . '</h5>';
+
+      if ($vocabulary->machine_name == in_array($item['map'][2]->name, array('Methodology', 'About'))) {
+        $variables['header_title'] = 'Learn';
+      }
+
+      break;
+    case 'search/site':
+    case 'search/site/%':
+      $variables['header_title'] = 'Search Results';
+      $variables['title_prefix']= '<h5>Keywords: ' . $item['map'][2] . '</h5>';
+      $variables['tabs'] = array();
+      break;
+    case 'region/%/%':
+    case 'region/%/%/chart':
+    case 'region/%/%/summary':
+    case 'region/%/%/performance':
+    case 'region/%/%/cluster-portfolio':
+    case 'region/%/%/subregions':
+    case 'region/%/%/organizations':
+      switch($item['path']){
+        case 'region/%/%/performance':
+          $tab = ':  Performance & Drivers';
+          break;
+        case 'region/%/%/cluster-portfolio':
+          $tab = ':  Cluster Portfolio';
+          break;
+        case 'region/%/%/subregions':
+          $tab = ':  Sub-Regions';
+          break;
+        default:
+          $tab = ':  Summary';
+      }
+      $variables['title_prefix']= '<h5>Region Dashboard' . $tab . '</h5>';
+      $variables['header_title'] = _hbs_content_title_fix($item['title'], $item['map']);
+      $variables['header_title_title'] = 'title="' . $item['title'] . '"';
+
+      if( $item['map'][1] == "economic" ){
+        $variables['title_suffix'] = '<h4 class="title-suffix">' . $item['map'][2]['region_name_t'] . '</h4>';
+      }
+      break;
+    case 'cluster':
+      $variables['title_prefix']= '<h5>Regions</h5>';
+      $variables['header_title'] = _hbs_content_title_fix($item['title'], $item['map']);
+      $variables['header_title_title'] = 'title="' . $item['title'] . '"';
+      break;
+    case 'user/%':
+      $variables['title_prefix']= '<h5>' . $item['map'][1]->name . '</h5>';
+      $variables['header_title'] = 'User Profile';
+      break;
+    case 'user':
+      $variables['title_prefix']= '<h5>' . $item['map'][1]->name . '</h5>';
+      $variables['header_title'] = 'User Login';
+      break;
+  }
+
+  // Get rid of the Path-based meta tags link/tab
+  if (!empty($variables['tabs']['#primary'])) {
+    foreach ($variables['tabs']['#primary'] as $key => $value) {
+      if ($value['#link']['path'] == 'admin/config/search/metatags_quick/path_based/edit') {
+        unset($variables['tabs']['#primary'][$key]);
+      }
+    }
+
+    if (arg(0) == 'user') {
+      if (!empty($variables['page']['content']['system_main']['summary']['blog'])) unset($variables['page']['content']['system_main']['summary']['blog']);
+      foreach ($variables['tabs']['#primary'] as $key => $value) {
+        if ($value['#link']['path'] == 'user/%/imce') {
+          unset($variables['tabs']['#primary'][$key]);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Helper function to get the abbreviated title for EAs and MSAa.
+ */
+function _hbs_content_title_fix($title, $data = array()) {
+  return $title;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function hbs_content_theme() {
+  return array(
+    'hbs_content_filters' => array(
+      'template' => 'hbs_content_filters',
+      'arguments' => array('terms' => array(), 'type' => NULL, 'label' => NULL, 'block_type' => NULL),
+    ),
+    'hbs_content_section_menu' => array(
+      'template' => 'hbs_content_section_menu',
+      'arguments' => array('term' => array(), 'nodes' => array(), 'type' => NULL, 'label' => NULL),
+    ),
+    'hbs_content_section_menu_special' => array(
+      'template' => 'hbs_content_section_menu_special',
+      'arguments' => array('links' => array(), 'label' => NULL, 'menu_classes' => NULL),
+    ),
+  );
+}
+
+/**
+ * Implements hook_entity_info_alter().
+ * This adds a section_teaser display mode to nodes so that we can theme node
+ * teasers that appear on section pages differently.
+ */
+function hbs_content_entity_info_alter(&$entity_info) {
+  $entity_info['node']['view modes']['section_teaser'] = array(
+    'label' => t('Section page teaser'),
+    'custom settings' => TRUE,
+  );
+}
+
+/**
+ * Implements hook_preprocess_node().
+ */
+function hbs_content_preprocess_node(&$variables) {
+  if ($variables['view_mode'] == 'section_teaser') {
+    $variables['theme_hook_suggestions'][] = 'node__' . $variables['type'] . '__section_teaser';
+    $variables['theme_hook_suggestions'][] = 'node_section_teaser';
+  }
+
+  if ($variables['type'] == 'blog') {
+    $variables['submitted'] = t('<span class="byline-icon"></span>by <span class="byline-author">!author</span> <span class="byline-datetime">!datetime</span>', array(
+      '!author' => l($variables['node']->name, 'blog/' . $variables['node']->uid),
+      '!datetime' => format_date($variables['node']->created, 'custom', 'F j, Y'),
+    ));
+  }
+
+  // The "Learn" page uses the page title rather than the node title for display (special case).
+  if (variable_get('hbs_content_learn_nid', NULL) == $variables['node']->nid) {
+    $variables['title'] = NULL;
+  }
+}
+
+function _hbs_content_learn() {
+  $nid = variable_get('hbs_content_learn_nid', NULL); // 2598
+  if (empty($nid)) return array('#markup' => 'No Learn content has been imported yet. Please run "drush hbs_content."');
+  return (node_view(node_load($nid)));
+}
+
+
+function _hbs_content_welcome() {
+
+    $links = array(
+      l('Welcome&nbsp;&nbsp;<span class="glyphicon glyphicon-facetime-video"></span>', '<front>', array('html' => TRUE, 'attributes' => array('id' => 'welcome-trigger-side'))),
+    );
+    $label = NULL;
+
+    return theme('hbs_content_section_menu_special', array('links' => $links, 'label' => $label, 'menu_classes' => 'learn-menu'));
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function hbs_content_form_alter(&$form, $form_state, $form_id) {
+  if (!empty($form['field_super_promote'])) {
+    global $user;
+    $form['field_super_promote']['#access'] = !empty($user->roles[3]);
+  }
+}
+
+function hbs_content_preprocess_hbs_content_section_menu(&$variables) {
+  foreach ($variables['nodes'] as &$node) {
+    if ($node->nid == arg(1)) {
+      $node->active = TRUE;
+    }
+  }
+}
