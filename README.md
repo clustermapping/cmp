@@ -1,4 +1,4 @@
-# Directory structure for hbs.git
+# Directory structure for cmp
 .
 `-- cms/
 `-- data/
