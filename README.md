@@ -16,28 +16,27 @@
 
 ## Clone the GitHub repository 
 Repository root: https://github.com/clustermapping/cmp
-
-  mkdir /opt/development
-  cd /opt/development
-  git clone https://github.com/clustermapping/cmp.git
+    mkdir /opt/development
+    cd /opt/development
+    git clone https://github.com/clustermapping/cmp.git
 
 ## Configure Nginx
     cp /opt/development/cmp/environment/nginx/conf.d/* /etc/nginx/conf.d/
 
 ## Set up Solr
 * Download solr data file:
-  wget http://54.83.55.22/sites/default/files/cmp-solr-dataset-latest.tgz
+    wget http://54.83.55.22/sites/default/files/cmp-solr-dataset-latest.tgz
 
 ## Set up data api
-  cd /opt/development/cmp/data/web ; npm install
-  cd /opt/development/cmp/data/processing ; npm install
+    cd /opt/development/cmp/data/web ; npm install
+    cd /opt/development/cmp/data/processing ; npm install
 
 ## Start data api
     cd /opt/development/cmp/data/web ; nodemon -g server.js
 
 ## Build CMS 
-  cd /opt/development/cmp/cms
-  ./build.sh html
+    cd /opt/development/cmp/cms
+    ./build.sh html
 Make sure the settings file is writable for the web server.
 
 ## Rebuilding a development environment
