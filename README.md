@@ -29,9 +29,12 @@ Download solr data file:
 
     wget http://54.83.55.22/sites/default/files/cmp-solr-dataset-latest.tgz
 
-## Set up data api
+## Set up data API
     cd /opt/development/cmp/data/web ; npm install
     cd /opt/development/cmp/data/processing ; npm install
+
+### Data API Configuration options
+Configuration options can be found at /opt/development/cmp/cms/settings.php
 
 ## Start data api
     cd /opt/development/cmp/data/web ; nodemon -g server.js
@@ -44,6 +47,8 @@ Make sure the settings file is writable for the web server.
 ## Rebuilding a development environment
 To rebuild an existing environment, simply running the cmp/cms/build.sh html command will rebuild the target docroot. It will do this by blowing it away the existing docroot directory (but not the repo, settings.php, or the files directory). Once it's rebuilt, it will run a series of drush commands, such as 'cc all', 'fra', and 'updb' to make sure the existing database is caught back up.
 
+### CMS Configuration options
+Configuration options can be found at /opt/development/cmp/cms/settings.php
 
 ## Configure PHP-FPM
 Make sure PHP-FPM is listening on 127.0.0.1 port 9000.
