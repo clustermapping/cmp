@@ -36,10 +36,10 @@ Download solr data file:
 ### Data API Configuration options
 Configuration options can be found at /opt/development/cmp/cms/settings.php
 
-## Start data api
+## Start data API
     cd /opt/development/cmp/data/web ; nodemon -g server.js
 
-## Build CMS 
+## Build Drupal CMS
     cd /opt/development/cmp/cms
     ./build.sh html
 Make sure the settings file is writable for the web server.
