@@ -1,11 +1,9 @@
 module.exports = {
   development: {
     solr: {
-      host: 'hbsvagrant.local',
-      // port: 80,
-      // core: 'clusterdata',
-      port: 81,
-      core: 'collection1',
+      host: '54.83.55.22',
+      port: 80,
+      core: 'clusterdata',
       path: '/solr'
     },
     port: 4001,
