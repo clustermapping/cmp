@@ -1,4 +1,5 @@
-**/node_modules/
+data/web/node_modules
+data/processing/node_modules
 data/processing/data/
 html
 cms/html
@@ -7,10 +8,6 @@ cms/html_tmp
 files
 files-private
 settings.php
-environment/packer/packer_cache/
-environment/packer/*.box
-environment/vagrant/.vagrant/
-environment/vagrant/.vagrant-*
 .DS_Store
 .idea
 **/*.iml
