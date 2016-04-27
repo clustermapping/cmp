@@ -7,19 +7,8 @@ module.exports = {
       path: '/solr'
     },
     port: 4001,
-    base:'/data',
-    baseUrl: 'hbsvagrant.local'
-  },
-  development2: {
-    solr: {
-      host: 'localhost',
-      port: 8080,
-      core: 'collection1',
-      path: '/solr'
-    },
-    port: 4001,
-    base:'/data',
-    baseUrl: 'hbsvagrant.local'
+    base:'',
+    baseUrl: 'localhost'
   },
   test: {
     solr: {

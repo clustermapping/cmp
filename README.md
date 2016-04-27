@@ -29,15 +29,16 @@ Download solr data file:
 
     wget http://54.83.55.22/sites/default/files/cmp-solr-dataset-latest.tgz
 
-## Set up data API
+## Install data API dependencies
     cd /opt/development/cmp/data/web ; npm install
     cd /opt/development/cmp/data/processing ; npm install
 
 ### Data API Configuration options
-Configuration options can be found at /opt/development/cmp/cms/settings.php
+Configuration options can be found at /opt/development/cmp/data/web/config.js
 
 ## Start data API
     cd /opt/development/cmp/data/web ; nodemon server.js
+Point the browser to http://localhost:4001/ to verify the API connection.
 
 ## Build Drupal CMS
     cd /opt/development/cmp/cms
