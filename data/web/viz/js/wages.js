@@ -20,7 +20,11 @@
       .scale('x', 'key', 'value')
       .scale('x', 'domain', function(data, key) {
         var xdomain = d3.extent(data, function (d) { return d[key]; });
-        return xdomain; })
+        if (data.length == 1) {
+          xdomain[0] = xdomain[0] * 0.5;
+          xdomain[1] = xdomain[1] * 1.5;
+        }
+      return xdomain; })
       .scale('x', 'nice', 10)
       .scale('x', 'format', '$,.0f')
       .scale("y", {

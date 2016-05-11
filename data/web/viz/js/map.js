@@ -13,10 +13,10 @@
   settings.hbs_dashboard = {data: {region: {} } };
   settings.hbs_content = { };
   settings.hbs_map = {
-    countryJson: "/profiles/clustermapping/modules/hbs_viz/json/stoutput.json",
-    countyJson: "/profiles/clustermapping/modules/hbs_viz/json/countiesEasMsas.json",
-    dataJson: "/data/region/state/all/all",
-    mapJson: "/profiles/clustermapping/modules/hbs_viz/json/states.json",
+    countryJson: "/viz/hbs_viz/json/stoutput.json",
+    countyJson: "/viz/hbs_viz/json/countiesEasMsas.json",
+    dataJson: hbsBaseUrl + "/region/state/all/all",
+    mapJson: "/viz/hbs_viz/json/states.json",
     play_carousel: false
   };
   window.Drupal = { settings: settings };
@@ -221,7 +221,7 @@
     var _this = this;
 
     this.loadMetadata = function (cb) {
-      loader.request(['/data/meta'], function (metaData) {
+      loader.request([hbsBaseUrl + '/meta'], function (metaData) {
         metaData.clusters.forEach(function(c) {
           _this.clusterList.push({label: c.short_name_t, key: c.cluster_code_t, solrkey: c.key_t});
 
@@ -263,39 +263,35 @@
     };
 
     this.buildDataAndRedraw = function () {
-      map.select('.states-loading').style({ display: 'inline-block'});
+      map.select('.states-loading').text('Loading...').style({ display: 'inline-block'});
       var l = this.regionType,
         y = this.year,
-        s = this.start,
+        s = this.start || 1998,
         v = _this.varsList.filter(function (d) {
           return d.key == _this.economicIndicator;
         })[0],
         requests = [];
       _this.indicatorType = _this.indicatorType || (_this.getVariable(_this.economicIndicator) ? _this.getVariable(_this.economicIndicator).mapTypes[0] : "performance");
 
-      if (_this.cluster == 'all') {
-        requests.push('/data/region/' + l + '/all/' + y);
-      } else {
-        var sub = _this.subCluster == 'all' ? '' : '/' + _this.subCluster;
-        requests.push('/data/region/' + l + '/all/' + y + '/' + _this.cluster + sub);
-      }
+      requests.push(hbsBaseUrl + '/report/map/' + [l, s, y, _this.cluster, _this.subCluster, _this.economicIndicator].join('/'));
+      requests.push(_this.mapData[_this.regionType].file);
 
-      //if (_this._currentRegionType !== _this.regionType) {
-        requests.push(_this.mapData[_this.regionType].file);
-      //}
-
-      if (v && v.range) {
-        if (_this.cluster == 'all') {
-          requests.push('/data/region/' + l + '/all/' + s);
-        } else {
-          var sc = _this.subCluster == 'all' ? '' : '/' + _this.subCluster;
-          requests.push('/data/region/' + l + '/all/' + s + '/' + _this.cluster + sc);
-        }
-      }
+      if (!v) return;
+      var metaIndicatorUrl = hbsBaseUrl + '/meta/indicator/' + (v.range ? v.range_source : v.key);
+      if (_this.cluster) metaIndicatorUrl += '/' + _this.cluster;
+      if (_this.subCluster) metaIndicatorUrl += '/' + _this.subCluster;
+      requests.push(metaIndicatorUrl);
       loader.request(requests, function () {
           var a = arguments[0];
           var geoData = arguments[1], lq75, shares, share25, share90;
           var start = arguments[2];
+          _this.dataByRegionYear = arguments[arguments.length -1];
+          if (! _this.validateData()) {
+            if (_this.selectValidData()) {
+              _this.buildDataAndRedraw();
+              return false;
+            }
+          }
 
           if (v && v.range && !start) {
             start = geoData;
@@ -361,33 +357,6 @@
                 }
               });
             }
-          }
-
-          if (v && v.range) {
-            var startByRegionId = d3.nest().key(function (d) {
-              return d.region_code_t;
-            }).rollup(function (ds) {
-              return ds[0]
-            }).map(start, d3.map);
-            var changeFunc = function (sv, ev) {
-              return ev - sv;
-            };
-            if (v.key === 'lq_cr') {
-              changeFunc = function (sv, ev) {
-                return  (ev - sv) / sv;
-              }
-            } else if (v.range_type === 'cagr') {
-              changeFunc = function (sv, ev) {
-                return  Math.pow((ev / sv), (1 / (y - s))) - 1;
-              }
-            }
-            a.forEach(function (d, i) {
-              var sd = startByRegionId.get(d.region_code_t),
-                sv = (sd  ? sd[v.range_source] : 0),
-                ev = d[v.range_source];
-
-              d[v.key] = changeFunc(sv, ev);
-            });
           }
 
           _this.allData = a;
@@ -457,7 +426,6 @@
               if (ld[0] >= 0) {
                 data.middle = d3.median(_this.allData, acc)
               }
-              _this.legendData = data;
               plot.layer('simpleLegendThree').config.dataFN = function () {
                 return [data];
               };
@@ -469,7 +437,7 @@
           carousel.dataUpdate(_this);
 
           if (options.regionType === 'custom') {
-            loader.request(['/data/region/custom/' + _this.regionCode + '/' + _this.year], function (result) {
+            loader.request([hbsBaseUrl + '/region/custom/' + _this.regionCode + '/' + _this.year], function (result) {
               if (result && result.regions_txt && result.regions_txt instanceof Array) {
                 aLayer.unFocus();
                 aLayer.highlight(result.regions_txt.map(function(d) {return d.slice(-5);}));
@@ -503,7 +471,11 @@
           } else {
             zoomMiscComponents();
           }
-          map.select('.states-loading').style({ display: 'none'});
+          if (dataManager.updating) {
+            dataManager.updating = false;
+          } else {
+            map.select('.states-loading').style({ display: 'none'});
+          }
         }
       );
       if (_this.regionType == 'state') {
@@ -511,6 +483,62 @@
       } else {
         d3.selectAll('.layer-states-background').style('display', 'block');
       }
+    };
+  
+    this.selectValidData = function() {
+      var _this = this;
+      var r = _this.regionType,
+        validRegionTypes = ['state', 'economic', 'msa', 'county'];
+      if (selectValidYears(r)) {
+        return true;
+      } else {
+        for (var i = 0; i < validRegionTypes.length; i++) {
+          if (r == validRegionTypes[i]) continue;
+          if (selectValidYears(validRegionTypes[i])) {
+            _this.regionType = validRegionTypes[i];
+            return true;
+          }
+        }
+      }
+
+      function selectValidYears(r) {
+        if (!_this.dataByRegionYear[r]) return false;
+        var years = _this.yearList.map(function(d) { return +d.key; }).sort();
+        var valid;
+        for (var i = years.length -1; i >= 0; i--) {
+          var y = years[i];
+          if (_this.dataByRegionYear[r][y] >= 2) {
+            _this.year = y;
+            valid = true;
+            break;
+          }
+        }
+        if (dataManager.getVariable(dataManager.economicIndicator).range) {
+          valid = false;
+          for (var i = 0; i < years.length; i++) {
+            var y = years[i];
+            if (_this.dataByRegionYear[r][y] >= 2) {
+             _this.start = y;
+              valid = true;
+              break;
+            }
+          }
+        }
+        return valid;
+      }
+    };
+  
+    this.validateData = function() {
+      var r = this.regionType,valid_end, valid_start;
+      if (! this.dataByRegionYear || !this.dataByRegionYear[r]) return false;
+
+      valid_end = this.dataByRegionYear[r][this.year];
+      valid_start = this.dataByRegionYear[r][this.start];
+      if (isNaN(valid_end) || valid_end <= 1) return false;
+      if (dataManager.getVariable(dataManager.economicIndicator).range) {
+        if (isNaN(valid_start) || valid_start <= 1) return false;
+      }
+      return true;
     };
   };
 
@@ -533,6 +561,9 @@
       x = layer.zoomX;
       y = layer.zoomY;
       k = layer.zoomK;
+      var zoomFactor = Math.round(layer.zoomK/10);
+      if (zoomFactor > 10) zoomFactor = 10;
+      map.attr('class', 'map-view zoom' + zoomFactor)
     } else {
       x = width / 2;
       y = height / 2;
@@ -855,7 +886,7 @@
           increase = (max - min) / 9,
           range = Math.floor((v - min) / increase);
         var scale = d3.scale.threshold().domain(domain).range(dataManager.colorsForIndicator);
-        fill = min && max ? scale(v) : undefined;
+        fill = min && max && v != null ? scale(v) : undefined;
         if (fill !== '#000000') {
           returnData.fill = fill;
         }
@@ -1167,7 +1198,7 @@
     });
 
   var mapUrl = function(d, suffix) {
-    var url = '/data/report/map',
+    var url = hbsBaseUrl + '/report/map',
         l = plot.layer('states'),
         zoom = l.zoomX && l.zoomY && l.zoomK ? '/' + [l.zoomX, l.zoomY, l.zoomK].join('_') : '';
     if (suffix == 'csv') {

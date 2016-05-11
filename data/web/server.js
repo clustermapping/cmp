@@ -46,7 +46,7 @@ if (cluster.isMaster) {
 
   var server = restify.createServer({name: 'Clustermapping.us Data Services'});
   server.formatters['text/html'] = formatHTML;
-  server.use(restify.queryParser({ mapParams: false }));
+  server.use(restify.queryParser({ mapParams: true }));
   server.use(restify.bodyParser({ mapParams: false }));
   server.use(restify.CORS());
   server.use(restify.gzipResponse());

@@ -210,7 +210,7 @@
     var dataOverlay = mapObjects.dataOverlay = $('.org-map-container').append(dataOverlayContent);
 
     queue()
-      .defer(d3.json, '/data/meta/clusters')
+      .defer(d3.json, hbsBaseUrl + '/meta/clusters')
       .await(function(err, clusters) {
         clusters = clusters.sort(function(a,b){return d3.ascending(a.name_t, b.name_t)})
         clusters.forEach(function(d) {
@@ -574,7 +574,7 @@
     //   .attr("height", height)
     //   .call(zoomBehavior);
 
-    loader.request(["/profiles/clustermapping/modules/hbs_viz/json/states.json", "/profiles/clustermapping/modules/hbs_viz/json/stoutput.json"], function(geoData, countryData) {
+    loader.request(["/viz/hbs_viz/json/states.json", "/viz/hbs_viz/json/stoutput.json"], function(geoData, countryData) {
       var states = topojson.feature(geoData, geoData.objects.states);
       var countries = topojson.feature(countryData, countryData.objects.nonUsStates);
 
@@ -618,7 +618,7 @@
         .attr("d", path)
         .on('click', clickToZoom);
 
-      loader.request(['/data/content/organization'], function (orgData) {
+      loader.request(['http://clustermapping.us/content/organization'], function (orgData) {
         mapObjects.orgData = orgData;
         var pointsRaw = orgData.map(function(d, i) {
           var point = projection([d['location_lng_s'], d['location_lat_s']]);

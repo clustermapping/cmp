@@ -199,6 +199,7 @@
               return totalData.value;
             },
             label: function() {
+              if (totalData.type.avg) return '';
               if (inverted.indexOf(options.indicator) >= 0) {
                 return totalData.benchmark + " " + totalData.type.label + " Rate: " + percentFormat(totalData.value)
               } else {
@@ -208,8 +209,10 @@
             attrs:{
               y1: 'y',
               y2: 'y',
-              style: 'stroke: #00f; stroke-width: 2px',
-              'stroke-dasharray':"5,5"
+              style: function() {
+                if (totalData.type.avg) return 'display:none';
+                return 'stroke: #00f; stroke-width: 2px; stroke-dasharray:"5,5"'
+              },
             }
           },
           {
@@ -218,7 +221,10 @@
               x: function() { return plot.scale('x').scale(totalData.cagr); },
               y: 0,
               width: function() { return plot.drawWidth() - plot.margin.right() - plot.margin.left() - plot.scale('x').scale(totalData.cagr);},
-              height: function() { return plot.scale('y').scale(totalData.value); },
+              height: function() { 
+                if (totalData.type.avg) return '100%';
+                return plot.scale('y').scale(totalData.value);
+              },
               style: 'stroke: #00f; fill: #99f; opacity: 0.25'
             }
           }

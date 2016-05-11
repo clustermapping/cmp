@@ -13,6 +13,7 @@ var solr = require('solr-client'),
   moneyFormat = d3.format('$.2f'),
   percentFormat = d3.format('.2%'),
   percentFormatRounded = d3.format('%'),
+  indexTpl = _.template(fs.readFileSync(path.join(__dirname, 'tpl/index.html'), 'utf-8')),
   template = _.template(fs.readFileSync(path.join(__dirname, 'tpl/chart.html'), 'utf-8')),
   mapTemplate = _.template(fs.readFileSync(path.join(__dirname, 'tpl/map.html'), 'utf-8')),
   orgMapTemplate = _.template(fs.readFileSync(path.join(__dirname, 'tpl/orgMap.html'), 'utf-8')),
@@ -557,6 +558,7 @@ function loadEmploymentCluster(client, limit, cb) {
                 : {key_t: req.params.cluster},
         qry = q({type_t: 'cluster'})
           .and({year_t: year})
+          .and('(NOT region_state_code_t:72)')
           .and(idQry)
           .and(scQry)
           .and({region_type_t:type}),
@@ -1142,10 +1144,6 @@ function scorecard(data, region, benchmarkRegion, indicator, start, end, filters
     }
   });
 
-  if (indicator.avg) {
-    total.value = total.value / result.length;
-  }
-  
   if (filter == 'specialization') {
     result = result.sort(function(a, b) { return d3.descending(a.emp_tl, b.emp_tl);});
     var l = result.length, filtered = [];
@@ -1261,12 +1259,23 @@ function loadScorecard(client, cb) {
           region = comparison.region_data.map(function(r){ return r.type + '/' + r.code });
           var qryCompare = comparison.region_data.map(function(r){ return '(region_type_t:'+r.type+' AND region_code_t:'+r.code+')' }).join(' OR '),
             qryRegion = '(region_type_t:' + filter + ')';
-          filter = 'default';
-          qry = qry.and(qryBenchmark.or(qryCompare).or(qryRegion));
+          // filter = 'default';
+          qry = qry.and(qryBenchmark.or(qryRegion));
           query = client.createQuery().rows(10000).q(qry.q()).fl(fields);
           regionName = comparison.name;
           return deferQuery(client, query, function(data) {
-            return scorecardResults(data);
+            var finalResults = scorecardResults(data);
+            if (filter == 'state' && finalResults.totals.regionType == 'economic') {
+              finalResults.totals.focus = [];
+              comparison.region_data.forEach(function(d) {
+                if (d.states) {
+                  d.states.forEach(function(s){
+                    finalResults.totals.focus.push('state/' + s);
+                  });
+                }
+              });
+            }
+            return finalResults;
           });
         });
 
@@ -1370,7 +1379,7 @@ function getEconomicAreas(client, type, code) {
 
 function getCountiguousRegions(client, type, regionIds) {
   var deferred = Q.defer(),
-    url = 'http://' + baseUrl + '/profiles/clustermapping/modules/hbs_viz/json/countiesEasMsas.json',
+    url = 'http://' + baseUrl + '/viz/hbs_viz/json/countiesEasMsas.json',
     http = require('http'),
     topojson = require('topojson'),
     data = '';
@@ -1825,6 +1834,7 @@ function subregions(data, indicator, start, end, regionName, benchmarkRegion, re
   total.wage =  wageF(byRegionYear.get(benchmarkRegion).get(end));
   total.change = simpleChange(valF(byRegionYear.get(benchmarkRegion).get(start)), valF(byRegionYear.get(benchmarkRegion).get(end)));
   total.cagr = cagr(valF(byRegionYear.get(benchmarkRegion).get(start)), valF(byRegionYear.get(benchmarkRegion).get(end)), end-start);
+  console.log(valF(byRegionYear.get(benchmarkRegion).get(start)), valF(byRegionYear.get(benchmarkRegion).get(end)), end-start, '=', total.cagr);
 
   total.valueRegion = valF(byRegionYear.get(region).get(end));
   total.wageRegion =  wageF(byRegionYear.get(region).get(end));
@@ -1874,6 +1884,20 @@ function getRegionName(client, type, code) {
       .q(qry.q())
       .fl(['region_name_t', 'region_short_name_t', 'region_code_t']);
   return deferQuery(client, query, extractDocs(function(d) { return d; }));
+}
+
+function getRegionData(client, type, code) {
+  var qry = q({type_t:'aggregate'}).and(regionQ(type, code)),
+    query = client
+      .createQuery()
+      .q(qry.q())
+      .sort('year_t desc')
+      .fl(['region_name_t', 'region_short_name_t', 'region_code_t', 'emp_tl_rank_i', 'emp_tl']);
+  return deferQuery(client, query, function(result) {
+    return result.response.docs.filter(function(d){
+      return d.emp_tl;
+    }).shift();
+  });
 }
 
 function loadSubregions(client, cb) {
@@ -2240,6 +2264,14 @@ function captureTimelineCluster(req, res, next) {
   });
 }
 
+function index(name) {
+  return function(req, res, next) {
+    var body = indexTpl({base: base, name: name});
+    res.contentType='text/html';
+    res.send(body);
+    next();
+  };
+}
 
 function chart(name) {
   return function(req, res, next) {
@@ -2387,11 +2419,11 @@ function processMapData(data, cluster, subcluster, startYear, endYear, indicator
       byYearByRegion = d3.nest().key(byYear).key(byRegion).rollup(pullFirst).map(data, d3.map),
       endByRegionId = byYearByRegion.get(endYear),
       startByRegionId = byYearByRegion.get(startYear),
-      fmt = d3.format(indicator.format),
-      rangeFmt = (indicator.range && rangeIndicator ? d3.format(rangeIndicator.format) : function(d) { return d;}),
+      // fmt = d3.format(indicator.format),
+      // rangeFmt = (indicator.range ? d3.format(rangeIndicator.format) : function(d) { return d;}),
       a;
 
-  a = endByRegionId.values();
+  a = endByRegionId.values().sort(function(a,b){return d3.ascending(a.region_code_t, b.region_code_t);});
 
   if (indicator.key === 'specialization_tl') {
     shares = a.map(ac('cluster_emp_per_tf')).sort(d3.ascending);
@@ -2434,6 +2466,8 @@ function processMapData(data, cluster, subcluster, startYear, endYear, indicator
     };
     if (indicator.range_type === 'cagr') {
       changeFunc = function (sv, ev) {
+        ev = Math.round(ev);
+        sv = Math.round(sv);
         return  Math.pow((ev / sv), (1 / (+endYear - +startYear))) - 1;
       }
     }
@@ -2458,15 +2492,11 @@ function processMapData(data, cluster, subcluster, startYear, endYear, indicator
         d.sub_code_t = 'all';
       }
     }
-    if (isNaN(d[indicator.key])) d[indicator.key] = 0;
-    d[indicator.key] = fmt(d[indicator.key]);
-    if (indicator.range) {
-      var sd = startByRegionId.get(d.region_code_t);
-      if (isNaN(d[indicator.range_source])) d[indicator.range_source] = 0;
-      if (isNaN(sd[indicator.range_source])) sd[indicator.range_source] = 0;
-      d[indicator.range_source] = rangeFmt(d[indicator.range_source]);
-      d['start_' + indicator.range_source] = rangeFmt(sd[indicator.range_source]);
-    }
+    // d[indicator.key] = fmt(d[indicator.key]);
+    // if (indicator.range) {
+    //   d[indicator.range_source] = rangeFmt(d[indicator.range_source]);
+    //   d['start_' + indicator.range_source] = rangeFmt(startByRegionId.get(d.region_code_t)[indicator.range_source]);
+    // }
   });
 
   return {
@@ -2476,51 +2506,50 @@ function processMapData(data, cluster, subcluster, startYear, endYear, indicator
   };
 }
 
-function loadMapData(client, cb) {
-  return function(req) {
-    var type = req.params.type,
-        start = req.params.start,
-        end = req.params.end,
-        cluster = req.params.cluster,
-        subcluster = req.params.subcluster,
-        indicator = req.params.indicator,
-        ind = dictVarByKey(indicator),
-        indKey = ind.range_source || ind.key,
-        rangeIndicator = (ind.range ? dictVarByKey(ind.range_source) : undefined),
-        qry = {region_type_t: type},
-        fl = ['id', 'type_t', 'year_t', 'region_name_t','region_short_name_t', 'region_type_t', 'region_code_t',
-              'cluster_name_t',  'cluster_code_t', 'sub_code_t', indKey],
-        query;
-        if (indKey == 'specialization_tl') fl.push('cluster_emp_per_tf', 'lq_tf', 'emp_tl');
+function loadMapData(client, req, cb) {
+  var type = req.params.type,
+      start = req.params.start,
+      end = req.params.end,
+      cluster = req.params.cluster,
+      subcluster = req.params.subcluster,
+      indicator = req.params.indicator,
+      ind = dictVarByKey(indicator),
+      indKey = ind.range_source || ind.key,
+      rangeIndicator = (ind.range ? dictVarByKey(ind.range_source) : undefined),
+      qry = {region_type_t: type},
+      fl = ['year_t', 'region_name_t','region_short_name_t', 'region_type_t', 'region_code_t', 'region_key_t',
+            'cluster_name_t',  'cluster_code_t', 'sub_code_t', indKey],
+      query;
+      if (ind.calc && ind.calc_source) fl = fl.concat(ind.calc_source);
+      if (ind.range && ind.range_source) fl.push(ind.range_source);
 
-    if (start == end) {
-      qry.year_t = end;
+  if (start == end) {
+    qry.year_t = end;
+  } else {
+    qry.year_t = '(' + start + ' OR ' + end + ')';
+  }
+
+  if (cluster == 'all') {
+    qry.type_t = 'aggregate';
+  } else {
+    qry.type_t = 'cluster';
+    qry.cluster_code_t = cluster;
+    if (subcluster == 'all') {
+      qry.subcluster_b = false;
     } else {
-      qry.year_t = '(' + start + ' OR ' + end + ')';
+      qry.sub_code_t = subcluster;
     }
+  }
 
-    if (cluster == 'all') {
-      qry.type_t = 'aggregate';
+  query = client.createQuery().rows(100000).q(qry).fl(fl);
+  return deferQuery(client, query, function (queryResult) {
+    var results = processMapData(queryResult.response.docs, cluster, subcluster, start, end, ind, rangeIndicator);
+    if (cb) {
+      cb(results);
     } else {
-      qry.type_t = 'cluster';
-      qry.cluster_code_t = cluster;
-      if (subcluster == 'all') {
-        qry.subcluster_b = false;
-      } else {
-        qry.sub_code_t = subcluster;
-      }
+      return results;
     }
-
-    query = client.createQuery().rows(100000).q(qry).fl(fl);
-    return deferQuery(client, query, function (queryResult) {
-      var results = processMapData(queryResult.response.docs, cluster, subcluster, start, end, ind, rangeIndicator);
-      if (cb) {
-        cb(results);
-      } else {
-        return results;
-      }
-    });
-  };
+  });
 }
 
 function mapOrganizationCSV() {
@@ -2600,6 +2629,14 @@ function mapOrganizationCSV() {
   }
 }
 
+function loadMap(client, cb) {
+  return function(req, res, next) {
+    return loadMapData(client, req, function(results) {
+      res.send(results.data);
+    });
+  };
+}
+
 function mapCSV(client) {
   return function(req, res, next) {
     var p = req.params,
@@ -2610,13 +2647,16 @@ function mapCSV(client) {
         csvFields = [
           { name: "region_type_t", header: "Region Type"},
           { name: "region_code_t", header: "Region Code"},
-          { name: "region_name_t", header: "Region Name"},
+          { name: "region_short_name_t", header: "Region Name"},
           { name: 'cluster_name_t', header: "Cluster Name"}
         ],
         loader;
 
-    loader = loadMapData(client, function(results) {
+    loader = loadMapData(client, req, function(results) {
       var ind = results.indicator, rind = results.rangeIndicator;
+      if (p.indicator === 'specialization_tl') {
+        ind = dictVarByKey('lq_tf');
+      }
 
       if (p.cluster !== 'all') {
         csvFields.push({ name: 'cluster_code_t', header: "Cluster Code"});
@@ -2624,21 +2664,17 @@ function mapCSV(client) {
         csvFields.push({ name: 'sub_code_t', header:"Subcluster Code"});
       }
 
-      if (ind.range && rind) {
+      if (ind.range) {
         csvFields.push({name: 'start_' + rind.key, header: rind.label + ' ' + p.start });
         csvFields.push({name: rind.key, header: rind.label + ' ' + p.end });
-        csvFields.push({name: ind.key, header: ind.label + ' ' + p.start + '-' + p.end});
-      } else if(ind.range && ind.range_source) {
-        csvFields.push({name: 'start_' + ind.range_source, header: ind.label + ' ' + p.start });
-        csvFields.push({name: ind.range_source, header: ind.label + ' ' + p.end });
         csvFields.push({name: ind.key, header: ind.label + ' ' + p.start + '-' + p.end});
       } else {
         csvFields.push({name: ind.key, header: ind.label + ' ' + p.end});
       }
-      results.data.push({region_type_t: sourceCreditText()});
+
       exportCSV(res, filename, csvFields, results.data);
     });
-    return loader(req);
+    return loader;
   };
 }
 function captureJobCreation(req, res, next) {
@@ -2744,6 +2780,7 @@ function loadInnovation(client,cb) {
         .and(q({region_type_t:'country', region_code_t:'98'}).or(idQry)),
       fields = ['id','patent_count_tf','region_type_t','region_key_t','region_name_t','region_code_t','cluster_name_t','cluster_code_t','year_t','key_t'],
       query = client.createQuery().rows(10000).q(qry.q()).fl(fields);
+      console.log(qry.q())
     return deferQuery(client, query, function (queryResult) {
       var results = innovation(queryResult.response.docs, region, benchmarkRegion, start, end, req.params.cluster, isNaN(+code) );
       if (cb) { cb(results); }
@@ -3037,11 +3074,18 @@ function getComparison(client, code) {
         indicators: result.indicators_txt,
         owner: result.owner_t
       };
-      var query = client.createQuery().rows(10000).fl(['id','region_type_t','region_short_name_t','region_code_t','key_t'])
+      var query = client.createQuery().rows(10000).fl(['id','region_type_t','region_short_name_t','region_code_t','key_t','state_codes_txt'])
         .q('type_t:region AND id:(' + result.regions_txt.join(' OR ') + ')');
       return deferQuery(client, query, function (queryResult) {
         comparison.region_data = queryResult.response.docs.map(function(d) {
-          return { id: d.id, code: d.region_code_t, name: d.region_short_name_t, type: d.region_type_t, key: d.key_t};
+          return { 
+            code: d.region_code_t,
+            id: d.id,
+            key: d.key_t,
+            name: d.region_short_name_t,
+            states: d.state_codes_txt,
+            type: d.region_type_t
+          };
         });
         return comparison;
       });
@@ -3091,6 +3135,138 @@ function loadComparison(client,cb) {
           else { return results; }
         });
       });
+  };
+}
+
+function loadRelatedClusters(client, cb) {
+
+  return function(req) {
+
+    var p = req.params,
+      qry = q({type_t: 'clusterData', subcluster_b: false, traded_b: true }),
+      fields = ['cluster_code_t', 'name_t', 'related', 'icon_t', 'key_t', 'short_name_t', 'short_name2_t'],
+      year,
+      query = client.createQuery().rows(10000).q(qry.q()).fl(fields),
+      p1 = deferQuery(client, query, function (queryResult) {
+        return queryResult.response.docs;
+      });
+
+    var queues = [p1];
+
+    if (p.type && p.code) {
+      var qry2 = q({
+          subcluster_b: false,
+          traded_b: true,
+          type_t: 'cluster',
+          region_key_t: p.code,
+          region_type_t: p.type,
+        }),
+        fields2 = ['cluster_code_t', 'cluster_name_t', 'lq_tf', 'lq_tf_per_rank_i', 'emp_tl_rank_i', 'emp_tl', 'year_t', 'strong_b'],
+        query2 = client.createQuery().rows(10000).q(qry2.q()).fl(fields2).sort('year_t asc'),
+        p2 = deferQuery(client, query2, function (queryResult) {
+          var data = queryResult.response.docs.filter(function(d){return d.lq_tf && d.emp_tl;}),
+            byCluster = function(d) { return d.cluster_code_t;},
+            byYear = function (d) { return d.year_t;},
+            first = function(ds) { return ds[0]; },
+            keyF = function(d) { return d.cluster_code_t; },
+            byYear = d3.nest().key(byYear).map(data, d3.map),
+            yearMax = year = (p.year ? p.year : d3.max(byYear.keys())),
+            filteredData = data
+              .filter(function(d){return d.year_t == yearMax})
+              .sort(function(a,b){return d3.descending(a.lq_tf, b.lq_tf);});
+            var byClusterData = filteredData.map(function(d, i) {
+                  d.percentile = (i+1) * 100 / filteredData.length;
+                  return d;
+                });
+            return d3.nest().key(byCluster).map(byClusterData, d3.map);
+          });
+      queues.push(p2);
+
+      var p3 = getRegionData(client, p.type, p.code);
+      queues.push(p3);
+    }
+
+    return Q.all(queues)
+      .then(function(resp) {
+        var all = resp[0],
+          byCluster = resp[1],
+          regionData = resp[2];
+        
+        var clusters = all.map(function(d) {
+          var cluster = {
+              code: d.cluster_code_t,
+              name: d.name_t,
+              short_name: d.short_name2_t !== '0' ? d.short_name2_t : d.short_name_t,
+              key: d.key_t,
+              icon: d.icon_t,
+            };
+          cluster.related = [];
+          cluster.weak = [];
+          // if (d.related_cluster_codes_txt) {
+          //   cluster.related = d.related_cluster_codes_txt.map(function(r,i) {
+          //     return {
+          //       90: d.related_cluster_90_txt[i],
+          //       avg: d.related_cluster_avg_txt[i],
+          //       code: d.related_cluster_codes_txt[i],
+          //       i20_90_min: d.related_cluster_i20_90_min_txt[i],
+          //       i20_90: d.related_cluster_i20_90_txt[i],
+          //       min: d.related_cluster_min_txt[i],
+          //       name: d.related_cluster_names_txt[i],
+          //       percentage: d.related_cluster_percentage_txt[i],
+          //     };
+          //   });
+          // }
+          if (p.type && p.code) {
+            var c = byCluster.get(d.cluster_code_t);
+            if (c && c.length) {
+              c = c.shift();
+              cluster.emp_tl = c.emp_tl;
+              cluster.rank = c.emp_tl_rank_i; 
+              cluster.lq_tf = c.lq_tf;
+              cluster.lq_tf_per_rank_i = c.lq_tf_per_rank_i;
+              cluster.percentile = c.lq_tf_per_rank_i * 100 / 51;
+              // cluster.year_t = c.year_t;
+              cluster.strong = c.strong_b;
+            }
+          }
+          return cluster;
+        });
+        if (!p.type && !p.code) {
+          return { clusters: clusters };
+        }
+
+        return {
+          clusters: clusters,
+          region: regionData,
+          year: year,
+        }
+      });
+  };
+
+
+  function processFunc(results, cluster) {
+    if (isNaN(cluster)) {
+      return results;
+    }
+    return results.filter(function(c) {
+      return c.cluster_code == cluster;
+    });
+  }
+  return function(req) {
+    var p = req.params, 
+      yearQry = p.end ? q({year_t: p.start}).or({year_t: p.end}) : q({year_t: p.start}),
+      indicator = dictVarByKey(p.indicator);
+
+    var deferred = Q.defer();
+    fs.readFile(path.join(__dirname, '../viz/json/relatedClusters.json'), {encoding: 'utf-8'},
+      function(err, result) {
+        if (err) {
+          deferred.reject(err);
+        } else {
+          deferred.resolve(processFunc(JSON.parse(result), p.cluster));
+        }
+      });
+    return deferred.promise;
   };
 }
 
@@ -3175,6 +3351,12 @@ module.exports = function report_server(server, config) {
   port = config.port || 4000;
   base = config.base || '';
   baseUrl = config.baseUrl || 'localhost';
+  server.get('/report/relatedclusters', chart('relatedcluster'));
+  server.get('/report/relatedclusters/:cluster', handleWith(loadRelatedClusters(client)));
+  server.get('/report/relatedclusters/:cluster/:type/:code', handleWith(loadRelatedClusters(client)));
+  server.get('/report/relatedclusters/:cluster/:type/:code/:year', handleWith(loadRelatedClusters(client)));
+  server.get('/report/relatedclusters/:type/:code', handleWith(loadRelatedClusters(client)));
+
   server.get('/report/region/jobcreation', chart('jobcreation'));
   server.get('/report/region/jobcreation/:type/:code/:start/:end/:cluster', handleWith(loadJobCreation(client)));
   server.get('/report/region/jobcreation/:type/:code/:start/:end/:cluster/png', captureJobCreation);
@@ -3264,10 +3446,11 @@ module.exports = function report_server(server, config) {
   server.get('/report/cluster/timeline/:cluster/:subcluster/:type/:indicator/png', captureTimelineCluster);
   server.get('/report/cluster/timeline/:cluster/:subcluster/:type/:indicator/csv', handleWith(timelineClusterCSV(client)));
 
-  server.get('/report/map/organization/:region/:cluster/:type/csv', handleWith(mapOrganizationCSV()));
-  server.get('/report/map/:type/:start/:end/:cluster/:subcluster/:indicator/csv', handleWith(mapCSV(client)));
-  server.get('/report/map/', mapChart('map'));
   server.get('/report/map/organization/', mapChart('organizationsMap'));
+  server.get('/report/map/organization/:region/:cluster/:type/csv', handleWith(mapOrganizationCSV()));
+  server.get('/report/map/', mapChart('map'));
+  server.get('/report/map/:type/:start/:end/:cluster/:subcluster/:indicator', handleWith(loadMap(client)));
+  server.get('/report/map/:type/:start/:end/:cluster/:subcluster/:indicator/csv', handleWith(mapCSV(client)));
   server.get('/report/map/:maptype/:start/:end/:regiontype/:regioncode/:cluster/:subcluster/:indicator/png', captureMap);
   server.get('/report/map/:maptype/:start/:end/:regiontype/:regioncode/:cluster/:subcluster/:indicator/:zoom/png', captureMap);
 
@@ -3279,4 +3462,5 @@ module.exports = function report_server(server, config) {
   server.get('/report/region/csv/compare/:code/:key/:indicator/:start/:end', handleWith(comparisonCSV(client)));
 
   server.get('/report/capture/:name/:url', captureUrl);
+  server.get('/index', index('breadcrumb'));
 };

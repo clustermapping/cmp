@@ -213,7 +213,7 @@
               left = xo.scale(d.cluster) + x1.scale(d.id) - cr.width/2 + xo.scale.rangeBand()/2;
               top -= Math.abs(y.scale(0)-y.scale(d[y.key]))/2 + cr.height/2;
             }
-            return "top:" + top + "px; left: " + left + "px; width: 205%; display:block;";
+            return "top:" + top + "px; left: " + left + "px; width: 30%; display:block;";
           },
           class: function (d) {
             var position = 'top',

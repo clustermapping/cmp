@@ -28,13 +28,16 @@
       .scale('x', 'key', 'value')
       .scale('x', 'domain', function(data, key) {
         var xdomain = d3.extent(data, function (d) { return d[key]; });
+        if (data.length == 1) {
+          xdomain[0] = xdomain[0] * 0.5;
+          xdomain[1] = xdomain[1] * 1.5;
+        }
         return xdomain; })
       .scale('x', 'nice', 5)
       .scale("y",{
         key:'label',
         scale: d3.scale.ordinal(),
         attrs: {
-//          rangeRoundBands: function(data, key, drawWidth, drawHeight, margin){return ({ args: [ [0, (plotData.length > 15 ? drawHeight - margin.top - margin.bottom : plotData.length * 70)], 0.15 ]});},
           rangeRoundBands: function(data, key, drawWidth, drawHeight, margin){return ({ args: [ [0, drawHeight - margin.top - margin.bottom], 0.15 ]});},
           domain: function(data, key){ return data.map( function(d) { return d[key];} );}
         }
@@ -136,18 +139,6 @@
               }
             }
           },
-          /*{
-            type: 'text',
-            text: function(d) { return numFormat(d.value);},
-            attrs: {
-              y: 'y',
-              x: function(d) {
-                var sX = plot.scale('x');
-                return sX.scale(d[sX.key]) + 5;
-              },
-              dy: '.9em'
-            }
-          }*/
         ]
       })
       .layer('barGrads', {
@@ -641,7 +632,6 @@
     loader.request(base + '/meta/years', function(years) {
       yearRange = d3.extent(years);
       yearRange = [+yearRange[0], +yearRange[1]];
-//      yearRange[1] += 1;
       if (cb) {cb();}
     });
   }

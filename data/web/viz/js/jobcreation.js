@@ -16,31 +16,6 @@
     base = window.hbsBaseUrl || '';
 
   function buildChart(sel){
-//    plot = $g.plot().height(960)
-//      .scale('value', 'linear')
-//      .scale('label', 'ordinal')
-//      .scale('fill', $g.scale('positive-negative').on('.value').colors('#c10020', '#7de559'))
-//      .layer('axis', $g.axis('left').scale('value'), $g.axis('bottom').scale('label'), $g.guide().value(0))
-//      .layer('bars', $g.bars())) //behaviors?
-//      .layer('lines', $g.barLines().value('.expected').fill('#fc5920'))
-//      .layer('title', $g.title('top').title('totals.region_name').subtitle("Job creation by {{totals.type}} Cluster, {{totals.start}}-{{totals.end}}"))
-//      .layer('legend', $g.legend().reference('lines').label('indicates expected job creation given national growth'))
-//      .layer('notation', $g.info()
-//                          .item('Net {{totals.type}} job creation, {{totals.start}}-{{totals.end}}: {{totals.value}}')
-//                          .item('Expected job creation if matching national cluster benchmarks: {{totals.expected}}'))
-//      .layer('details', $g.popOver()
-//                            .title('.label')
-//                            .item('Employment, {{totals.end}}', '.end')
-//                            .item('Employment, {{totals.start}}', '.start')
-//                            .item('Job Creation', 'totals.value')
-//                            .item('Expected', 'totals.exected')
-//                            .item('Explore {{totals.subType}}', function() {})
-//      .behavior('bars', 'select', plot.layer('details').show);
-//
-//    container = plot.draw(sel);
-//    plotData = plot.data();
-//    totalData = plot.totals();
-
     plot = d3Plot()
       .height(960)
       .scale('y', 'key', 'value')
@@ -48,13 +23,16 @@
         var ydomain = d3.extent(data, function (d) { return d.value; }),
             adomain = d3.extent(data, function (d) { return d.benchmark; }),
           domain = [d3.min([adomain[0], ydomain[0]]), d3.max([adomain[1], ydomain[1]])];
+        if (data.length == 1) {
+          domain[0] = domain[0] >= 0 ? 0 : domain[0] * 0.5;
+          domain[1] = domain[1] <= 0 ? 0 : domain[1] * 1.5;
+        }
         return domain; })
       .scale('y', 'nice', 10)
       .scale("x", {
         key:'label',
         scale: d3.scale.ordinal(),
         attrs: {
-          // rangeRoundBands: function(data, key, drawWidth, drawHeight, margin){return ({ args: [ [0, (plotData.length > 15 ? drawWidth - margin.left - margin.right : plotData.length * 70)], 0.15 ]});},
           rangeRoundBands: function(data, key, drawWidth, drawHeight, margin){
             var w = plotData.length * 17.8;
             if (plotData.length < 12) {

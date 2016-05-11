@@ -45,7 +45,7 @@ var numFormat = ',f',
       format: numFormat,
       calc: true,
       calc_type: 'specialization',
-      calc_source: ['cluster_emp_per_tf', 'lq_tf', 'emp_tl']
+      calc_source: ['cluster_emp_per_tf', 'lq_tf', 'emp_tl', 'est_tl']
     },
     {
       label: "Employment",

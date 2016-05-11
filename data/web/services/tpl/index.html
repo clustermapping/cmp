@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title> API Browser </title>
+    <script type="text/javascript" src="<%= base %>/viz/bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/bower_components/d3/d3.min.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/bower_components/select2/dist/js/select2.full.min.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/bower_components/queue-async/queue.min.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/bower_components/topojson/topojson.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/mythos-vis/dist/mythosvis.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/mythos-vis/src/d3Plot.js"></script>
+    <script type="text/javascript" src="<%= base %>/viz/js/lib/chart-utils.js"></script>
+    <link href="<%= base %>/viz/mythos-vis/src/style/mythos-vis.css" rel="stylesheet" type="text/css">
+    <link href="<%= base %>/viz/css/fonts.css" rel="stylesheet" type="text/css">
+    <link href="<%= base %>/viz/css/style.css" rel="stylesheet" type="text/css">
+    <link href="<%= base %>/viz/css/chart.css" rel="stylesheet" type="text/css">
+    <link href="<%= base %>/viz/css/breadcrumb.css" rel="stylesheet" type="text/css">
+    <link href="<%= base %>/viz/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="<%= base %>/viz/bower_components/select2/dist/css/select2.min.css" rel="stylesheet" type="text/css">
+</head>
+<div id="controls" class="container">
+  <div class="download-controls"></div>
+  <div class="cluster-controls"></div>
+
+  <div class="header">
+    <h1> API Browser </h1>
+    <div style="visibility:visible;" id="region-header">Region: <span id="region-name"></span> </div>
+    <div style="visibility:visible;" id="cluster-header">Cluster: <span id="cluster-name"></span> </div>
+    <div style="visibility:visible;" id="subcluster-header">Subcluster: <span id="cluster-name"></span> </div>
+  </div>
+
+  <ul class="nav nav-tabs" role="tablist" style="margin-bottom:15px;">
+    <li id="region" class="active"><a href="#region" role="tab" data-toggle="tab">Regions</a></li>
+    <li id="cluster"><a href="#cluster" role="tab" data-toggle="tab">Clusters</a></li>
+    <li id="organization"><a href="#organization" role="tab" data-toggle="tab">Organizations</a></li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active">
+      
+    </div>
+    <div role="tabpanel" class="tab-pane"></div>
+  </div>
+
+
+  <div class="row">
+    <div class="col-md-12 cluster-listing">
+      <div class="btn-group" id="cluster-list-controls">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="legend-wrapper"></div>
+
+<div id="chart"></div>
+
+<script type="text/javascript">window.hbsBaseUrl = '<%= base %>'</script>
+<script type="text/javascript" src="<%= base %>/viz/js/<%= name %>.js"></script>
+<script type="text/javascript" src="<%= base %>/viz/bootstrap/js/button.js"></script>
+</body>
+</html>

@@ -257,8 +257,8 @@
     } else {
       var regionType = options.compareId ? 'compare' : totalData.regionType;
       var regionCode = options.compareId ? options.compareId : totalData.regionCode;
-      href = "/data/report/region/scorecard#/" 
-        + [regionType, regionCode, totalData.start_year, totalData.end_year, totalData.type.lookup, options.filter].join('/');
+      href = hbsBaseUrl + "/report/region/scorecard#/" 
+        + [regionType, regionCode, totalData.start_year, totalData.end_year, totalData.type.lookup, totalData.regionType].join('/');
       tooltip = 'Please click here to view a scatterplot of this region\'s performance compared to other similar regions.';
     }
     if (indicator.lookup) {
@@ -393,7 +393,7 @@
       if (window.parent.Drupal && window.parent.Drupal.settings.hbs_region_compare) {
         loadComparison(window.parent.Drupal.settings.hbs_region_compare)
       } else {
-        loader.request('/data/report/region/compare/' + options.regionId, loadComparison)
+        loader.request(hbsBaseUrl + '/report/region/compare/' + options.regionId, loadComparison)
       }
 
     } else {

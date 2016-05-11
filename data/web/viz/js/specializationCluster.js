@@ -30,7 +30,7 @@
           yS = plot.scale('y').scale,
           xOffset = Math.abs(d[xKey]),
           yOffset = Math.abs(d[yKey]),
-          xD = [d[xKey] - xOffset/1.5, d[xKey] + xOffset/1.5],
+          xD = [d[xKey] - xOffset/5, d[xKey] + xOffset/5],
           yD = [d[yKey] - yOffset/1.5, d[yKey] + yOffset/1.5];
         if (yD[0] < yS.domain()[0]) yD[0] = yS.domain()[0];
         if (yD[1] > yS.domain()[1]) yD[1] = yS.domain()[1];
@@ -200,7 +200,9 @@
         selectable: true,
         clip: true,
         behaviors:{
-          'click': zoomFunc
+          'click': function(d, i) {
+            updateOverlay('clusterDetail',[d]);
+          }
         },
         elements:[
           {
@@ -223,7 +225,9 @@
         selectable: true,
         clip: true,
         behaviors:{
-          'click': zoomFunc
+          'click': function(d, i) {
+            updateOverlay('clusterDetail',[d]);
+          }
         },
         elements:[
           {
@@ -337,7 +341,7 @@
         layerCanvas: 'div',
         attrs: {
           style: function(d) {
-            return 'width: 250px; top: 130px; right: '+ (plot.margin.right()-20) +'px; padding: 5px; text-align: right; border: 1px solid #999;'
+            return 'width: 50%; top: initial; bottom: 20px; right: '+ (plot.margin.right()-20) +'px; padding: 5px; text-align: right; border: none;'
           }
         },
         elements:[
@@ -345,34 +349,15 @@
             type: 'div',
             attrs: {class: 'header'},
             append: [
+              {type: 'div', attrs: {style: function(d) {
+                var radius = 12;
+                return "height:" + radius + "px; width: " + radius + 'px; margin: 0; display: inline-block; background-color:#7de559; border: 1px solid #999; border-radius:' + radius/2 + "px";}}
+              },
               {
                 type: 'div',
-                attrs: {style: "clear:both"},
-                append: [
-                  {type: 'div', attrs: {style: function(d) {
-                    var r = plot.scale('r'),
-                        dom = r.scale.domain(),
-                        base =  d3.round(dom[0] + ((dom[1] - dom[0])/ 3), -3),
-                        radius = r.scale(base)/Math.PI * 2;
-
-                    return "height:" + radius + "px; width: " + radius + 'px; margin: 0; float: left; background-color:#7de559; border: 1px solid #999; border-radius:' + radius/2 + "px";}}},
-                  {type: 'div', attrs: {
-                    style: function(d) {
-                      var r = plot.scale('r'),
-                        dom = r.scale.domain(),
-                        base =  d3.round(dom[0] + ((dom[1] - dom[0])/ 3), -3),
-                        radius = r.scale(base)/Math.PI;
-                      return "padding:" + (radius-7) + "px 3px; float: left;font-size: 14px; color: #777d85";
-                    }},
-                    text: function(d) {
-                      var r = plot.scale('r'),
-                        dom = r.scale.domain(),
-                        base =  d3.round(dom[0] + ((dom[1] - dom[0])/ 3), -3);
-                      return " = " + roundedNumFormat(base) +  " Employees";
-                    }
-                  }
-                ]
-              }
+                attrs: {style: "display:inline-block;margin-left: 4px;"},
+                text: ' The sizes of circles in the chart are proportional to employment.',
+              },
             ]
           }
         ]})
@@ -414,6 +399,13 @@
         enabled: true,
         dataFN: function(){ return (zoomed && zoomed.id)? [zoomed]: [];},
         layerCanvas: 'div',
+        behaviors:{
+          'click': function(d, i) {
+            if (d3.event.target.className == 'close' || d3.event.target.parentElement.className == 'close') {
+              updateOverlay('clusterDetail',[]);
+            }
+          }
+        },
         attrs: {
           style: function(d) {
             var x = plot.scale('x'),
@@ -498,6 +490,22 @@
                   }
                 ]
               },
+              {
+                type: 'div',
+                attrs: {class: 'indicator'},
+                append: [
+                  {
+                    type: 'span',
+                    attrs: {class: 'indicator-label'},
+                    text: "Employment Share:"
+                  },
+                  {
+                    type: 'span',
+                    attrs: {class: 'indicator-value '},
+                    text: function(d) {if (d && d.value) {return percentFormat(d.value);} }
+                  }
+                ]
+              },
               /*{
                 type: 'div',
                 attrs: {class: 'action',
@@ -566,9 +574,7 @@
             ]
           }
         ],
-        behaviors:{
-          'click': zoomFunc
-        }});
+      });
 
     container = d3.select(sel);
     chart = container.append('div').datum(plotData).call(plot);

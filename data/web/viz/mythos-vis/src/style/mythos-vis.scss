@@ -1,0 +1,61 @@
+.mythos-plot{
+  position: relative;
+  svg{
+    fill: transparent;
+    text{
+      fill: #000;
+    }
+    .layer{
+      &.axis{
+        path.domain,
+        line{stroke: #333;}
+        text{
+          fill: #000;
+          &.label{
+            font-size: 1.3em;
+            text-anchor: middle;
+          }
+        }
+      }
+      &.grid{
+        @extend .layer.axis;
+        .tick{
+          line{stroke-dasharray : 2,4;}
+        }
+        path.domain{stroke-width:0;}
+      }
+      &.guide{
+        g{
+          &.rect{
+            text{text-anchor: middle;}
+          }
+          rect{opacity: 0.5;}
+          line{stroke:red;}
+        }
+      }
+      &.item.active {
+        filter: url(#glow);
+        stroke: #ceef80;
+      }
+    }
+    .layer-labelLayer {
+      .labelLayer-item .text-point {
+        cursor: pointer;
+      }
+    }
+  }
+  .info{
+
+    .item{
+      top:0;
+      right: 0;
+      position: absolute;
+      width: 20%;
+      padding: 20px;
+      margin: 20px;
+      background-color: rgba(255,255,255, 0.9);
+      border: 1px solid #000;
+    }
+
+  }
+}

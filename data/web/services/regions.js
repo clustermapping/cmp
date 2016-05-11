@@ -113,7 +113,7 @@ function parseRegion(q, region, type) {
     maybeAdd(q, 'region_code_t', parse(region));
   } else {
     if (isNaN(+region) && type !== 'custom') {
-      maybeAdd(q, 'key_t', region);
+      maybeAdd(q, 'region_key_t', region);
     } else {
       maybeAdd(q, 'region_code_t', region);
     }
@@ -337,10 +337,32 @@ function deleteCustomRegion(client) {
   }
 }
 
+function restartCustomRegion(client) {
+  return function(req, res) {
+    var qry = {type_t:'region', region_type_t:'custom', region_code_t: req.body.code},
+      query = client.createQuery().set('json.nl=map').rows(10000);
+    query.q(qry);
+    return deferQuery(client, query, function(result) { 
+      var d = result.response.docs.shift();
+      var spec = {
+        name: d.region_name_t,
+        username: d.owner_t,
+        owner: d.owner_t,
+        regions: d.regions_txt
+      };
+      custom.send(spec);
+      res.send(d);
+    });
+  }
+}
+
 function customRegionLoader(client) {
   return function(req) {
     var userId = req.params.user,
-        query = client.createQuery().set('json.nl=map').q({type_t:'region', region_type_t:'custom', owner_t:userId}).rows(10000);
+        qry = {type_t:'region', region_type_t:'custom'},
+        query = client.createQuery().set('json.nl=map').rows(10000);
+    if (userId) qry.owner_t = userId;
+    query.q(qry);
     return deferQuery(client, query, function(result) { return result.response.docs; });
   }
 }
@@ -428,8 +450,10 @@ module.exports = function regions_server(server, config) {
 
   server.get('/content/:bundle', handleWith(contentLoader(siteCLient)));
 
+  server.post('/custom/restart', protectWithDrupalLogin(config), restartCustomRegion(client));
   server.post('/custom/delete/:code', protectWithDrupalLogin(config), deleteCustomRegion(client));
   server.post('/custom', protectWithDrupalLogin(config), customRegion(client));
+  server.get('/custom/admin/list', handleWith(customRegionLoader(client)));
   server.get('/custom/:user', handleWith(customRegionLoader(client)));
   
   server.post('/compare', createComparison(client));

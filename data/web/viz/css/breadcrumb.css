@@ -1,0 +1,107 @@
+#cluster-list-controls {
+
+}
+#cluster-list-controls .btn-group {
+    margin: 0px auto;
+}
+
+#region-navigation-panel {
+  border: 1px solid #cccccc;
+  border-radius: 5px;
+  -webkit-box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+  height: 500px;
+  left: -420px;
+  overflow: hidden;
+  padding: 0 0 0 12px;
+  position: fixed;
+  top: 90px;
+  width: 420px;
+  z-index: 99;
+}
+#region-navigation-panel.panel-open {
+  width: 420px;
+}
+#region-navigation-panel .panel-handle {
+  background: #30b9fc;
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  height: 26px;
+  padding: 4px 0;
+  position: absolute;
+  right: 26px;
+  transform: rotate(270deg);
+  -ms-transform: rotate(270deg);
+  transform-origin: right top 0;
+  -ms-transform-origin: right top 0;
+  text-align: center;
+  text-transform: uppercase;
+  top: 0;
+  width: 500px;
+  z-index: 100;
+}
+#region-navigation-panel.ie9 .panel-handle {
+  left: 167px;
+  top: 220px;
+}
+#region-navigation-panel.focused {
+}
+#region-navigation-panel:hover {
+  -webkit-box-shadow: 0 0 26px rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: 0 0 26px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 26px rgba(0, 0, 0, 0.5);
+}
+#region-navigation-panel .panel-content {
+  padding: 8px 12px;
+  position: relative;
+  width: 380px;
+}
+#region-navigation-panel :focus {
+  outline: 0;
+}
+#region-navigation-panel .select2.focused .select2-selection{
+  border-color: #66afe9;
+  outline: 0;
+  -webkit-box-shadow: 0 0 8px rgba(82,168,236,.6);
+  box-shadow: 0 0 8px rgba(82,168,236,.6);
+  -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+  -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+  transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;  
+}
+#region-navigation-panel p {
+  margin: 8px 0 6px 0;
+}
+#region-navigation-panel p.nav-or {
+  margin: 8px 0 0 12px;
+}
+#region-navigation-panel p.nav-msa,
+#region-navigation-panel p.nav-county,
+#region-navigation-panel p.nav-economic {
+   margin-left: 12px;
+}
+#region-navigation-panel p.nav-cluster {
+  border-top: 1px solid #ddd;
+  margin-top: 16px;
+  padding-top: 12px;
+}
+#region-navigation-panel p.nav-subcluster {
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 12px;
+  padding-bottom: 16px;
+}
+#region-navigation-panel .select2-container--default .select2-selection--single .select2-selection__rendered {
+  white-space: normal;
+}
+
+#chart {
+    margin: 0 40px;
+}
+#chart iframe {
+    border: none;
+    display: block;
+    height: 960px;
+    margin: 0px auto;
+    width: 100%;
+}

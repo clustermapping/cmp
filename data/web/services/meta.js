@@ -55,6 +55,29 @@ function loadYears(client) {
   return facetForType(client, 'aggregate', 'year_t');
 }
 
+function loadIndicators(client, req, res) {
+  var p = req.params,
+    indicator = p.indicator;
+  if (indicator == 'specialization_tl') indicator = 'emp_tl';
+  var pivot = 'region_type_t,year_t',
+    type = Number(p.cluster) > 0 ? 'cluster' : 'aggregate',
+    q = 'type_t:' + type + ' AND ' + indicator + ':* AND NOT ' + indicator + ':0';
+  if (Number(p.cluster) > 0) q += ' AND cluster_code_t:' + p.cluster;
+  if (Number(p.subcluster) > 0) q += ' AND sub_code_t:' + p.subcluster;
+  var query = 'q=' + encodeURIComponent(q) + '&wt=json&indent=true&facet=true&facet.pivot=' + pivot + '&rows=0';
+  return deferQuery(client, query)
+    .then(function(result) {
+      var regionYears = {};
+      result.facet_counts.facet_pivot[pivot].forEach(function(r) {
+        regionYears[r.value] = {};
+        r.pivot.forEach(function(y) {
+          regionYears[r.value][y.value] = y.count;
+        });
+      });
+      return regionYears;
+    })
+}
+
 function cleanCluster(item) {
   item.sub_clusters = _.object(item.sub_code_txt, item.sub_name_txt);
   delete(item.sub_code_txt);
@@ -200,6 +223,9 @@ module.exports = function meta_server(server, config) {
   server.get('/meta/regions', handleWith(loadRegionTypes, client));
   server.get('/meta/regions/:type', handleWith(loadRegionsByType, client));
   server.get('/meta/years', handleWith(loadYears, client));
+  server.get('/meta/indicator/:indicator', handleWith(loadIndicators, client));
+  server.get('/meta/indicator/:indicator/:cluster', handleWith(loadIndicators, client));
+  server.get('/meta/indicator/:indicator/:cluster/:subcluster', handleWith(loadIndicators, client));
   server.get('/meta/clusters', handleWith(loadClustersNoSubs, client));
   server.get('/meta/cluster/:id', handleWith(loadCluster, client));
   server.get('/meta/cluster/:id/:sub', handleWith(loadSubclusterMappings, client));

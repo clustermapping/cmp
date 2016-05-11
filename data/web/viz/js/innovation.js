@@ -162,7 +162,7 @@
           yS = plot.scale('y').scale,
           xOffset = Math.abs(d[xKey]),
           yOffset = Math.abs(d[yKey]),
-          xD = [d[xKey] - xOffset/1.5, d[xKey] + xOffset/1.5],
+          xD = [d[xKey] - xOffset/5, d[xKey] + xOffset/5],
           yD = [d[yKey] - yOffset/1.5, d[yKey] + yOffset/1.5];
         if (yD[0] < yS.domain()[0]) yD[0] = yS.domain()[0];
         if (yD[1] > yS.domain()[1]) yD[1] = yS.domain()[1];
