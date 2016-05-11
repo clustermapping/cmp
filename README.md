@@ -10,10 +10,11 @@
 ### Build and run API Browser
 
     git clone https://github.com/clustermapping/cmp.git
-    cd cmp/data/web
-    npm install
+    cd cmp/data/processing; npm install
+    cd ../web; npm install
     nodemon server
 
+Point your browser to http://localhost:4001/index and start using the API Browser.
 
 ## Full platform build
 
