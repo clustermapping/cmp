@@ -1,6 +1,23 @@
 # Cluster Mapping Project
 
-## Software required
+## Simplified build
+
+### Software required
+* NodeJS
+    * npm
+    * nodemon
+
+### Build and run API Browser
+
+    git clone https://github.com/clustermapping/cmp.git
+    cd cmp/data/web
+    npm install
+    nodemon server
+
+
+## Full platform build
+
+### Software required
 * Nginx
 * PHP /
     * php-fpm
