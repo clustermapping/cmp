@@ -48,12 +48,15 @@
         </div>
     </div>
 
+    <p style="position:relative;visibility:hidden;"><a id="related-clusters" name="related-clusters"> </a></p>
     <div class="container related-clusters-container">
         <div class="row">
             <div class="col-md-12 header">
                 <h1>Related Clusters</h1>
                 <?php print _hbs_dashboard_messages('region_regioncluster_related'); ?>
-
+                <div class="col-md-12 chart" style="height:600px;width:1024px;margin:0 auto;">
+                    <?php print $relatedclusters_chart; ?>
+                </div>
             </div>
         </div>
     </div>

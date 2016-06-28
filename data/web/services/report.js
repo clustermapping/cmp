@@ -1567,6 +1567,13 @@ function sparkline(data, region, indicator, rank_key, change_rank_key, rank_top)
     end = dataByYear.get(yearRange[1]).get(region);
   }
 
+  if (!start) {
+    return {
+      totals: totals,
+      results: results,
+    };
+  }
+
   totals.region = (start.region_short_name_t ? start.region_short_name_t : start.region_name_t);
   totals.regionType = start.region_type_t;
   totals.regionCode = start.region_code_t;
@@ -1640,7 +1647,7 @@ function hasResults(data, indicator) {
 
   data.forEach(function(d) {
     var v = valF(d);
-    if (v !== undefined && !isNaN(+v)) {
+    if (v !== undefined && !isNaN(+v) && v) {
       hasResult = true;
     }
   });
@@ -1690,12 +1697,19 @@ function loadSparkline(client, cb) {
       indicator = dictVarByKey(req.params.indicator),
       key = (indicator ? (indicator.range_source || indicator.key) : ''),
       rank_key = key + '_rank_i',
+      change_key = key + '_change_tf',
       change_rank_key = key + '_change_tf_rank_i',
       percentile_rank_key = key + '_per_rank_i',
       change_percentile_rank_key = key + '_change_tf_per_rank_i',
       qry = q({type_t: 'aggregate', region_code_t: code, region_type_t: type}),
-      fields = ['id', 'type_t', 'region_type_t', 'region_code_t', 'region_name_t', 'region_short_name_t', 'year_t', 'region_key_t', key, rank_key, percentile_rank_key, change_rank_key, change_percentile_rank_key],
+      fields = ['id', 'type_t', 'region_type_t', 'region_code_t', 'region_name_t', 'region_short_name_t', 'year_t', 'region_key_t', key, rank_key, percentile_rank_key, change_rank_key, change_percentile_rank_key, change_key],
       rank_top = 50;
+
+    if (key == 'venture_capital_per_gdp_tf') {
+      var qryObj = {type_t: 'aggregate', region_type_t: type, venture_capital_per_gdp_tf: '*' };
+      qryObj[key] = '*';
+      qry = q(qryObj);
+    }
 
     if (key == 'fortune1000_tl') {
       fields.push('fortune1000_rank_txt');
@@ -1719,8 +1733,51 @@ function loadSparkline(client, cb) {
     }
 
     function _processResults(queryResult) {
+      var data = queryResult.response.docs;
+
+      if (key == 'venture_capital_per_gdp_tf') {
+        var byRegion = d3.nest()
+          .key(function(d) { return d.region_type_t + '/' + d.region_code_t;})
+          .map(queryResult.response.docs, d3.map);
+        
+        var regions = Object.keys(byRegion).map(function(k){
+          var years = byRegion[k].sort(function(a,b){ return d3.ascending(a.year_t, b.year_t); });
+          if (years.length < 2) { return; }
+          var last = years.slice().pop() || {};
+
+          // Alternative cagr calculation which matches with the stored calculation.
+          // var first = years.slice().shift() || {};
+          // var ys = +last.year_t - +first.year_t;
+          // var d = last[key] / first[key];
+          // var p = 1/ys;
+          // var cagr = Math.pow(d, p) -1;
+
+          // Stored cagr calculation
+          var cagr = last[change_key];
+
+          return {
+            code: +last.region_code_t,
+            cagr: cagr,
+          };
+        })
+        .filter(function(d){return d})
+        .sort(function(a,b){return d3.descending(a.cagr,b.cagr);})
+        .map(function(d, i){
+          d.change_rank = i +1;
+          return d;
+        })
+        var l = regions.length;
+        var regionTotals = regions.filter(function(d){return d.code == code }).shift();
+        
+        data = data.filter(function(d){return +d.region_code_t == code })
+          .map(function(d){
+            d[change_rank_key] = regionTotals.change_rank;
+            d[change_percentile_rank_key] = Math.round(rank_top * regionTotals.change_rank / l);
+            return d;
+          });
+      }
       try {
-        var results = sparkline(queryResult.response.docs, region, indicator, rank_key, change_rank_key, rank_top);
+        var results = sparkline(data, region, indicator, rank_key, change_rank_key, rank_top);
         if (cb) {
           cb(results);
         }
@@ -1834,7 +1891,6 @@ function subregions(data, indicator, start, end, regionName, benchmarkRegion, re
   total.wage =  wageF(byRegionYear.get(benchmarkRegion).get(end));
   total.change = simpleChange(valF(byRegionYear.get(benchmarkRegion).get(start)), valF(byRegionYear.get(benchmarkRegion).get(end)));
   total.cagr = cagr(valF(byRegionYear.get(benchmarkRegion).get(start)), valF(byRegionYear.get(benchmarkRegion).get(end)), end-start);
-  console.log(valF(byRegionYear.get(benchmarkRegion).get(start)), valF(byRegionYear.get(benchmarkRegion).get(end)), end-start, '=', total.cagr);
 
   total.valueRegion = valF(byRegionYear.get(region).get(end));
   total.wageRegion =  wageF(byRegionYear.get(region).get(end));
@@ -2780,7 +2836,6 @@ function loadInnovation(client,cb) {
         .and(q({region_type_t:'country', region_code_t:'98'}).or(idQry)),
       fields = ['id','patent_count_tf','region_type_t','region_key_t','region_name_t','region_code_t','cluster_name_t','cluster_code_t','year_t','key_t'],
       query = client.createQuery().rows(10000).q(qry.q()).fl(fields);
-      console.log(qry.q())
     return deferQuery(client, query, function (queryResult) {
       var results = innovation(queryResult.response.docs, region, benchmarkRegion, start, end, req.params.cluster, isNaN(+code) );
       if (cb) { cb(results); }

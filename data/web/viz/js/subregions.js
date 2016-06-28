@@ -159,7 +159,8 @@
          {
            type: 'rect',
            attrs : {
-             x: function() { return plot.scale('x').scale(totalData.cagr); },
+             x: function() { 
+              return plot.scale('x').scale(totalData.cagr); },
              y: 0,
              width: function() { return plot.drawWidth() - plot.margin.right() - plot.margin.left() - plot.scale('x').scale(totalData.cagr);},
              height: function() { return plot.scale('y').scale(totalData.value); },
@@ -170,8 +171,15 @@
            type: 'line',
            axis: 'x',
            style: 'position:relative;',
-           dataSource : function() { return totalData.cagrRegion;},
-           label: function() { return totalData.benchmarkRegion + " " + totalData.type.label + " Growth Rate: " + percentFormat(totalData.cagrRegion) },
+           dataSource : function() { 
+            let startValue = plotData.reduce(function(x,d,i){ return x+d.start; }, 0);
+            let endValue = plotData.reduce(function(x,d,i){ return x+d.value; }, 0);
+            let years = +totalData.end - +totalData.start;
+            totalData.cagrRegion = Math.pow(endValue/startValue, 1/years) - 1;
+            return totalData.cagrRegion;
+          },
+           label: function() { 
+            return totalData.benchmarkRegion + " " + totalData.type.label + " Growth Rate: " + percentFormat(totalData.cagrRegion) },
            attrs:{
              x1: 'x',
              x2: 'x',
@@ -398,7 +406,7 @@
                     attrs: {
                       href: function(d) {
                         return (options.subcluster ? location(d.key, d.type) : '/cluster/' + d.id); },
-                      target: function () { console.log(options); return (isNaN(+options.cluster) ? '_parent' : '');}
+                      target: function () { return (isNaN(+options.cluster) ? '_parent' : '');}
                     },
                     text:  function() { return (!options.subcluster ? "Goto Cluster Dashboard" : (isNaN(+options.cluster) ? "Go to Region Dashboard" : "Explore Industries")); },
                     append: [

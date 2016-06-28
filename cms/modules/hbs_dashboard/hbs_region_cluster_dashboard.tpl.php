@@ -51,6 +51,24 @@
         </div>
     </div>
 
+    <p style="position:relative;visibility:hidden;"><a id="related-clusters" name="related-clusters"> </a></p>
+    <div class="container related-clusters-container">
+        <div class="row">
+            <div class="col-md-12 header">
+              <h1>Related Clusters</h1>
+              <?php print _hbs_dashboard_messages('cluster_summary_related'); ?>
+            </div>
+            <div class="clearfix"></div>
+        <?php if ($relatedclusters_chart): ?>
+            <div class="col-md-12 chart" style="height:800px;width:960px;margin:0 auto;">
+                <?php print $relatedclusters_chart; ?>
+            </div>
+        <?php else: ?>
+          <?php print _hbs_dashboard_messages('cluster_related_empty'); ?>
+        <?php endif ?>
+        </div>
+    </div>
+
     <div class="container related-container last">
         <div class="row">
             <div class="col-md-4">

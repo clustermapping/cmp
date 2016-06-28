@@ -37,6 +37,12 @@ function hbs_data_admin_menu() {
       'page arguments' => array('cluster/meta'),
       'access arguments' => array('manage hbs data')
     ),
+    'admin/config/hbsdata/customregions' => array(
+      'title' => 'Custom Regions',
+      'description' => 'Custom Regions List',
+      'page callback' => 'hbs_data_custom_regions',
+      'access arguments' => array('manage hbs data')
+    ),
   );
 }
 
@@ -68,6 +74,65 @@ function hbs_data_admin_page($type) {
     'data_view' => array(
       '#type' => 'markup',
       '#markup' => '<iframe src="' . $base_path . 'api/' . $type . '" frameborder=0 height="700px" width="100%"></iframe>',
+    ),
+  );
+
+  return drupal_render($markup);
+}
+
+/**
+ * Helper function to provide a Custom Regions List
+ */
+function _hbs_load_custom_regions() {
+    global $base_url, $user;
+    $alias = str_replace('users/', '', $alias);
+    $api_base_url = variable_get('hbs_dashboard_api_base_url', $base_url);
+    $result = drupal_http_request($api_base_url . '/data/custom/admin/list');
+    $data = json_decode($result->data, TRUE);
+    return $data;
+}
+
+/**
+ * Page callback to provide a Custom Regions List
+ */
+function hbs_data_custom_regions($type) {
+  global $base_url, $base_path, $user;
+  $api_base_url = variable_get('hbs_dashboard_api_base_url', $base_url);
+  $data = _hbs_load_custom_regions();
+  $content = '';
+  if (is_array($data)) {
+    $content .= '<h3>' . t('Custom Regions') . '</h3>';
+    $content .= '<p>Below you can a list of the saved custom regions. Regions marked as "Data Processing..." will be available shortly (usually within 30m), reload this page to see updated status.</p><ul>';
+    foreach($data AS $region) {
+        if (isset($region['key_t'])) {
+            $url = $base_url . '/region/custom/' . $region['key_t'];
+            $content .= '<li>'
+              . l($region['region_short_name_t'] . ' (' . $region['region_count_tl'] . ' counties)', $url)
+            . ' </li>';
+        } else {
+            $content .= '<li>' . $region['region_short_name_t'] . ' (' . $region['region_count_tl'] . ' counties)'
+              . ' - <a class="restart-processing" data-code="' . $region['region_code_t'] . '" href=""> Restart Processing </a>'
+              . '</li>';
+        }
+    }
+    $content .= '</ul>';
+    $content .= '<script>';
+    $content .= 'jQuery(".restart-processing").on("click", function(e){
+      e.preventDefault();
+      var $ = jQuery;
+      var $this = $(this);
+      var code = $(this).data("code");
+      $.post("' . $api_base_url . '/data/custom/restart", {code: code})
+      .then(function(result) {
+        $this.after("<span>Data Processing restarted</span>").remove();
+      });
+    })';
+    $content .= '</script>';
+  }
+  $markup = array(
+    'data_view' => array(
+      '#type' => 'markup',
+      '#markup' => $content,
     ),
   );
 

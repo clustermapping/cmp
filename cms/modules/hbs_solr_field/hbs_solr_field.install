@@ -25,7 +25,7 @@ function hbs_solr_field_field_schema($field) {
   $columns = array(
     'solr_reference' => array('type' => 'varchar','length' => 128, 'not null' => FALSE),
     'solr_id' => array('type' => 'varchar','length' => 128, 'not null' => FALSE),
-    'solr_key' => array('type' => 'varchar','length' => 128, 'not null' => FALSE),
+    'solr_key' => array('type' => 'varchar','length' => 255, 'not null' => FALSE),
   );
   $indexes = array(
     'solr_reference' => array('solr_reference'),

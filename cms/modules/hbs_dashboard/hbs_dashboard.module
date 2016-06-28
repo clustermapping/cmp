@@ -240,6 +240,13 @@ function hbs_dashboard_menu() {
   return $items;
 }
 
+function _hbs_indicator_year($indicator, $cluster_key='all', $region_type='country') {
+  $url = '/data/meta/indicator/' . $indicator . '/' . $cluster_key;
+  $data = _hbs_load_helper($url);
+  $years = array_keys($data[$region_type]);
+  return max($years);
+}
+
 function _hbs_load_helper($url) {
   global $base_url;
   $api_base_url = variable_get('hbs_dashboard_api_base_url', $base_url);
@@ -251,7 +258,8 @@ function _hbs_load_helper($url) {
 
 function hbs_region_load($id, $region_type) {
   $years = _hbs_load_helper('/data/meta/years');
-  return _hbs_load_helper('/data/region/' . $region_type . '/' . $id . '/' . max($years));
+  $region = _hbs_load_helper('/data/region/' . $region_type . '/' . $id );
+  return array_shift($region);
 }
 
 function hbs_cluster_load($id) {

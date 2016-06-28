@@ -48,9 +48,58 @@ function _hbs_dashboard_comparison_page_callback($code = NULL) {
   ksort($cluster_data);
   $_SESSION['region_compare']['cluster_data'] = array_values($cluster_data);
 
-  $indicator_data = array(); $indicators = array();
+  $indicator_data = array();
+  $indicators = array();
+  $valid_indicators = array(
+    'gdp_per_capita_tf',
+    'private_wage_tf',
+    'real_per_capita_personal_income_chained_2008_dollars_tf',
+    'labor_mobilization_tf',
+    'emp_tl',
+    'unemployment_rate_tf',
+    'poverty_rate_tf',
+    'labor_force_productivity_tf',
+    'innovation_tf',
+    'est_tl',
+    'exports_tf',
+    'bea_foreign_employment_by_state_industry__all_industries_tf',
+    'rd_per_capita_tf',
+    'federal_rd_per_capita_tf',
+    'venture_capital_per_gdp_tf',
+    'scientific_degrees_tf',
+    'advanced_scientific_workers_tf',
+    'educational_attainment_25_to_64_high_school_graduate_per_tf',
+    'educational_attainment_25_to_64_some_college_or_associates_per_tf',
+    'educational_attainment_25_to_64_bachelors_per_tf',
+    'unionization_rate_tf',
+    'taxes_per_gdp_tf',
+    'corp_taxes_per_gdp_tf',
+    'str_emp_per_tf',
+    'manufacturing_intensity_tf',
+    'personal_consumption_expenditures_per_capita_tf',
+    'population_by_age_ages_0_to_4_preschool_per_tf',
+    'population_by_age_ages_5_to_17_school_age_per_tf',
+    'population_by_age_ages_18_to_24_college_age_per_tf',
+    'population_by_age_ages_25_to_44_young_adult_per_tf',
+    'population_by_age_45_to_64_older_adult_per_tf',
+    'population_by_age_age_65_and_older_older_per_tf',
+    'total_population_gr',
+    'young_adult_population_gr',
+    'population_density_tf',
+    'net_international_migration_per_tf',
+    'net_domestic_migration_per_tf',
+    'agricultural_output_gdp_tf',
+    'gov_employment_local_services_tf',
+    'gov_employment_federal_services_tf',
+    'gov_employment_higher_education_tf',
+    'gov_employment_health_hospitals_tf',
+    'military_payroll_per_capita_tf',
+    'avg_firm_size_tf',
+    'fortune1000_tl',
+  );
+
   foreach ($meta['dict']['vars'] as $var) {
-    if (! in_array($var['label'], $indicator_data)) {
+    if (! in_array($var['label'], $indicator_data) && in_array($var['key'], $valid_indicators)) {
       $indicator_data[$var['label']] = array('name' => $var['label'], 'key' => $var['key']);
       if (in_array($var['key'], $_SESSION['region_compare']['indicators'])) {
         $indicators[$var['key']] = $var['label'];

@@ -13,13 +13,14 @@
         <div id="cluster-list-controls">
           <span class="sort-label">Show Clusters By</span>
           <div class="btn-group">
-            <button type="button" name="clustersort" class="btn btn-default active" id="clustersortname">List</button>
-            <button type="button" name="clustersort" class="btn btn-default" id="clustersoremp">Employment</button>
-            <button type="button" name="clustersort" class="btn btn-default" id="clustersorwage">Wages</button>
-            <button type="button" name="clustersort" class="btn btn-default" id="clustersorjobcreate">Job Creation</button>
-            <button type="button" name="clustersort" class="btn btn-default" id="clustersorspecialize">Specialization</button>
-            <button type="button" name="clustersort" class="btn btn-default" id="clustersortimeline">Timeline</button>
-            <button type="button" name="clustersort" class="btn btn-default" id="clustersorinnovation">Innovation</button>
+            <button type="button" name="clustersort" class="btn btn-default active" id="related-clusters">Relatedness</button>
+            <button type="button" name="clustersort" class="btn btn-default" id="clusters-list">List</button>
+            <button type="button" name="clustersort" class="btn btn-default" id="clusters-employment">Employment</button>
+            <button type="button" name="clustersort" class="btn btn-default" id="clusters-wages">Wages</button>
+            <button type="button" name="clustersort" class="btn btn-default" id="clusters-jobs">Job Creation</button>
+            <button type="button" name="clustersort" class="btn btn-default" id="clusters-specialization">Specialization</button>
+            <button type="button" name="clustersort" class="btn btn-default" id="clusters-timeline">Timeline</button>
+            <button type="button" name="clustersort" class="btn btn-default" id="clusters-innovation">Innovation</button>
           </div>
         </div>
         <ul id="cluster-list-0" class="cluster-graph cluster-list"></ul>
@@ -29,6 +30,7 @@
         <div class="col-md-12 chart chart-100 cluster-graph specialization-chart"></div>
         <div class="col-md-12 chart chart-100 cluster-graph timeline-chart"></div>
         <div class="col-md-12 chart chart-100 cluster-graph innovation-chart"></div>
+        <div class="col-md-12 chart chart-100 cluster-graph related-chart"></div>
     </div>
   </div>
 </div>

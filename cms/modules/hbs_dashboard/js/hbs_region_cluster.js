@@ -11,7 +11,7 @@
 
         if(cId == 'all') cId = "traded";
 
-        $('.employment-chart').show();
+        $('.employment-chart').hide();
         $('.wages-chart').hide();
         $('.jobcreation-chart').hide();
         $('.specialization-chart').hide();
@@ -55,21 +55,24 @@
         }
 
         var hash = window.location.hash.replace('#', '');
-        if(hash) {
-            $( "#" + hash ).trigger( "click" );
-        }else{
+        
+        if (hash) {
+            var $btn  = $('#cluster-list-controls .btn').filter('#' + hash);
+            $btn.trigger("click");
+        } else {
             embedIframe('employment', true);
         }
 
+        if (! $('.company-innovation-list').length) {
+            return;
+        }
 
-        if (! $('.company-innovation-list').length) return;
+        var data = settings.hbs_dashboard.data.region,
+            region_type = data.region_type_t,
+            region_id = data.region_code_t;
 
-
-            var data = settings.hbs_dashboard.data.region,
-                region_type = data.region_type_t,
-                region_id = data.region_code_t;
-
-        $('.company-innovation-list').html('<iframe src="/data/report/region/innovationtable#/' + region_type + '/' + region_id + '/50" scrolling="no"></iframe>');
+        $('.company-innovation-list').html('<iframe src="/data/report/region/innovationtable#/'
+            + region_type + '/' + region_id + '/50" scrolling="no"></iframe>');
         return;
     }
   }

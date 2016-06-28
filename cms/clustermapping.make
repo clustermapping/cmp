@@ -6,7 +6,7 @@ core = 7.x
 ;***************;
 
 projects[drupal][type] = core
-projects[drupal][version] = 7.32
+projects[drupal][version] = 7.38
 projects[drupal][patch][1899498] = http://drupal.org/files/field_guarantee_hook_field_presave.patch
 
 
@@ -16,27 +16,27 @@ projects[drupal][patch][1899498] = http://drupal.org/files/field_guarantee_hook_
 
 ; Addres Field
 projects[addressfield][subdir] = contrib
-projects[addressfield][version] = 1.0-beta5
+projects[addressfield][version] = 1.1
 
 ; Apache Solr
 projects[apachesolr][subdir] = contrib
-projects[apachesolr][version] = 1.6
+projects[apachesolr][version] = 1.7
 
 ; Breakpoints
 projects[breakpoints][subdir] = contrib
-projects[breakpoints][version] = 1.1
+projects[breakpoints][version] = 1.3
 
 ; Captcha
 projects[captcha][subdir] = contrib
-projects[captcha][version] = 1.0
+projects[captcha][version] = 1.3
 
 ; Chosen
 projects[chosen][subdir] = contrib
-projects[chosen][version] = 2.0-alpha4
+projects[chosen][version] = 2.0-beta4
 
 ; CKEditor
 projects[ckeditor][subdir] = contrib
-projects[ckeditor][version] = 1.13
+projects[ckeditor][version] = 1.16
 
 ; Corresponding Node References
 projects[cnr][subdir] = contrib
@@ -44,20 +44,20 @@ projects[cnr][version] = 4.22
 
 ; Ctools
 projects[ctools][subdir] = contrib
-projects[ctools][version] = 1.4
+projects[ctools][version] = 1.7
 ;projects[ctools][patch][1828534] = http://drupal.org/files/ctools-n1828534-5.patch
 
 ; Date
 projects[date][subdir] = contrib
-projects[date][version] = 2.7
+projects[date][version] = 2.8
 
 ; Entity
 projects[entity][subdir] = contrib
-projects[entity][version] = 1.3
+projects[entity][version] = 1.6
 
 ; Features
 projects[features][subdir] = contrib
-projects[features][version] = 2.0
+projects[features][version] = 2.5
 
 ; Field collection
 projects[field_collection][subdir] = contrib
@@ -65,7 +65,7 @@ projects[field_collection][version] = 1.0-beta5
 
 ; Field group
 projects[field_group][subdir] = contrib
-projects[field_group][version] = 1.3
+projects[field_group][version] = 1.4
 
 ; Filter Perms
 projects[filter_perms][subdir] = contrib
@@ -77,7 +77,7 @@ projects[geocoder][version] = 1.2
 
 ; Geolocation Field
 projects[geolocation][subdir] = contrib
-projects[geolocation][version] = 1.4
+projects[geolocation][version] = 1.6
 
 ; Geophp
 projects[geophp][subdir] = contrib
@@ -89,11 +89,11 @@ projects[google_analytics][version] = 1.4
 
 ; IMCE
 projects[imce][subdir] = contrib
-projects[imce][version] = 1.8
+projects[imce][version] = 1.9
 
 ; jQuery Update
 projects[jquery_update][subdir] = contrib
-projects[jquery_update][version] = 2.3
+projects[jquery_update][version] = 2.6
 
 ; Libraries
 projects[libraries][subdir] = contrib
@@ -101,15 +101,15 @@ projects[libraries][version] = 2.2
 
 ; Memcache
 projects[memcache][subdir] = contrib
-projects[memcache][version] = 1.0
+projects[memcache][version] = 1.5
 
 ; Metatag
 projects[metatag][subdir] = contrib
-projects[metatag][version] = 1.0-beta9
+projects[metatag][version] = 1.4
 
 ; Metatags quick
 projects[metatags_quick][subdir] = contrib
-projects[metatags_quick][version] = 2.7
+projects[metatags_quick][version] = 2.9
 
 ; Navbar
 projects[navbar][subdir] = contrib
@@ -145,12 +145,16 @@ projects[references][version] = 2.1
 projects[references_dialog][subdir] = contrib
 projects[references_dialog][download][type] = git
 projects[references_dialog][download][url] = http://git.drupal.org/project/references_dialog.git
-projects[references_dialog][download][revision] = c245778
+projects[references_dialog][download][revision] = faf64b7
 projects[references][patch][1599132] = http://drupal.org/files/error_on_saving_node-1599132-4.patch
 
 ; Robots TXT
 projects[robotstxt][subdir] = contrib
-projects[robotstxt][version] = 1.1
+projects[robotstxt][version] = 1.3
+
+; SMTP
+projects[smtp][subdir] = contrib
+projects[smtp][version] = 1.2
 
 ; Strongarm
 projects[strongarm][subdir] = contrib
@@ -158,7 +162,7 @@ projects[strongarm][version] = 2.0
 
 ; Token
 projects[token][subdir] = contrib
-projects[token][version] = 1.5
+projects[token][version] = 1.6
 
 ; URL
 projects[url][subdir] = contrib
@@ -166,13 +170,12 @@ projects[url][version] = 1.0
 
 ; Views
 projects[views][subdir] = contrib
-projects[views][version] = 3.7
+projects[views][version] = 3.11
 projects[views][patch][1959558] = http://drupal.org/files/fixed_image_warnings-1959558-1.patch
-projects[views][patch][1511396] = http://drupal.org/files/views-key_diff-1511396-56.patch
 
 ; Views Autocomplete Filters
 projects[views_autocomplete_filters][subdir] = contrib
-projects[views_autocomplete_filters][version] = 1.0
+projects[views_autocomplete_filters][version] = 1.2
 
 ; Views Bulk Operations
 projects[views_bulk_operations][subdir] = contrib
@@ -180,7 +183,7 @@ projects[views_bulk_operations][version] = 3.2
 
 ; Views data export
 projects[views_data_export][subdir] = contrib
-projects[views_data_export][version] = 3.0-beta7
+projects[views_data_export][version] = 3.0-beta8
 
 ; Workbench
 projects[workbench][subdir] = contrib
@@ -188,15 +191,12 @@ projects[workbench][version] = 1.2
 
 ; Workbench Moderation
 projects[workbench_moderation][subdir] = contrib
-projects[workbench_moderation][version] = 1.3
-projects[workbench_moderation][patch][1314508] = http://drupal.org/files/workbench_moderation-featuresint-state-transition-1314508-57.patch
+projects[workbench_moderation][version] = 1.4
 projects[workbench_moderation][patch][1942314] = http://drupal.org/files/workbench_moderation-set_moderation_set_none_by_variable-1942314-1.patch
-projects[workbench_moderation][patch][1919706] = http://drupal.org/files/workbench_moderation-entitymalformedexception-action-1919706-2.patch
-projects[workbench_moderation][patch][1787214] = http://drupal.org/files/workbench_moderation-vbo-checkbox-and-invalid-state-change-1787214-9.patch
 
 ; XML Sitemap
 projects[xmlsitemap][subdir] = contrib
-projects[xmlsitemap][version] = 2.0-rc2
+projects[xmlsitemap][version] = 2.2
 
 
 ;*********************;
@@ -205,7 +205,7 @@ projects[xmlsitemap][version] = 2.0-rc2
 
 ; Devel
 projects[devel][subdir] = contrib
-projects[devel][version] = 1.4
+projects[devel][version] = 1.5
 
 ; Diff
 projects[diff][subdir] = contrib

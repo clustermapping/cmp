@@ -82,6 +82,9 @@
   }
 
   function addRank(sel, name, rank, rankQ, showRank, style) {
+    if (!rank) {
+      return;
+    }
     var r = sel.append('div').classed('performance-rank', true);
     r.classed("rank-" + name, true);
     r.classed("rank-" + rankQ, true);
@@ -111,7 +114,7 @@
     subtitle.append('span').classed('sub-title', true).text(function (d) { return d.subtitle; });
     subtitle.append('span').classed('sub-title-years', true).text(function (d) {
       if (options.indicator == 'fortune1000_tl') return d.end_year;
-      if (d.start_year == d.end_year) return d.end_year;
+      if (d.start_year == d.end_year) return d.end_year ? d.end_year : '';
       return d.start_year + '-' + d.end_year; 
     });
   }
@@ -179,7 +182,9 @@
       .classed('performance-change-positive', positiveF)
       .classed('performance-change-negative', negativeF)
       .classed('performance-benchmark', indicator.benchmark)
-      .text(function (d) { return changeFormat(changeVal(d)); });
+      .text(function (d) {
+        return changeVal(d) ? changeFormat(changeVal(d)) : '';
+      });
 
     if (indicator.type == 'simple') {
       change.append('span')
@@ -221,7 +226,7 @@
         benchmarkLine = d3.svg.area().x(xPos).y(yBenchmarkPos),
         graph,range;
     if (yearRange[0] == yearRange[1]) {
-      chartRow.text('Data is only available for ' + yearRange[0])
+      chartRow.text( yearRange[0] ? 'Data is only available for ' + yearRange[0] : 'No data available.');
       return;
     }
     if (indicator.benchmark) {
@@ -257,8 +262,13 @@
     } else {
       var regionType = options.compareId ? 'compare' : totalData.regionType;
       var regionCode = options.compareId ? options.compareId : totalData.regionCode;
-      href = hbsBaseUrl + "/report/region/scorecard#/" 
-        + [regionType, regionCode, totalData.start_year, totalData.end_year, totalData.type.lookup, totalData.regionType].join('/');
+      var params = [regionType, regionCode, totalData.start_year, totalData.end_year, totalData.type.lookup];
+      if (options.compareId) {
+        params.push(totalData.regionType);
+      }
+      href = hbsBaseUrl + "/report/region/scorecard#/" + params.join('/');
+        // Removed seemingly incorrect parameter totalData.regionType
+        // + [regionType, regionCode, totalData.start_year, totalData.end_year, totalData.type.lookup, totalData.regionType].join('/');
       tooltip = 'Please click here to view a scatterplot of this region\'s performance compared to other similar regions.';
     }
     if (indicator.lookup) {

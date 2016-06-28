@@ -143,13 +143,14 @@ function _hbs_user_build_custom_region_list($uid) {
         if (isset($region['key_t'])) {
             $url = $base_url . '/region/custom/' . $region['key_t'];
             $content .= '<li>'
-              . l($region['region_short_name_t'] . ' (' . $region['region_count_tl'] .  ' counties) ', $url)
+              . l($region['region_short_name_t'] . ' (' . $region['region_count_tl'] . ' counties)', $url)
               . ' - <a href="" class="custom_region_rename" key_t="'. $region['key_t'] . '" title="'. $region['region_short_name_t'] . '"> Rename </a>'
               . ' - <a href="" class="custom_region_delete" key_t="'. $region['key_t'] . '" title="'. $region['region_short_name_t'] . '"> Delete </a>'
             . ' </li>';
         } else {
-            $content .= '<li>' . $region['region_short_name_t']
-            . ' - <a href="" class="custom_region_delete" key_t="'. $region['region_code_t'] . '" title="'. $region['region_short_name_t'] . '"> Delete </a>' ;
+            $content .= '<li>' . $region['region_short_name_t'] . ' (' . $region['region_count_tl'] . ' counties)'
+            . ' - <a href="" class="custom_region_delete" key_t="'. $region['region_code_t'] . '" title="'. $region['region_short_name_t'] . '"> Delete </a>'
+            . '</li>' ;
         }
     }
     $content .= '</ul>';

@@ -195,6 +195,7 @@ function d3MapMenu(selection, stories) {
             if (d.key == dataManager[data.name]) return "selected";
           });
         });
+        updateYears();
 
         // el.menu
         //   .selectAll('div.orgs-form')
@@ -295,8 +296,8 @@ function d3MapMenu(selection, stories) {
       .style({display: 'none'})
       .text(' Explore');
 
-    var infoTitle = Drupal.settings.hbs_content.tooltiptitle1;
-    var infoTxt = Drupal.settings.hbs_content.tooltip1;
+    var infoTitle = Drupal ? Drupal.settings.hbs_content.tooltiptitle1 : '';
+    var infoTxt = Drupal ? Drupal.settings.hbs_content.tooltip1 : '';
 
     el.help = el.header.append('a');
       //.classed('col-md-12', true)
@@ -437,6 +438,7 @@ function d3MapMenu(selection, stories) {
     }
 
     dataManager.buildDataAndRedraw();
+    updateYears();
   }
 
   function buildValidOrganizationTypeOptions() {
@@ -477,9 +479,9 @@ function d3MapMenu(selection, stories) {
         {name: "subCluster", label: "Subcluster", icon: "", columns: 12, options: dataManager.subClusterList},
         {name: "indicatorType", label: "Indicator Category", icon: "", columns: 12, options: dataManager.varTypes },
         {name: "economicIndicator", label: "Economic Indicator", icon: "", columns: 12, options: buildValidEconomicIndicatorOptions() },
+        {name: "regionType", label: "Region Type", icon: "", columns: 12, options: dataManager.regionList},
         {name: "start", label: "Start Year", icon: "", columns: 6, disabled: startDisabled, options: dataManager.yearList},
-        {name: "year", label: "End Year", icon: "", columns: 6, options: dataManager.yearList},
-        {name: "regionType", label: "Region Type", icon: "", columns: 12, options: dataManager.regionList}
+        {name: "year", label: "End Year", icon: "", columns: 6, options: dataManager.yearList}
       ],
       data = [];
     for (var i in mapOpts) {
@@ -535,6 +537,7 @@ function d3MapMenu(selection, stories) {
 
       // dataManager.loadMetadata(function() {
         dataManager.buildDataAndRedraw();
+        updateYears()
       // });
     }
   }
@@ -560,9 +563,41 @@ function d3MapMenu(selection, stories) {
 //        dataManager.economicIndicator = validEconomicIndicators[0];
 //      }
 //    }
-
     draw(['menu']);
   };
+
+  function updateYears() {
+    var r = dataManager.regionType;
+    $('select[name="map_year"] option').add('select[name="map_start"] option')
+      .each(function() {
+        var y = $(this).val(),
+          regionStatus = false;
+        if (dataManager.dataByRegionYear[r] && dataManager.dataByRegionYear[r][y]) {
+          regionStatus = dataManager.dataByRegionYear[r][y] > 1;
+        }
+        $(this)
+          .prop('disabled', !regionStatus)
+          .toggleClass('select-disabled', !regionStatus);
+      });
+
+    $('select[name="map_regionType"] option')
+      .each(function() {
+        var r = $(this).val(),
+          regionStatus = false,
+          years = dataManager.yearList.map(function(d) { return +d.key; }).sort();
+        for (var i = 0; i < years.length; i++) {
+          if (dataManager.dataByRegionYear[r] && dataManager.dataByRegionYear[r][years[i]]) {
+            regionStatus = dataManager.dataByRegionYear[r][years[i]] > 1;
+            if (regionStatus) break;
+          }
+        }
+
+        $(this)
+          .prop('disabled', !regionStatus)
+          .toggleClass('select-disabled', !regionStatus);
+      });
+    return;
+  }
 
 
   this.pause = function (option) {

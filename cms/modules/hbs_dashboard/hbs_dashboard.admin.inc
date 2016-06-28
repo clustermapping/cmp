@@ -42,6 +42,7 @@ function hbs_dashboard_admin_page() {
         'cluster_summary_topregions'              => 'Top Regions',
         'cluster_summary_subclusters'             => 'Sub Clusters',
         'cluster_summary_related'                 => 'Related Clusters',
+        'cluster_related_empty'                   => 'No Related Clusters message',
       ),
       'topregions' => array(
         'cluster_topregions_top'                  => 'Top of page',

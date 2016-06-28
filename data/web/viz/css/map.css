@@ -398,3 +398,21 @@ path.item {
 .carousel .map-view svg {
   display: none;
 }
+.select-disabled {
+  font-style: italic;
+  color: #ccc;
+}
+.block-hbs-viz .data-overlay .menu-body .map-controls .form-group.group-start,
+.block-hbs-viz .data-overlay .menu-body .map-controls .form-group.group-year {
+  margin-bottom: 17px;
+}
+
+.form-control.focused {
+  border-color: #66afe9;
+  outline: 0;
+  -webkit-box-shadow: 0 0 8px rgba(82,168,236,.6);
+  box-shadow: 0 0 8px rgba(82,168,236,.6);
+  -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+  -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+  transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;  
+}

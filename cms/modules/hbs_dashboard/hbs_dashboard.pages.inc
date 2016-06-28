@@ -11,6 +11,8 @@ function _hbs_dashboard_cluster_landing_page_callback() {
   drupal_add_js( array( 'hbs_cluster_grid' => array('selected' => array() ) ), 'setting');
   $years = _hbs_load_helper('/data/meta/years');
   drupal_add_js( array( 'hbs_dashboard' => array('years' => $years)), 'setting');
+  $year = _hbs_indicator_year('emp_tl', 'all', 'country');
+  drupal_add_js(array('hbs_dashboard' => array('year' => $year)), 'setting');
   drupal_add_js(drupal_get_path('module', 'hbs_viz') .'/js/hbs-clusterlist.js', 'file');
   drupal_add_js(drupal_get_path('module', 'hbs_dashboard') .'/js/hbs_cluster_landing.js', 'file');
   drupal_add_css(drupal_get_path('module', 'hbs_viz') . '/css/hbs-viz.css', 'file');
@@ -173,8 +175,9 @@ function _hbs_dashboard_cluster_page_callback($cluster_data = NULL) {
   if (empty($data)) {
       return MENU_NOT_FOUND;
   } else {
-    
+
     $cluster_key = $data['cluster']['key_t'];
+    $cluster_code = $data['cluster']['cluster_code_t'];
     $build['cluster_name'] = $data['cluster']['name_t'];
     $hash = quick_search_callback_set('hbs_cluster_autocomplete_qs_callback');
     drupal_add_js(array( 'quick_search' => array(
@@ -184,8 +187,9 @@ function _hbs_dashboard_cluster_page_callback($cluster_data = NULL) {
         ),
     )), 'setting');
     _hbs_dashboard_add_common_js('cluster', $data, 'summary');
-    $years = _hbs_load_helper('/data/meta/years');
-    $year = max($years);
+    
+    $year = _hbs_indicator_year('emp_tl', $cluster_key, 'country');
+
     $build['map'] = _hbs_dashboard_main_map();
     $build['related'] = _hbs_dashboard_related();
     // $build['topregions_chart'] = '<iframe src="/data/report/cluster/employment#/' . $cluster_key . '/all/'
@@ -197,6 +201,12 @@ function _hbs_dashboard_cluster_page_callback($cluster_data = NULL) {
       . '/state?subcluster=true&benchmark=false&limit=10&height=460" scrolling="no"></iframe>';
     $build['subcluster_chart'] = '<iframe src="/data/report/region/employment#/country/united_states/'
       . $year . '/' . $cluster_key . '?subcluster=true&benchmark=false" scrolling="no"></iframe>';
+
+    // if (isset($data['cluster']['related_clusters'])) {
+    $build['relatedclusters_chart'] = '<iframe src="/data/report/relatedclusters#/'
+      . $cluster_code . '" scrolling="no"></iframe>';
+    // echo '<pre>'; print_r($build['relatedclusters_chart']);die;
+    // }
 
     $build['related_organizations'] = _hbs_dashboard_related_content('organization');
     $build['related_blogs'] = _hbs_dashboard_related_content('blog');
@@ -605,6 +615,7 @@ function _hbs_dashboard_region_performance_callback($region_type, $region_data =
  */
 function _hbs_dashboard_region_cluster_portfolio_callback($region_type, $region_data = NULL) {
   $data = $region_data? array('region' => $region_data) : array();
+  $build = array();
   if (empty($data)) {
     return MENU_NOT_FOUND;
   } else {
@@ -617,20 +628,19 @@ function _hbs_dashboard_region_cluster_portfolio_callback($region_type, $region_
       drupal_add_js( array( 'hbs_cluster_grid' => array('selected' => $selected ) ), 'setting');
     }
 
+    $build['relatedclusters_chart'] = '<iframe src="/data/report/relatedclusters#/'
+      . $region_data['region_type_t'] .'/'. $region_data['region_key_t'] .'" scrolling="no"></iframe>';
+
+
     _hbs_dashboard_region_compare($data);
     drupal_add_js(drupal_get_path('module', 'hbs_dashboard') .'/js/hbs_region_dashboard.js', 'file');
     drupal_add_js(drupal_get_path('module', 'hbs_dashboard') .'/js/hbs_region_cluster.js', 'file');
     drupal_add_css(drupal_get_path('module', 'hbs_viz') . '/css/hbs-viz.css', 'file');
     drupal_add_js(drupal_get_path('module', 'hbs_viz') .'/js/hbs-clustergrid.js', 'file');
-    $years = _hbs_load_helper('/data/meta/years');
-    drupal_add_js(array(
-      'hbs_dashboard' => array(
-        'year' => max($years),
-      ),
-    ),
-    'setting');
+    $year = _hbs_indicator_year('emp_tl', 'all', $region_data['region_type_t']);
+    drupal_add_js(array('hbs_dashboard' => array('year' => $year)), 'setting');
     _hbs_dashboard_add_common_js('region', $data);
-    return theme('hbs_region_subpage_cluster_composition', array());
+    return theme('hbs_region_subpage_cluster_composition', $build);
   }
 }
 
@@ -650,12 +660,13 @@ function _hbs_dashboard_region_subregions_callback($region_type, $region_data = 
     } else {
         $subtype = 'county';
     }
-    $years = _hbs_load_helper('/data/meta/years');
+    $year = _hbs_indicator_year('emp_tl', 'all', $region_type);
+    drupal_add_js(array('hbs_dashboard' => array('year' => $year)), 'setting');
 
     _hbs_dashboard_region_compare($data['region']['region_type_t'], $data['region']['region_code_t']);
     $build['map'] = _hbs_dashboard_main_map();
-    $build['subregions_wages'] = '<iframe src="/data/report/region/subregions#/' . $region_type . '/' . $data['region']['key_t'] . '/1998/' . max($years). '/' . $subtype . '/private_wage_tf" scrolling="no"></iframe>';
-    $build['subregions_employment'] = '<iframe src="/data/report/region/subregions#/' .  $region_type . '/' . $data['region']['key_t'] . '/1998/' . max($years). '/' . $subtype . '/emp_tl" scrolling="no"></iframe>';
+    $build['subregions_wages'] = '<iframe src="/data/report/region/subregions#/' . $region_type . '/' . $data['region']['key_t'] . '/1998/' . $year. '/' . $subtype . '/private_wage_tf" scrolling="no"></iframe>';
+    $build['subregions_employment'] = '<iframe src="/data/report/region/subregions#/' .  $region_type . '/' . $data['region']['key_t'] . '/1998/' . $year. '/' . $subtype . '/emp_tl" scrolling="no"></iframe>';
       _hbs_dashboard_add_common_js('region', $data);
     return theme('hbs_region_subpage_subregions', $build);
   }
@@ -680,6 +691,9 @@ function _hbs_dashboard_cluster_top_regions_callback($cluster_data = NULL) {
     $build = array();
     $build['map'] = _hbs_dashboard_main_map();
     $build['cluster_name'] = $data['cluster']['name_t'];
+    $year = _hbs_indicator_year('emp_tl', $cluster_key, 'country');
+    drupal_add_js(array('hbs_dashboard' => array('year' => $year)), 'setting');
+
     $hash = quick_search_callback_set('hbs_cluster_autocomplete_qs_callback');
     drupal_add_js(array( 'quick_search' => array(
         'region-cluster-input-regions' => array(
@@ -687,6 +701,11 @@ function _hbs_dashboard_cluster_top_regions_callback($cluster_data = NULL) {
           'minlength' => 1,
         ),
     )), 'setting');
+    drupal_add_js(array(
+        'hbs_dashboard' => array(
+          'year' => $year,
+        ),
+      ), 'setting');
     _hbs_dashboard_add_common_js('cluster', $data, 'topRegions');
     drupal_add_js(drupal_get_path('module', 'hbs_dashboard') .'/js/hbs_cluster_topregion.js', 'file');
     drupal_add_css(drupal_get_path('module', 'hbs_viz') . '/css/hbs-viz.css', 'file');
@@ -702,13 +721,8 @@ function _hbs_dashboard_cluster_subclusters_callback($cluster_data = NULL) {
   } else {
     $build = array();
     $build['map'] = _hbs_dashboard_main_map();
-    $years = _hbs_load_helper('/data/meta/years');
-    drupal_add_js(array(
-      'hbs_dashboard' => array(
-        'year' => max($years),
-      ),
-    ),
-    'setting');
+    $year = _hbs_indicator_year('emp_tl', $cluster_key, 'country');
+    drupal_add_js(array('hbs_dashboard' => array('year' => $year)), 'setting');
     _hbs_dashboard_add_common_js('cluster', $data, 'subClusters');
     drupal_add_js(drupal_get_path('module', 'hbs_dashboard') .'/js/hbs_region_cluster.js', 'file');
     return theme('hbs_cluster_subpage_subclusters', $build);
@@ -726,13 +740,9 @@ function _hbs_dashboard_cluster_subcluster_summary_callback($cluster_data = NULL
     $build = array();
     $build['map'] = _hbs_dashboard_main_map();
     _hbs_dashboard_add_common_js('subCluster', $data);
-    $years = _hbs_load_helper('/data/meta/years');
-    drupal_add_js(array(
-      'hbs_dashboard' => array(
-        'year' => max($years),
-      ),
-    ),
-    'setting');
+    $cluster_key = $data['cluster']['key_t'] .'/'. $data['subcluster']['key_t'];
+    $year = _hbs_indicator_year('emp_tl', $cluster_key, 'country');
+    drupal_add_js(array('hbs_dashboard' => array('year' => $year)), 'setting');
     drupal_add_js(drupal_get_path('module', 'hbs_dashboard') .'/js/hbs_cluster_topregion.js', 'file');
     return theme('hbs_cluster_subpage_subcluster_summary', $build);
   }
@@ -754,23 +764,32 @@ function _hbs_dashboard_cluster_organizations_callback($region_id) {
 function _hbs_dashboard_region_cluster_page_callback($cluster_data = NULL, $region_data = NULL) {
     $data = $cluster_data ?  array( 'cluster' => $cluster_data, 'region' => $region_data ) : array();
     $build = array();
-
     if (empty($data)) {
         return MENU_NOT_FOUND;
     } else {
-        $code = $data['cluster']['cluster_code_t'];
+        $cluster_code = $data['cluster']['cluster_code_t'];
         _hbs_dashboard_add_common_js('region-cluster', $data, 'summary');
 
         $build['map'] = _hbs_dashboard_main_map();
         $build['related'] = _hbs_dashboard_related();
         $years = _hbs_load_helper('/data/meta/years');
 
-        $build['subcluster_chart'] = '<iframe src="/data/report/region/jobcreation#/' . $data['region']['region_type_t'] . '/' . $data['region']['key_t'] . '/1998/' . max($years) . '/' . $code . '?benchmark=false" scrolling="no"></iframe>';
+        $build['relatedclusters_chart'] = '<iframe src="/data/report/relatedclusters#/'
+          . $cluster_code . '/'
+          . $region_data['region_type_t'] .'/'
+          . $region_data['region_key_t'] .'" scrolling="no"></iframe>';
+
+        $build['subcluster_chart'] = '<iframe src="/data/report/region/jobcreation#/' . $data['region']['region_type_t'] . '/' . $data['region']['key_t'] . '/1998/' . max($years) . '/' . $cluster_code . '?benchmark=false" scrolling="no"></iframe>';
         drupal_add_js(drupal_get_path('module', 'hbs_dashboard') .'/js/hbs_region_cluster.js', 'file');
 
         $build['related_organizations'] = _hbs_dashboard_related_content('organization');
         $build['related_blogs'] = _hbs_dashboard_related_content('blog');
         $build['related_resources'] = _hbs_dashboard_related_content('resource');
+      
+      if (isset($data['cluster']['related_clusters'])) {
+        $build['relatedclusters_chart'] = '<iframe src="/data/report/relatedclusters#/'. $cluster_code 
+            .'/'. $region_data['region_type_t'] .'/'. $region_data['region_key_t'] .'" scrolling="no"></iframe>';
+      }
     }
     return theme('hbs_region_cluster_dashboard_template', $build);
 }
@@ -808,6 +827,8 @@ function _hbs_dashboard_region_cluster_subclusters_callback($cluster_data = NULL
   } else {
     $build = array();
     $build['map'] = _hbs_dashboard_main_map();
+    $year = _hbs_indicator_year('emp_tl', $data['cluster']['key_t'], $data['region']['region_type_t']);
+    drupal_add_js(array('hbs_dashboard' => array('year' => $year)), 'setting');
     _hbs_dashboard_add_common_js('region-cluster', $data, 'subClusters');
     drupal_add_js(drupal_get_path('module', 'hbs_dashboard') .'/js/hbs_region_cluster.js', 'file');
 
