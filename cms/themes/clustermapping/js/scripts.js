@@ -15,6 +15,15 @@
         // Call function at a slight delay.
         setTimeout(frame_container_resize, 800, $(this));
       });
+      if (jQuery(document.location.hash).length) {
+        setTimeout(function(){
+          var top = jQuery(document.location.hash).offset().top - jQuery('#banner').height();
+          console.log(top)
+          jQuery('html, body').animate({
+            scrollTop: top,
+          }, 500);
+        }, 1000);
+      }
     }
   };
 
