@@ -7,8 +7,8 @@ module.exports = {
       path: '/solr'
     },
     port: 4001,
-    base:'',
-    baseUrl: 'localhost'
+    base:'/data',
+    baseUrl: 'hbsvagrant.local'
   },
   test: {
     solr: {
@@ -42,7 +42,7 @@ module.exports = {
     solr: {
       host: '54.83.55.150',
       port: 80,
-      core: 'clusterdata2012',
+      core: 'clusterdata2016',
       path: '/solr'
     },
     siteSolr: {
