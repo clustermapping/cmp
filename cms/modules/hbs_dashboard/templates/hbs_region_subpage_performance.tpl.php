@@ -110,15 +110,15 @@
                 <iframe src="/data/report/region/spark#/<?php print $region_type . '/' . $region_code ?>/advanced_scientific_workers_tf" scrolling="no"></iframe></div>
             <div class="col-md-6 sparkline sparkline-6 even chart chart-100">
                 Educational Attainment - Total Receiving a High School Diploma or More
-                <iframe src="/data/report/region/spark#/<?php print $region_type . '/' . $region_code ?>/educational_attainment_25_to_64_high_school_graduate_per_tf" scrolling="no"></iframe></div>
+                <iframe src="/data/report/region/spark#/<?php print $region_type . '/' . $region_code ?>/educational_attainment_25_years_and_over_high_school_graduate_per_tf" scrolling="no"></iframe></div>
             <div class="clearfix"></div>
 
             <div class="col-md-6 sparkline sparkline-7 odd chart chart-100">
                 Educational Attainment - Some College or Associates Degree
-                <iframe src="/data/report/region/spark#/<?php print $region_type . '/' . $region_code ?>/educational_attainment_25_to_64_some_college_or_associates_per_tf" scrolling="no"></iframe></div>
+                <iframe src="/data/report/region/spark#/<?php print $region_type . '/' . $region_code ?>/educational_attainment_25_years_and_over_some_college_or_associates_per_tf" scrolling="no"></iframe></div>
             <div class="col-md-6 sparkline sparkline-8 even chart chart-100">
                 Educational Attainment - Total Completing a Bachelor’s Degree or More
-                <iframe src="/data/report/region/spark#/<?php print $region_type . '/' . $region_code ?>/educational_attainment_25_to_64_bachelors_per_tf" scrolling="no"></iframe></div>
+                <iframe src="/data/report/region/spark#/<?php print $region_type . '/' . $region_code ?>/educational_attainment_25_years_and_over_bachelors_per_tf" scrolling="no"></iframe></div>
             <div class="clearfix"></div>
 
 

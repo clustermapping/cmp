@@ -3279,7 +3279,11 @@ function loadRelatedClusters(client, cb) {
               cluster.rank = c.emp_tl_rank_i; 
               cluster.lq_tf = c.lq_tf;
               cluster.lq_tf_per_rank_i = c.lq_tf_per_rank_i;
-              cluster.percentile = c.lq_tf_per_rank_i * 100 / 51;
+	      if (p.type === 'state') {
+                  cluster.percentile = c.lq_tf_per_rank_i * 100 / 51;
+	      } else {
+                  cluster.percentile = c.lq_tf_per_rank_i;
+	      }
               // cluster.year_t = c.year_t;
               cluster.strong = c.strong_b;
             }
