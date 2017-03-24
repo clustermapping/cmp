@@ -452,7 +452,7 @@
               y: 'y',
               height: function(){return plot.scale('y').scale.rangeBand(); },
               width: 40,
-              style: function(d) { return "fill:" + (d.strong ? "#FFFBCC" : "none");}
+              style: function(d) { return "fill:" + (d.strong ? "#dfffa5" : "none");}
             }
           },
           {

@@ -7,7 +7,8 @@
 //          tradedColor = d3.scale.log().range(["#388aa7", "#004c87"]),
 //          localColor = d3.scale.log().range(["#38a78a", "#00874c"]),
           localColor = d3.scale.log().range(["#33A1DE", "#0371AE"]),
-          tradedColor = d3.scale.log().range(["#0AAF86", "#0A7F56"]),
+	  //tradedColor = d3.scale.log().range(["#9824af", "#620375"]),
+	  tradedColor = d3.scale.log().range(["#0A936A", "#0A936A"]),
           radius = d3.scale.log().range([0,100]),
           fontSize = d3.scale.log().range([110, 160]);
 

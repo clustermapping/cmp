@@ -368,9 +368,10 @@
             .style("stroke", 'black')
             .style("fill", function(d) {
               if (regionData) {
-                if (d.lq_tf > 1 && d.percentile <= 10) {
+                //if (d.lq_tf > 1 && d.percentile <= 10) {
+                if (d.lq_tf > 1 && d.strong10) {
                   return '#6ab690';
-                } else if (d.lq_tf > 1 && d.percentile <= 25) {
+                } else if (d.lq_tf > 1 && d.strong && Math.round(d.percentile) <= 25) {
                   return '#92d14f';
                 } else if (d.lq_tf > 1) {
                   return '#D4D445';
