@@ -605,24 +605,43 @@ function captureEmploymentCluster(req, res, next) {
     }
   });
 }
+function getStateWageTotal(client, code, type, year, cb) {
+    var qry = q({type_t: 'aggregate'})
+        .and({year_t: year})
+        .and( q({region_type_t:'state', region_key_t:code}) ),
+      query = client.createQuery().rows(100).q(qry.q());
 
-function wages(data, region, benchmarkRegion, year, typeInfo, idNaN) {
+    return deferQuery(client, query, function (queryResult) {
+      var value = 0;
+      if (type == 'traded') value = queryResult.response.docs[0].private_wage_traded_tf;
+      else if (type == 'local') value = queryResult.response.docs[0].private_wage_local_tf;
+      return value;
+    });
+}
+function getBenchmarkWageTotal(client, type, year, cb) {
+    var qry = q({type_t: 'aggregate'})
+        .and({year_t: year})
+        .and( q({region_type_t:'country', region_code_t:'98'}) ),
+      query = client.createQuery().rows(100).q(qry.q());
+
+    return deferQuery(client, query, function (queryResult) {
+      var value = 0;
+      if (type == 'traded') value = queryResult.response.docs[0].private_wage_traded_tf;
+      else if (type == 'local') value = queryResult.response.docs[0].private_wage_local_tf;
+      return value;
+    });
+}
+function wages(data, region, benchmarkRegion, year, typeInfo, totals, idNaN) {
   var labelF = function(d) { return (d.sub_name_t ? d.sub_name_t : d.cluster_name_t);},
     keyF = function(d) { return d.cluster_code_t + (d.sub_code_t ? '-' + d.sub_code_t : '');},
     valF = ac('private_wage_tf'),
-    valEmp = ac('emp_reported_tl'),
-    valAp = ac('ap_tl'),
     regionF = function(d) { return d.region_type_t+'/'+ ( idNaN? d.region_key_t: d.region_code_t) ;},
     firstF = function(ds) { return ds[0];},
     byRegion = d3.nest().key(regionF).key(keyF).rollup(firstF).map(data, d3.map),
     result = [],
     regionName = byRegion.get(region).values()[0].region_name_t,
     rKey = byRegion.get(region).values()[0].region_key_t,
-    total = {region: regionName, regionKey: rKey, year: year, value:0, benchmark: 0},
-    nonZeroVals = 0,
-    nonZeroValsBench = 0,
-    totalEmpReported = 0,
-    totalAp = 0;
+    total = {region: regionName, regionKey: rKey, year: year, value:0, benchmark: 0};
 
   if (typeInfo != 'traded' && typeInfo != 'local' && idNaN) {
     total.cluster_name = data[0].cluster_name_t;
@@ -632,11 +651,7 @@ function wages(data, region, benchmarkRegion, year, typeInfo, idNaN) {
   }
   byRegion.get(region).forEach(function(k, v) {
     var val = valF(v), benchmark = valF(byRegion.get(benchmarkRegion).get(k));
-    var empTl = valEmp(v);
-    var apTl = valAp(v);
 
-    totalEmpReported += empTl;
-    totalAp += apTl;
     total.value += val;
     total.benchmark += benchmark;
     result.push({
@@ -647,14 +662,9 @@ function wages(data, region, benchmarkRegion, year, typeInfo, idNaN) {
       benchmark: benchmark,
       parent_key: v.parent_key_t || null
     });
-
-    if(val > 0){nonZeroVals++;}
-    if(benchmark > 0){nonZeroValsBench++;}
   });
-  //total.value = total.value/nonZeroVals;
-  total.value = totalAp*1000/totalEmpReported;
-  total.benchmark = total.benchmark/nonZeroValsBench;
-
+  total.value = totals.value;
+  total.benchmark = totals.benchmark;
   return {
     totals: total,
     results: result.sort(function(a, b) { return d3.descending(a.value, b.value);})
@@ -668,17 +678,27 @@ function loadWages(client, cb) {
       benchmarkRegion = 'country/' + (isNaN(+code)?'united_states' : 98),
       year = req.params.year,
       idQry = isNaN(+code)? {region_type_t:type, region_key_t: code} : {region_type_t:type, region_code_t: code},
-	qry = q({type_t: 'cluster'})
+       qry = q({type_t: 'cluster'})
         .and({year_t: year})
         .and(clusterQ(req.params.cluster))
         .and( q({region_type_t:'country', region_code_t:'98'}).or(idQry) ),
       query = client.createQuery().rows(10000).q(qry.q());
 
-    return deferQuery(client, query, function (queryResult) {
-      var results = wages(queryResult.response.docs, region, benchmarkRegion, year, req.params.cluster, isNaN(+code) );
-      if (cb) { cb(results); }
-      else { return results; }
-    });
+      return getBenchmarkWageTotal(client, req.params.cluster, year).then(function(result) {
+          return result;
+        }).then(function(benchmarkTotal) {
+          return getStateWageTotal(client, code, req.params.cluster, year).then(function(result) {
+            return result;
+          }, benchmarkTotal).then(function(stateTotal) {
+            return {value: stateTotal, benchmark: benchmarkTotal};
+          }).then(function(totals) {
+            return deferQuery(client, query, function (queryResult) {
+              var results = wages(queryResult.response.docs, region, benchmarkRegion, year, req.params.cluster, totals, isNaN(+code) );
+              if (cb) { cb(results); }
+              else { return results; }
+            });
+          });
+       });
   };
 }
 function wagesCSV(client){
@@ -2607,7 +2627,6 @@ function loadMapData(client, req, cb) {
   }
 
   query = client.createQuery().rows(100000).q(qry).fl(fl).set('fq=-emp_tl:0');
-  //console.log(JSON.stringify(query));
   return deferQuery(client, query, function (queryResult) {
     var results = processMapData(queryResult.response.docs, cluster, subcluster, start, end, ind, rangeIndicator);
     if (cb) {
@@ -3242,9 +3261,8 @@ function loadRelatedClusters(client, cb) {
             var byClusterData = filteredData.map(function(d, i) {
                 //d.percentile = (i+1) * 100 / filteredData.length;
                 d.percentile = (d.lq_tf_per_rank_i) * 100 / filteredData.length;
-		//console.log(JSON.stringify(d));
-                  return d;
-                });
+                return d;
+            });
             return d3.nest().key(byCluster).map(byClusterData, d3.map);
           });
       queues.push(p2);
