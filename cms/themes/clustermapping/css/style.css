@@ -4313,10 +4313,13 @@ a.thumbnail:focus {
   color: #2e3a45;
 }
 .alert {
-  padding: 15px;
+  padding: 15px 15px 0 15px;
   margin-bottom: 14px;
   border: 1px solid transparent;
   border-radius: 5px;
+  -webkit-box-shadow: 10px 10px 5px 0px rgba(189,189,189,1);
+  -moz-box-shadow: 10px 10px 5px 0px rgba(189,189,189,1);
+  box-shadow: 10px 10px 5px 0px rgba(189,189,189,1);
 }
 .alert h4 {
   margin-top: 0;

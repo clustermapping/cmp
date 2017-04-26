@@ -32,6 +32,16 @@
         <?php print render($search); ?>
       </div><!--/big search bar-->
 
+      <div id="dive-in-wrapper">
+        <h2 class="section-head">
+          <?php print _hbs_homepage_title('third_lead'); ?>
+        </h2>
+        <div id="whos-doing" class="col-wrapper clearfix">
+          <?php print _hbs_homepage_messages('third_lead'); ?>
+        </div><!--/dive in-->
+
+      </div><!--/dive in wrapper-->
+
   </div><!--/container-->
 
 </div><!--/main-container-->

@@ -15,7 +15,7 @@ function hbs_homepage_homepage() {
   $build['search'] = $block;
 
   // Display the main map dashboard.
-  $build['map'] = _hbs_homepage_main_map();
+  //$build['map'] = _hbs_homepage_main_map();
 
   // Display the main map stories items.
   $build['stories'] = _hbs_homepage_stories();
@@ -468,6 +468,33 @@ function hbs_homepage_config_form($form, &$form_state) {
     '#description' => 'This HTML block will appear under the first lead on the homepage.',
     '#default_value' => ($lead_message2) ? $lead_message2['value'] : NULL,
     '#format' => ($lead_message2) ? $lead_message2['format'] : NULL,
+  );
+
+  $form['hbs_homepage_third_lead'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Third Homepage Lead',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#description' => "Messages that appears under the map on the homepage.",
+  );
+
+  $form['hbs_homepage_third_lead']['hbs_homepage_third_lead_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Lead Title'),
+    '#default_value' => variable_get('hbs_homepage_third_lead_title', FALSE),
+    '#size' => 62,
+    '#maxlength' => 128,
+    '#description' => t('Header for the lead'),
+  );
+
+  $lead_message3 = variable_get('hbs_homepage_third_lead_messages', NULL);
+  $form['hbs_homepage_third_lead']['hbs_homepage_third_lead_messages'] = array(
+    '#type' => 'text_format',
+    '#base_type' => 'textarea',
+    '#title' => 'Lead Message',
+    '#description' => 'This HTML block will appear under the map on the homepage.',
+    '#default_value' => ($lead_message3) ? $lead_message3['value'] : NULL,
+    '#format' => ($lead_message3) ? $lead_message3['format'] : NULL,
   );
 
   $welcome_message = variable_get('hbs_homepage_welcome_message', _hbs_homepage_welcome_message_default());
