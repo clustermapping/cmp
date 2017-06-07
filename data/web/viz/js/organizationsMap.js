@@ -247,16 +247,20 @@
     }
 
     $('[name="map_organizationType"]', dataOverlay).change(function() {
-      var value = $(this).val();
+      //var value = $(this).val();
+      var name= $(this).find('option:selected').text();
       updateListUrl();
-      mapState.currentFilter.orgType = (value === '0') ? undefined : value;
+      // mapState.currentFilter.orgType = (value === '0') ? undefined : value;
+      mapState.currentFilter.orgType = (name === 'all') ? undefined : name;
       paint();
     });
 
     $('[name="map_cluster"]', dataOverlay).change(function() {
-      var value = $(this).val();
+      // var value = $(this).val();
+      var name= $(this).find('option:selected').text();
       updateListUrl();
-      mapState.currentFilter.cluster = (value === 'all') ? undefined : value;
+      // mapState.currentFilter.cluster = (value === 'all') ? undefined : value;
+      mapState.currentFilter.cluster= (name === 'all') ? undefined : name;
       paint();
     });
 
@@ -313,36 +317,32 @@
     var g = mapObjects.g;
 
     var filteredData = orgData;
-
-    if (mapState.currentFilter.orgType) {
+    if (mapState.currentFilter.orgType && mapState.currentFilter.orgType != 'All') {
       filteredData = filteredData.filter(function(d) {
         var returnValue = false;
 
-        if (d.im_vid_3) {
-          for (var i = 0; i < d.im_vid_3.length; i++) {
-            if (d.im_vid_3[i] == mapState.currentFilter.orgType) {
-              returnValue = true;
-              break;
-            }
-          }
-        }
-
+	if (d.orgtype && d.orgtype == mapState.currentFilter.orgType) {
+	  returnValue = true;
+	}
         return returnValue;
       });
     }
 
-    if (mapState.currentFilter.cluster) {
+    if (mapState.currentFilter.cluster && mapState.currentFilter.cluster!= 'Economy Wide') {
       filteredData = filteredData.filter(function(d) {
         var returnValue = false;
 
         var cid = 'clusterData/' + mapState.currentFilter.cluster;
         if (d.tm_field_clusters) {
-          if (d.tm_field_clusters.length == 1) {
-            d.tm_field_clusters = d.tm_field_clusters[0].split(' ');
-          }
-
-          if (d.tm_field_clusters.indexOf(cid) >= 0) {
-            returnValue = true;
+	  var arrClusters = d.tm_field_clusters.split(',');
+	  //arrClusters.forEach(function(cluster) {
+          for (var i = 0; i < arrClusters.length; i++) {
+	    var el = $( '<div></div>' );
+	    var ela = $('a', el.html(arrClusters[i])).text();
+            if (mapState.currentFilter.cluster == ela) {
+              returnValue = true;
+              continue;
+            }
           }
         }
         return returnValue;
@@ -480,7 +480,7 @@
               + '<div class="content">'
               + '<h3 class="title-text">' + d['label'] + '</h3>'
               + '<p>' + d['teaser'] + '</p>'
-              + '<a target="_parent" href="/' + d['path_alias'] + '">Go to organization</a>'
+              + '<a target="_parent" href="' + d['path_alias'] + '">Go to organization</a>'
               + '</div>';
 
             $('.orgDetail-item').html(content).addClass('visible');
@@ -618,7 +618,9 @@
         .attr("d", path)
         .on('click', clickToZoom);
 
-      loader.request(['http://clustermapping.us/content/organization'], function (orgData) {
+    var loadingOverlay = $('#loading-overlay').show();
+      loader.request(['/content/organization'], function (orgData) {
+	
         mapObjects.orgData = orgData;
         var pointsRaw = orgData.map(function(d, i) {
           var point = projection([d['location_lng_s'], d['location_lat_s']]);
@@ -631,7 +633,7 @@
         });
 
         mapObjects.pointsRaw = pointsRaw.filter(function(d) {return d !== null;});
-
+	loadingOverlay.fadeOut();
         paint();
       });
     });

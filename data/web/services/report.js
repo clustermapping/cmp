@@ -613,8 +613,10 @@ function getStateWageTotal(client, code, type, year, cb) {
 
     return deferQuery(client, query, function (queryResult) {
       var value = 0;
-      if (type == 'traded') value = queryResult.response.docs[0].private_wage_traded_tf;
-      else if (type == 'local') value = queryResult.response.docs[0].private_wage_local_tf;
+      if (queryResult.response.numFound > 0) {
+        if (type == 'traded') value = queryResult.response.docs[0].private_wage_traded_tf;
+        else if (type == 'local') value = queryResult.response.docs[0].private_wage_local_tf;
+      }
       return value;
     });
 }
@@ -1147,6 +1149,7 @@ function scorecard(data, region, benchmarkRegion, indicator, start, end, filters
   }
   total.focus = region;
   total.value = valF(byRegionYear.get(benchmarkRegion).get(end));
+
   total.change = simpleChange(valF(byRegionYear.get(benchmarkRegion).get(start)), valF(byRegionYear.get(benchmarkRegion).get(end)));
   total.cagr = cagr(valF(byRegionYear.get(benchmarkRegion).get(start)), valF(byRegionYear.get(benchmarkRegion).get(end)), end-start);
 
@@ -2665,7 +2668,7 @@ function mapOrganizationCSV() {
       res.cache({maxAge: 0});
       res.set('Content-Type', 'text/csv');
       res.set('Content-Disposition','attachment; filename=' + filename );
-    
+
     http.get(url, function(response) {
       response.on('data', function (chunk) {
         data += chunk;

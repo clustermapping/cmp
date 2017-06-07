@@ -167,36 +167,42 @@ function hbs_organizations_taxonomy_select_nodes($tid, $pager = TRUE, $limit = F
   return $query->execute()->fetchCol();
 }
 
-
 function hbs_organizations_node_presave($node) {
   //Create $address var if we have a field with data.
-  if ($address = @$node->field_address[$node->language][0]) {
-    // Build address string.
-    $address_string =
-      $address['thoroughfare'] . ' ' .
-      $address['locality'] . ' ' .
-      $address['administrative_area'] . ' ' .
-      $address['postal_code'];
+  try {
+    if ($address = @$node->field_address[$node ->language][0]) {
+      // Build address string.
+      $address_string =
+        $address['thoroughfare']. ' ' .
+          $address['locality']. ' ' .
+            $address['administrative_area']. ' ' .
+              $address['postal_code'];
 
-    // Geocode address string.
-    $point = geocoder('google',$address_string);
-    $geoJSON = $point->out('json');
-    $data = json_decode($geoJSON);
+      // Geocode address string.
+      $point = geocoder('google', $address_string);
+      if (!is_null($point)) {
+        $geoJSON = $point ->out('json');
+        $data = json_decode($geoJSON);
 
-    if (is_array($data->coordinates)) {
-      // Populate location field.
-      // Do not overwrite fields if they contain data.
-      if (!trim($node->field_location[$node->language][0]['lat']) && !trim($node->field_location[$node->language][0]['lng'])) {
-        $lat = $data->coordinates[1];
-        $lng = $data->coordinates[0];
-        $node->field_location[$node->language][0]['lat'] = $lat;
-        $node->field_location[$node->language][0]['lng'] = $lng;
+        if (is_array($data ->coordinates)) {
+          // Populate location field.
+          // Do not overwrite fields if they contain data.
+          if (!trim($node ->field_location[$node ->language][0]['lat']) && !trim($node ->field_location[$node ->language][0]['lng'])) {
+            $lat = $data ->coordinates[1];
+            $lng = $data ->coordinates[0];
+            $node ->field_location[$node ->language][0]['lat'] = $lat;
+            $node ->field_location[$node ->language][0]['lng'] = $lng;
 
-        $lat_rad = deg2rad($lat);
-        $node->field_location[$node->language][0]['lat_sin'] = sin($lat_rad);
-        $node->field_location[$node->language][0]['lat_cos'] = cos($lat_rad);
-        $node->field_location[$node->language][0]['lng_rad'] = deg2rad($lng);
+            $lat_rad = deg2rad($lat);
+            $node ->field_location[$node ->language][0]['lat_sin'] = sin($lat_rad);
+            $node ->field_location[$node ->language][0]['lat_cos'] = cos($lat_rad);
+            $node ->field_location[$node ->language][0]['lng_rad'] = deg2rad($lng);
+          }
+        }
       }
     }
+  }
+  catch (Exception $e) {
+    echo 'Caught exception: ', $e ->getMessage(), "\n";
   }
 }

@@ -287,7 +287,12 @@ function keyName(str) {
     .toLowerCase(); // to lower case
 }
 
-var custom = cp.fork(__dirname + '/../custom.js');
+var custom;
+function forkCustom() {
+    custom = cp.fork(__dirname + '/../custom.js');
+}
+
+forkCustom();
 function customRegion(client) {
     return function(req, res, next) {
         var customSpec = req.body, region;
@@ -311,6 +316,10 @@ function customRegion(client) {
           };
           client.autoCommit = true;
           client.add(region, function() {
+          if (!custom && !custom.send) { 
+            console.log('Custom process died, restarting');
+            forkCustom();
+          }
             custom.send(customSpec);
             res.send(region);
           });
@@ -342,15 +351,21 @@ function restartCustomRegion(client) {
     var qry = {type_t:'region', region_type_t:'custom', region_code_t: req.body.code},
       query = client.createQuery().set('json.nl=map').rows(10000);
     query.q(qry);
+console.log(JSON.stringify(query));
     return deferQuery(client, query, function(result) { 
       var d = result.response.docs.shift();
-      var spec = {
-        name: d.region_name_t,
-        username: d.owner_t,
-        owner: d.owner_t,
-        regions: d.regions_txt
-      };
-      custom.send(spec);
+console.log(JSON.stringify("d "+ JSON.stringify(d)));
+      if (d && d.data_processing_t === 'true') {
+        var spec = {
+          name: d.region_name_t,
+          username: d.owner_t,
+          owner: d.owner_t,
+          regions: d.regions_txt
+        };
+console.log(JSON.stringify(spec));
+console.log(JSON.stringify(d));
+        custom.send(spec);
+      }
       res.send(d);
     });
   }
