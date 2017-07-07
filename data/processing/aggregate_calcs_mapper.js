@@ -207,13 +207,13 @@ function create_importer(clusterData, clusters) {
   }
 
   function calc_education_percentages(row) {
-    if(row.educational_attainment_25_to_64_total_population_25_to_64_tf) {
+    if(row.educational_attainment_25_years_and_over_total_population_25_years_and_over_tf) {
 
-      var total_pop_over_25 = row.educational_attainment_25_to_64_total_population_25_to_64_tf;
+      var total_pop_over_25 = row.educational_attainment_25_years_and_over_total_population_25_years_and_over_tf;
 
-      _calc_per(row, 'educational_attainment_25_to_64_high_school_graduate_tf', total_pop_over_25, ['educational_attainment_25_to_64_some_college_or_associates_tf', 'educational_attainment_25_to_64_bachelors_tf','educational_attainment_25_to_64_masters_professional_ph_d_tf']);
-      _calc_per(row, 'educational_attainment_25_to_64_some_college_or_associates_tf', total_pop_over_25, ['educational_attainment_25_to_64_bachelors_tf','educational_attainment_25_to_64_masters_professional_ph_d_tf']);
-      _calc_per(row, 'educational_attainment_25_to_64_bachelors_tf', total_pop_over_25, ['educational_attainment_25_to_64_masters_professional_ph_d_tf']);
+      _calc_per(row, 'educational_attainment_25_years_and_over_high_school_graduate_tf', total_pop_over_25, ['educational_attainment_25_years_and_over_some_college_or_associates_tf', 'educational_attainment_25_years_and_over_bachelors_tf','educational_attainment_25_years_and_over_masters_professional_ph_d_tf']);
+      _calc_per(row, 'educational_attainment_25_years_and_over_some_college_or_associates_tf', total_pop_over_25, ['educational_attainment_25_years_and_over_bachelors_tf','educational_attainment_25_years_and_over_masters_professional_ph_d_tf']);
+      _calc_per(row, 'educational_attainment_25_years_and_over_bachelors_tf', total_pop_over_25, ['educational_attainment_25_years_and_over_masters_professional_ph_d_tf']);
     }
   }
 

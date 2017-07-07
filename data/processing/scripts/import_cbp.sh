@@ -1,5 +1,5 @@
 #!/bin/bash
-appdir=${1:-"/opt/development/hbs/clustermapping/dataservices"}
+appdir=${1:-"/opt/development/hbs/clustermapping/data/processing"}
 year=${2:-"2011"}
 dir=`pwd`
 i=$dir/cbp/$year
@@ -22,4 +22,5 @@ for k in $i/*co.txt; do
 	echo "Importing County Data: $k"
 	node import.js cbp year="$year" region_type="county" file="$k"
 	echo 
-done 
+done
+ 

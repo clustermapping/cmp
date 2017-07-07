@@ -32,27 +32,32 @@ var cluster_calcs = function (persister, skipTypes, skipSubs) {
       Object.keys(lqs).forEach(function(key){
         Object.keys(lqs[key]).forEach(function(clusterKey){
           var clusters = lqs[key][clusterKey],
-              all_emp = clusters.map(function(d) { return d.emp; }).sort(d3.ascending),
-              all_est = clusters.map(function(d) { return d.est; }).sort(d3.ascending),
-              all_lq = clusters.map(function(d) { return d.lq; }).sort(d3.ascending),
+              all_emp = clusters.filter(function(d) {return d.emp > 0;}).map(function(d) { return d.emp; }).sort(d3.ascending),
+              all_est = clusters.filter(function(d) {return d.emp > 0;}).map(function(d) { return d.est; }).sort(d3.ascending),
+              all_lq = clusters.filter(function(d) {return d.emp > 0;}).map(function(d) { return d.lq; }).sort(d3.ascending),
               bottom_emp_quartile = d3.quantile(all_emp, 0.25),
               bottom_est_quartile = d3.quantile(all_est, 0.25),
+	      top_lq_decile = d3.quantile(all_lq, 0.90),
               top_lq_quartile = d3.quantile(all_lq, 0.75);
               lq_half = d3.quantile(all_lq, 0.5);
               bottom_lq_quartile = d3.quantile(all_lq, 0.25);
           clusters.forEach(function (d, i) {
-            var cluster = persister.get('cluster/' + d.region + '/' + clusterKey);
-            if (skipTypes && skipTypes.indexOf(cluster.region_type_t) != -1) return;
-            cluster.qualifying_b = (d.lq > bottom_lq_quartile
+              var cluster = persister.get('cluster/' + d.region + '/' + clusterKey);
+              if (skipTypes && skipTypes.indexOf(cluster.region_type_t) != -1) return;
+              cluster.qualifying_b = (d.lq > bottom_lq_quartile
                                 && d.emp > bottom_emp_quartile
                                 && d.est > bottom_est_quartile);
-            cluster.significant_b = (d.lq > lq_half
+              cluster.significant_b = (d.lq > lq_half
                                 && d.emp > bottom_emp_quartile
                                 && d.est > bottom_est_quartile);
-            cluster.strong_b = (d.lq > top_lq_quartile
+              cluster.strong_b = (d.lq >= top_lq_quartile
                                 && d.emp > bottom_emp_quartile
                                 && d.est > bottom_est_quartile
-                                && d.lq > 1);
+                                && d.lq >= 1);
+              cluster.strong10_b = (d.lq >= top_lq_decile
+                                && d.emp > bottom_emp_quartile
+                                && d.est > bottom_est_quartile
+                                && d.lq >= 1);
           });
         });
       });

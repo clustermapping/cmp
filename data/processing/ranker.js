@@ -2,27 +2,36 @@ var d3 = require('d3');
 
 function create_importer(data, startData, dataDict, types, regionTypes) {
 
-  function percentile(index, count) {
+ function percentile(index, adjustedCount) {
     index = index+1;
-    if (count < 100) return index;
-    return Math.round((100/count)*(index-.5));
+    return Math.round((100/adjustedCount)*(index-.5));
   }
 
   function rank(values, key, reverse) {
+    var vs = values.slice(0);
+    var perKeys = ['lq_tf', 'emp_tf', 'est_tf'];
+    if (perKeys.indexOf(key) != -1) {
+      vs = vs.filter(function(a){return a.emp_tl>0;});
+    }
     var rank_key = key + '_rank_i',
         percentile_key = key + '_per_rank_i',
-        count = values.length,
+        actualCount = values.length,
+        adjustedCount = vs.length,
         sort = (reverse? d3.ascending : d3.descending),
         sorted = values.sort(function(a, b) { return sort(+a[key], +b[key]); });
+
     sorted.forEach(function(v, i) {
       if (v[key]) {
         v[rank_key] = i + 1;
-        v[percentile_key] = percentile(i, count);
-//        data.persist(v);
+        if (v['region_type_t'] === 'state') {
+          v[percentile_key] = i+1;
+        } else {
+          v[percentile_key] = percentile(i, adjustedCount);
+        }
       }
     });
-  }
-
+  }  
+  
   function rankChange(values, startValuesByRegion, key, changeType, reverse) {
     var change_key = key + '_change_tf';
     values.forEach(function(v) {
