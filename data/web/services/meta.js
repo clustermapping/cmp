@@ -7,7 +7,13 @@ var solr = require('solr-client'),
 
 function facetKeys(fieldName) {
   return function(result) {
-    return Object.keys(result.facet_counts.facet_fields[fieldName]);
+    // filter out year entries with 0 employees
+    var ret = result.facet_counts.facet_fields[fieldName];
+    if (fieldName === 'year_t') {
+        ret = Object.keys(ret).filter(function(key){return ret[key] > 0});
+    }
+    //return Object.keys(result.facet_counts.facet_fields[fieldName]);
+    return ret;
   };
 }
 
@@ -43,7 +49,9 @@ function deferQuery(client, query, processFunc) {
 }
 
 function facetForType(client, docType, facetField) {
-  var query = client.createQuery().q({type_t: docType}).facet({field: facetField}).rows(0).set('json.nl=map');
+  //var query = client.createQuery().q({type_t: docType}).facet({field: facetField}).rows(1).set('json.nl=map');
+  // Add filter to filter out years with 0 employees (this adds the employee count to the result)
+  var query = client.createQuery().q({type_t: docType}).set('fq=-emp_tl:0').facet({field: facetField}).rows(0).set('json.nl=map');
   return deferQuery(client, query, facetKeys(facetField));
 }
 

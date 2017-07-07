@@ -468,6 +468,14 @@ function createFromSpec(spec, progressFunc, successFunc) {
   var startTime = process.hrtime();
   var client = solr.createClient(config.solr);
   client.autoCommit = true;
+
+  var name = spec.name;
+  var n = name.lastIndexOf(" by ");
+  if (n > 0) {
+    name = name.substring(0, n);
+    spec.name = name;
+  }
+
   console.log('CREATE FROM SPEC', spec.name);
   return Q.all([loadYears(client), loadClusters(client, true)])
     .spread(processYears(client, spec, progressFunc))
@@ -497,17 +505,22 @@ dataDict.vars.forEach(function(v) {
 dataKeys = Object.keys(oKeys);
 
 process.on('message', function (spec) {
+console.log("spec "+ JSON.stringify(spec));
   function _progress_func(status) {
     process.send(status);
+console.log("status "+ JSON.stringify(status));
   }
   if (running) {
     queue.push(spec);
+console.log("pushing...queue size:"+queue.length);
   } else {
     createFromSpec(spec, _progress_func);
+console.log("createFromSpec...");
   }
 });
 
 process.on('uncaughtException', function (err) {
+  running = false;
   console.error(err.message + "\n" + err.stack);
 });
 

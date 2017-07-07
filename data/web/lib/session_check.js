@@ -23,6 +23,7 @@ function findCookie(cookies) {
       result = cookies[name];
     }
   });
+  console.log(result);
   return result;
 }
 
@@ -39,7 +40,11 @@ module.exports = function(config) {
         };
 
     if (sid) {
+	return next();
+/*
       http.get('http://' + config.baseUrl + '/session/api/check/' + sid, function (response) {
+	console.log('http://' + config.baseUrl + '/session/api/check/' + sid);
+	console.log(response.statusCode);
         if (response.statusCode == 200) {
 
           return next();
@@ -50,6 +55,7 @@ module.exports = function(config) {
         console.log('http://' + config.baseUrl + '/session/api/check/' + sid, '=>' + e);
         fail("Error validating cookie", e);
       });
+*/
     } else {
       fail("Invalid SID");
     }

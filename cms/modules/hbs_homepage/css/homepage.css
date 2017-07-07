@@ -1,5 +1,5 @@
 #what-are-clusters {
-  padding-top: 30px;
+  padding-top: 0;
 }
 
 .front h2.section-head {
@@ -103,12 +103,13 @@ a.read-more {
 
 
 /* Dive in */
-
+/*
 #dive-in-wrapper {
   margin: 40px 0 0 0;
   background: url(../images/bkg-divider-sml.png) center 0 no-repeat;
   padding-top: 35px;
 }
+*/
 
 #dive-in {
   background: #6b717c;
@@ -231,6 +232,10 @@ background: -o-linear-gradient(top, #264aa8 0%,#21408f 100%); /* Opera 11.10+ */
 background: -ms-linear-gradient(top, #264aa8 0%,#21408f 100%); /* IE10+ */
 background: linear-gradient(to bottom, #264aa8 0%,#21408f 100%); /* W3C */
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#264aa8', endColorstr='#21408f',GradientType=0 );
+}
+
+#whos-doing {
+  padding: 30px 0 30px;
 }
 
 #data-by-region {

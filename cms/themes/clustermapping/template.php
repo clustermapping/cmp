@@ -111,7 +111,8 @@ function clustermapping_preprocess_page(&$variables) {
   // Modify search block
   $search_block = module_invoke('search', 'block_view', 'search');
   $search_block['content']['search_block_form']['#attributes']['placeholder'] = 'Cluster, Region, City, zip, or keyword';
-  $search_block['content']['search_block_form']['#prefix'] = '<label class="pull-left">Explore</label>';
+  $search_block['content']['search_block_form']['#prefix'] = '<label class="pull-left">Explore</label><br />';
+  $search_block['content']['search_block_form']['#attributes']['class'][] = 'form-control';
   $variables['search_block'] = render($search_block);
 }
 
