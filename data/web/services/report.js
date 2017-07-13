@@ -2124,7 +2124,7 @@ function timeline(data, dataType, typeInfo, indicator) {
       first = function(ds) { return ds[0]; },
       byTypeYear = d3.nest().key(vObj[dataType].byType).key(byYear).rollup(first).map(data, d3.map),
       yearRange = d3.extent(data, byYear ),
-      years = d3.range(yearRange[0], yearRange[1]+1),
+      years = d3.range(yearRange[0], yearRange[1]),
       result = [],
       typeKey = data[0].key_t,
       rType = data[0].region_type_t,
