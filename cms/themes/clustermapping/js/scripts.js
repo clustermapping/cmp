@@ -18,7 +18,6 @@
       if (jQuery(document.location.hash).length) {
         setTimeout(function(){
           var top = jQuery(document.location.hash).offset().top - jQuery('#banner').height();
-          console.log(top)
           jQuery('html, body').animate({
             scrollTop: top,
           }, 500);
