@@ -6,7 +6,9 @@ var env = process.env.NODE_ENV || 'development',
   custom = require('./custom');
 function loadProcessingRegions(client, processFunc) {
   var name = process.argv[2] || '*';
-  var q = {type_t: 'region', region_type_t:  'custom', region_name_t: name};
+  //var q = {type_t: 'region', region_type_t:  'custom', region_name_t: name};
+  // var q = {type_t: 'region', region_type_t:  'custom', data_processing: true};
+  var q = {type_t: 'region', region_type_t:  'custom', data_processing_t : true};
   var query = client.createQuery().q(q).sort({name_t: 'ASC'}).rows(100000);
 
   var startTime = process.hrtime();
@@ -16,12 +18,13 @@ function loadProcessingRegions(client, processFunc) {
     console.log('Starting process ', result.response.docs.length, 'regions');
     var docs = result.response.docs.sort(function (a,b){ return d3.ascending(a.region_count_tl, b.region_count_tl) });
 
+    console.log('Processing '+ docs.length + ' documents.');
     processNext(docs);
 
     function processNext(docs) {
       var d = docs.shift();
       if (! d) return;
-      console.log(d.name_t, d.region_count_tl);
+      console.log('Next document: '+ d.name_t, d.region_count_tl);
       if (d.region_count_tl > 500 || d.region_count_tl == 0) {
         processNext(docs);
         return;
@@ -44,7 +47,6 @@ function loadProcessingRegions(client, processFunc) {
 
   });
 }
-
 var client = solr.createClient(config.solr);
 loadProcessingRegions(client);
 
