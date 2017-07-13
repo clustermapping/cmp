@@ -36,7 +36,7 @@
     <div class="container cluster-container">
         <div class="row no-border">
             <div class="col-md-12 header">
-                <h1 class="center-block">Cluster Portfolio</h1>
+                <h1 class="center-block">Cluster Portfolio, 2015</h1>
 <!---->
 <!--                <p><strong>Cluster Strength: 38%</strong> (National Average: 24%) --><?php //print hbs_dashboard_filter_tooltip('[tooltip:2]'); ?><!--</p>-->
 
