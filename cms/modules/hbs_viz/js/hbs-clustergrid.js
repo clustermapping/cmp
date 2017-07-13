@@ -590,11 +590,16 @@
       var selectedClusters = settings.hbs_cluster_grid ? settings.hbs_cluster_grid.selected : undefined;
       queue()
         .defer(d3.json, '/data/meta/clusters')
-        .defer(d3.json, '/data/region' + region  + '/2013/all')
+        .defer(d3.json, '/data/region' + region  + '/2015/all')
         .await(function(err, data, clusters) {
-            buildData(data, 'name', selectedClusters);
-            buildClusters(clusters, selectedClusters);
-            selectedClusters && setup("#cluster-list-0", '#cluster-list-controls');
+            var strongClusters = clusters.filter(function(d) { return d.strong_b;});
+            var strongIds = [];
+            strongClusters.map( function(cluster) {
+              strongIds.push(cluster.cluster_code_t);
+            });
+            buildData(data, 'name', strongIds);
+            buildClusters(clusters, strongIds);
+            strongIds && setup("#cluster-list-0", '#cluster-list-controls');
         });
     }
   }
