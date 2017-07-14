@@ -227,6 +227,7 @@
       );
 
     container = d3.select(sel);
+    if (plotData && plotData.length>0) {totalData.end = plotData[0].lastYear;}
     chart = container.append('div').datum(plotData).call(plot);
     d3.select(window).on("resize", plot.update).on("hashchange", update);
     return container;
@@ -354,7 +355,6 @@
     if (!d3.event.sourceEvent) return; // only transition after input
     var extent0 = brush.extent(),
       extent1 = extent0.map(d3.time.year.round);
-
     // if empty when rounded, use floor & ceil instead
     if (extent1[0] >= extent1[1]) {
       extent1[0] = d3.time.year.floor(extent0[0]);
