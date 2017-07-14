@@ -13,6 +13,8 @@ function _hbs_dashboard_cluster_landing_page_callback() {
   drupal_add_js( array( 'hbs_dashboard' => array('years' => $years)), 'setting');
   $year = _hbs_indicator_year('emp_tl', 'all', 'country');
   drupal_add_js(array('hbs_dashboard' => array('year' => $year)), 'setting');
+  $innovation_year = _hbs_indicator_year('patent_count_tf', 'all', 'country');
+  drupal_add_js(array('hbs_dashboard' => array('innovation_year' => $innovation_year)), 'setting');
   drupal_add_js(drupal_get_path('module', 'hbs_viz') .'/js/hbs-clusterlist.js', 'file');
   drupal_add_js(drupal_get_path('module', 'hbs_dashboard') .'/js/hbs_cluster_landing.js', 'file');
   drupal_add_css(drupal_get_path('module', 'hbs_viz') . '/css/hbs-viz.css', 'file');
@@ -639,6 +641,8 @@ function _hbs_dashboard_region_cluster_portfolio_callback($region_type, $region_
     drupal_add_js(drupal_get_path('module', 'hbs_viz') .'/js/hbs-clustergrid.js', 'file');
     $year = _hbs_indicator_year('emp_tl', 'all', $region_data['region_type_t']);
     drupal_add_js(array('hbs_dashboard' => array('year' => $year)), 'setting');
+    $innovation_year = _hbs_indicator_year('patent_count_tf', 'all', $region_data['region_type_t']);
+    drupal_add_js(array('hbs_dashboard' => array('innovation_year' => $innovation_year)), 'setting');
     _hbs_dashboard_add_common_js('region', $data);
     return theme('hbs_region_subpage_cluster_composition', $build);
   }
@@ -662,6 +666,8 @@ function _hbs_dashboard_region_subregions_callback($region_type, $region_data = 
     }
     $year = _hbs_indicator_year('emp_tl', 'all', $region_type);
     drupal_add_js(array('hbs_dashboard' => array('year' => $year)), 'setting');
+    $innovation_year = _hbs_indicator_year('patent_count_tf', 'all', $region_type);
+    drupal_add_js(array('hbs_dashboard' => array('innovation_year' => $innovation_year)), 'setting');
 
     _hbs_dashboard_region_compare($data['region']['region_type_t'], $data['region']['region_code_t']);
     $build['map'] = _hbs_dashboard_main_map();
@@ -829,6 +835,8 @@ function _hbs_dashboard_region_cluster_subclusters_callback($cluster_data = NULL
     $build['map'] = _hbs_dashboard_main_map();
     $year = _hbs_indicator_year('emp_tl', $data['cluster']['key_t'], $data['region']['region_type_t']);
     drupal_add_js(array('hbs_dashboard' => array('year' => $year)), 'setting');
+    $innovation_year = _hbs_indicator_year('patent_count_tf', $data['cluster']['key_t'], $data['region']['region_type_t']);
+    drupal_add_js(array('hbs_dashboard' => array('innovation_year' => $innovation_year)), 'setting');
     _hbs_dashboard_add_common_js('region-cluster', $data, 'subClusters');
     drupal_add_js(drupal_get_path('module', 'hbs_dashboard') .'/js/hbs_region_cluster.js', 'file');
 

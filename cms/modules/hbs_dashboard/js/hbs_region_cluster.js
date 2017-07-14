@@ -34,7 +34,8 @@
                 case 'jobcreation':
                     //benchmark = false;
                 case 'innovation':
-                  yearStr = '/1998/' + year;
+                  var innovation_year = Drupal.settings.hbs_dashboard.innovation_year;
+                  yearStr = '/1998/' + innovation_year;
                   break;
                 case 'specialization':
                   yearStr = '/1998/' + year;
