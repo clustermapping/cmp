@@ -605,10 +605,10 @@ function captureEmploymentCluster(req, res, next) {
     }
   });
 }
-function getStateWageTotal(client, code, type, year, cb) {
+function getRegionWageTotal(client, regionType, regionCode, type, year, cb) {
     var qry = q({type_t: 'aggregate'})
         .and({year_t: year})
-        .and( q({region_type_t:'state', region_key_t:code}) ),
+        .and( q({region_type_t:regionType, region_key_t:regionCode}) ),
       query = client.createQuery().rows(100).q(qry.q());
 
     return deferQuery(client, query, function (queryResult) {
@@ -689,7 +689,7 @@ function loadWages(client, cb) {
       return getBenchmarkWageTotal(client, req.params.cluster, year).then(function(result) {
           return result;
         }).then(function(benchmarkTotal) {
-          return getStateWageTotal(client, code, req.params.cluster, year).then(function(result) {
+          return getRegionWageTotal(client, type, code, req.params.cluster, year).then(function(result) {
             return result;
           }, benchmarkTotal).then(function(stateTotal) {
             return {value: stateTotal, benchmark: benchmarkTotal};
