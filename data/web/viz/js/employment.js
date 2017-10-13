@@ -393,7 +393,7 @@
         attrs: {
           style: function(d) {
             var top = plot.drawHeight() - plot.margin.bottom() - 62;
-            return "background:#FFFBCC;height:38px;width:400px;top:" + (top)
+            return "background:#dfffa5;height:38px;width:400px;top:" + (top)
               + "px;right:" + plot.margin.right() + "px;padding:3px;border:0;text-align:center;border:1px solid #ccc;"
               + (options.regionType == 'country' ? 'display:none;' : '')
           }
