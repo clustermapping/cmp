@@ -40,13 +40,13 @@ module.exports = {
   },
   production: {
     solr: {
-      host: '54.83.55.150',
+      host: '34.207.238.121',
       port: 80,
       core: 'clusterdata2016',
       path: '/solr'
     },
     siteSolr: {
-      host: '54.83.55.150',
+      host: '34.207.238.121',
       port: 80,
       core: 'collection1',
       path: '/solr'
