@@ -150,7 +150,7 @@ var numFormat = ',f',
 
     {
       label: "Prosperity",
-      subtitle: 'GDP Per Capita, 2005 real dollars',
+      subtitle: 'GDP Per Capita ',
       key: "gdp_per_capita_tf",
       mapTypes: ['performance'],
       colors: colors.rowD,
@@ -260,7 +260,7 @@ var numFormat = ',f',
     },
     {
       label: "Labor Force Productivity",
-      subtitle: 'Real GDP, 2005 dollars, per Labor Force Participant',
+      subtitle: 'GDP per Labor Force Participant ',
       key: "labor_force_productivity_tf",
       mapTypes: ['performance'],
       colors: colors.rowD,
