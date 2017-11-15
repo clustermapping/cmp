@@ -965,7 +965,7 @@ function specializationCSV(client) {
             { name: "benchmarkEnd", header: p.end + " National Employment" }
           ],
           data: results.results,
-          transform: function(d) {d.value = percentFormat(d.value); d.benchmark = percentFormat(d.change); return d;}
+          transform: function(d) {console.log(JSON.stringify(d)); d.benchmark = percentFormat(d.change); return d;}
         });
         // Add credit to end of file.
         results.results.push({label: sourceCreditText()});
