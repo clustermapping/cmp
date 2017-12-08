@@ -965,7 +965,7 @@ function specializationCSV(client) {
             { name: "benchmarkEnd", header: p.end + " National Employment" }
           ],
           data: results.results,
-          transform: function(d) {console.log(JSON.stringify(d)); d.benchmark = percentFormat(d.change); return d;}
+          transform: function(d) {d.benchmark = percentFormat(d.change); return d;}
         });
         // Add credit to end of file.
         results.results.push({label: sourceCreditText()});
@@ -2507,8 +2507,6 @@ function processMapData(data, cluster, subcluster, startYear, endYear, indicator
       byYearByRegion = d3.nest().key(byYear).key(byRegion).rollup(pullFirst).map(data, d3.map),
       endByRegionId = byYearByRegion.get(endYear),
       startByRegionId = byYearByRegion.get(startYear),
-      // fmt = d3.format(indicator.format),
-      // rangeFmt = (indicator.range ? d3.format(rangeIndicator.format) : function(d) { return d;}),
       a;
 
   a = endByRegionId.values().sort(function(a,b){return d3.ascending(a.region_code_t, b.region_code_t);});
@@ -2524,13 +2522,20 @@ function processMapData(data, cluster, subcluster, startYear, endYear, indicator
       if (d.empt_tl <= 0) d.specialization = -1;
 
       if (d.emp_tl > 0) {
-        if (d.lq_tf >= lq75 || (d.lq_tf > 1.0 && d.cluster_emp_per_tf >= share25)) {
-          highEmpSpec = true;
-        }
+          if (d.strong_b) {
+            highEmpSpec = true;
+          }
 
-        if (d.cluster_emp_per_tf >= share90) {
-          highEmpShare = true;
-        }
+          var percentile;
+          if (d.region_type_t === 'state') {
+            percentile = d.emp_tl_rank_i * 100 / 51;
+          } else {
+            percentile = d.emp_tl_rank_i;
+          }
+
+          if (percentile <= 10) {
+            highEmpShare = true;
+          }
       }
 
       if (highEmpShare && highEmpSpec) {
@@ -2606,7 +2611,7 @@ function loadMapData(client, req, cb) {
       rangeIndicator = (ind.range ? dictVarByKey(ind.range_source) : undefined),
       qry = {region_type_t: type},
       fl = ['year_t', 'region_name_t','region_short_name_t', 'region_type_t', 'region_code_t', 'region_key_t',
-            'cluster_name_t',  'cluster_code_t', 'sub_code_t', indKey],
+            'cluster_name_t',  'cluster_code_t', 'sub_code_t', 'emp_tl_rank_i', 'emp_tl_per_rank_i', 'strong_b', 'strong10_b', indKey],
       query;
       if (ind.calc && ind.calc_source) fl = fl.concat(ind.calc_source);
       if (ind.range && ind.range_source) fl.push(ind.range_source);
