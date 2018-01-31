@@ -387,10 +387,10 @@ var zoom = d3.behavior.zoom()
 var drag = d3.behavior.drag();
 drag.on("drag", function() {
     d3.event.sourceEvent.stopPropagation(); // silence other listeners
-    svg.style('cursor', 'move')
+    //svg.style('cursor', 'move')
 });
 drag.on("dragend", function() {
-    svg.style('cursor', 'initial')
+    //svg.style('cursor', 'initial')
 });
 
 var fill = d3.scale.log()
@@ -649,7 +649,8 @@ function bbox(ids) {
 
 function clicked(d) {
     var MAX_COUNTIES = 399;
-    if (d3.event.defaultPrevented || (d3.event.type == 'mouseover' && !d3.event.shiftKey)) return;
+    //if (d3.event.defaultPrevented || (d3.event.type == 'mouseover' && !d3.event.shiftKey)) return;
+    if (d3.event.type == 'mouseover' && !d3.event.shiftKey) return;
 
     var el = d3.select(this);
     selected = !Object.keys(selectedCounties).length;
