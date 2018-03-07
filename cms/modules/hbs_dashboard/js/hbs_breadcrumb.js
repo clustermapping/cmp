@@ -60,7 +60,12 @@
         countries = regions.filter(function(d){return d.region_type_t == 'country'}).sort(function(a,b){return d3.ascending(a.name_t,b.name_t)});
         states = regions.filter(function(d){return d.region_type_t == 'state'}).sort(function(a,b){return d3.ascending(a.name_t,b.name_t)});
         msas = regions.filter(function(d){return d.region_type_t == 'msa'}).sort(function(a,b){return d3.ascending(a.name_t,b.name_t)});
-        eas = regions.filter(function(d){return d.region_type_t == 'economic'}).sort(function(a,b){return d3.ascending(a.name_t,b.name_t)});
+	eas = regions.filter(function(d){return d.region_type_t == 'economic'})
+		.map(function(d) {
+		  if (d.key_t.indexOf('+')>0) 
+		    d.key_t = d.key_t.substring(0,d.key_t.indexOf('+'));
+		    return d;
+		}).sort(function(a,b){return d3.ascending(a.name_t,b.name_t)});
         counties = regions.filter(function(d){return d.region_type_t == 'county'}).sort(function(a,b){return d3.ascending(a.region_short_name_t,b.region_short_name_t)});
 
         $('<p>').addClass('nav-state').append($('<label>').text('State')).append(select.state).appendTo($content);
