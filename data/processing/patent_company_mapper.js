@@ -1,6 +1,6 @@
 function create_importer(year) {
 
-  //fips,iyear,cnt,cocode,company
+  //fips,year,count,cocode,company
   //01001,2007,0.5333333333,0473860,RHEEM MANUFACTURING COMPANY
   //01001,2007,0.25,0218550,GENERAL ELECTRIC COMPANY
   //01001,2008,1,0926110,"SHORELINE RESTORATION SERVICES, LLC"
@@ -8,12 +8,12 @@ function create_importer(year) {
 
   return {
     filter: function(row) {
-      return row.iyear == year;
+      return row.year == year;
     },
     transform: function (row) {
       var fips = row.fips,
         region = 'county/' + fips,
-        value = +row.cnt;
+        value = +row.count;
 
       if (value == null) {
         console.log('region/' + region, 'aggregate/' + region + '/' + year, v.key, row.value, +row.value);
