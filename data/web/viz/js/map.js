@@ -334,18 +334,13 @@
                 if (d.empt_tl <= 0) d.specialization = -1;
 
                 if (d.emp_tl > 0) {
-                  if (d.region_type_t === 'state') {
-                    if (d.emp_tl_rank_i <= 12) {
-                      highEmpShare = true;
-                    } 
-                  } else {
-                    if (d.emp_tl_per_rank_i <= 25) {
-                      highEmpShare = true;
-                    }
-                  }
-                  if (d.strong_b) {
+                  if (d.lq_tf > lq75 && d.lq_tf > 1.0 && d.emp_tl > share25 && d.est_tl > est25) {
                     highEmpSpec = true;
-                  } 
+                  }
+
+                  if (d.emp_tl >= share90) {
+                    highEmpShare = true;
+                  }
                 }
 
                 if (highEmpShare && highEmpSpec) {
@@ -894,17 +889,6 @@
         fill = min && max && v != null ? scale(v) : undefined;
         if (fill !== '#000000') {
           returnData.fill = fill;
-        }
-        switch (v) {
-	  case 1: 
-	    returnData.fill = '#0074ea';
-	  break;
-          case 0:
-            returnData.fill = '#76dddd';
-          break;
-          case -1:
-           returnData.fill = '#fffddc';
-          break;
         }
         return returnData;
       },
