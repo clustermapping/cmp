@@ -1,4 +1,4 @@
-var env = process.env.NODE_ENV || 'development',
+var env = process.env.NODE_ENV || 'production',
   config = require('./config')[env],
   solr = require('solr-client'),
   Q = require('q'),
@@ -15,6 +15,7 @@ var env = process.env.NODE_ENV || 'development',
   fromCache = require('../processing/processor_from_cache'),
   processor_base = require('../processing/processor'),
   dataDict = require('./datadict');
+
 
 function keyName(str) {
   return str.replace(/[\(\)\*&,'":;\/\.]/g, '') // remove bad chars
