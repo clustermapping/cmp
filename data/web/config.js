@@ -36,7 +36,7 @@ module.exports = {
     },
     port: 4001,
     base: '/data',
-    baseUrl: '54.83.55.22'
+    baseUrl: '54.159.196.192'
   },
   production: {
     solr: {
