@@ -4,11 +4,11 @@
   "description": "",
   "main": "import.js",
   "dependencies": {
-    "csvtojson": "^0.1.7",
-    "d3": "^3.4.9",
+    "csvtojson": "^1.1.9",
+    "d3": "^3.5.17",
     "dev-null": "^0.1.1",
-    "jsts": "^0.13.4",
-    "shapefile": "^0.3.0",
+    "jsts": "^1.5.0",
+    "shapefile": "^0.6.6",
     "underscore": "^1.6.0"
   },
   "devDependencies": {},
