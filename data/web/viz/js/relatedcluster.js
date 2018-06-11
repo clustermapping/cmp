@@ -646,7 +646,10 @@
       year = options.year ? '?year=' + options.year : '';
     if (options.cluster) {
       parts.push(options.cluster);
+    } else {
+      parts.push('none');
     }
+
     if (options.regionType && options.regionKey) {
       parts.push(options.regionType, options.regionKey)
     }
