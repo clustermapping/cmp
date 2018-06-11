@@ -8,7 +8,7 @@ function clustermapping_preprocess_html(&$variables) {
   $fonts = array(
     '#tag' => 'link',
     '#attributes' => array(
-      'href' => 'http://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400italic,700,900,700italic,900italic,600italic,600|Lato:400,700,900,700italic,900italic,400italic',
+      'href' => '//fonts.googleapis.com/css?family=Source+Sans+Pro:400,400italic,700,900,700italic,900italic,600italic,600|Lato:400,700,900,700italic,900italic,400italic',
       'rel' => 'stylesheet',
       'type' => 'text/css',
     ),
@@ -20,7 +20,7 @@ function clustermapping_preprocess_html(&$variables) {
     $variables['head_title'] = implode(' | ', $variables['head_title_array']);
   }
 
-  drupal_add_js(variable_get('hbs_secondary_analytics', 'http://www.hbs.edu/apps/isc/js/analytics.js'), 'external');
+  drupal_add_js(variable_get('hbs_secondary_analytics', '//www.hbs.edu/apps/isc/js/analytics.js'), 'external');
 }
 
 function clustermapping_preprocess_views_view(&$variables) {
