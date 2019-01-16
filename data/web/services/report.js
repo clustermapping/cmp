@@ -3751,22 +3751,24 @@ function compareRegions(comparison, data, key, start, end) {
         },
         byClusterRegionYear = d3.nest().key(byCluster).key(byRegion).key(byYear).rollup(first).map(data, d3.map);
 
-    byClusterRegionYear.forEach(function (ckey, cval) {
-        var obj = {key: ckey, regions: []};
-        cval.forEach(function (rKey, rVal) {
-            var yStart = rVal.get(start);
+    Object.keys(byClusterRegionYear).forEach(function (cKey) {
+        var cVal = byClusterRegionYear[cKey];
+        var obj = {key: cKey.substring(1), regions: []};
+        Object.keys(cVal).forEach(function (rKey) {
+            var rVal = cVal[rKey];
+            var yStart = rVal[`$${start}`];
             obj.code = yStart.cluster_code_t;
             obj.label = yStart.cluster_name_t;
-            var agg = comparison.aggs.get(rKey).get(start),
+            var agg = comparison.aggs[rKey][`$${start}`],
                 region = {
-                    id: rKey,
+                    id: rKey.substring(1),
                     value: +yStart[key],
                     total: +agg[key]
                 };
             region.percent = region.value / region.total;
             if (end) {
-                var agg = comparison.aggs.get(rKey).get(end),
-                    yEnd = rVal.get(end);
+                var agg = comparison.aggs[rKey][`$${end}`],
+                    yEnd = rVal[`$${end}`];
                 region.total = +agg[key] - region.total;
                 region.value = +yEnd[key] - region.value;
                 region.percent = region.value / Math.abs(region.total);
@@ -4117,7 +4119,11 @@ function screenshot(req, res, next, path, filename, option) {
 
     (async () => {
       try {
-        const browser = await puppeteer.launch();
+        const browser = await puppeteer.launch({
+    	    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    	    headless: true,
+            executablePath: '/usr/bin/google-chrome-stable'
+        });
         const page = await browser.newPage();
         await page.setViewport(viewportSize);
 
