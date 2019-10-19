@@ -33,9 +33,11 @@
             switch (id) {
                 case 'jobcreation':
                     //benchmark = false;
+                  yearStr = '/1998/' + year;
+                  break;
                 case 'innovation':
                   var innovation_year = Drupal.settings.hbs_dashboard.innovation_year;
-                  yearStr = '/1998/' + innovation_year;
+                  yearStr = '/2000/' + innovation_year;
                   break;
                 case 'specialization':
                   yearStr = '/1998/' + year;
@@ -70,7 +72,7 @@
 
         var data = settings.hbs_dashboard.data.region,
             region_type = data.region_type_t,
-            region_id = data.region_code_t;
+            region_id = data.region_key_t;
 
         $('.company-innovation-list').html('<iframe src="/data/report/region/innovationtable#/'
             + region_type + '/' + region_id + '/50" scrolling="no"></iframe>');

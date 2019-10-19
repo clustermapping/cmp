@@ -126,6 +126,7 @@
           },
           {
             type:'y',
+	    xoffset: -20,
             label:function(d){ return 'Job Creation ' + options.start + " to " + options.end },
             axis:{
               fn: d3.svg.axis(),

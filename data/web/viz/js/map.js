@@ -759,7 +759,7 @@
               attrs: {target: '_parent', href: function (d) {
                 if (d && d[0]) {
                   return typeof settings.hbs_dashboard != 'undefined' && settings.hbs_dashboard == 'cluster' ? '/region-cluster/'+ settings.hbs_dashboard.data.cluster.key_t + '/' + d[0].region_type_t + '/' + d[0].region_key_t
-                    :'/region/' + d[0].region_type_t + '/' + d[0].region_key_t;
+                    :'/region/' + d[0].region_type_t + '/' + encodeURIComponent(d[0].region_key_t);
                 }
               }},
               text: function (d) {

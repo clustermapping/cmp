@@ -34,7 +34,8 @@
                     yearStr = '/1998/' + year;
                     break;
                 case 'innovation':
-                    yearStr = '/1998/' + year;
+                    var innovation_year = Drupal.settings.hbs_dashboard.innovation_year;
+                    yearStr = '/2000/' + innovation_year;
                     scId = '';
                     break;
                 case 'specialization':

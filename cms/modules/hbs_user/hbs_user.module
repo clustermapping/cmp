@@ -175,6 +175,8 @@ function _hbs_user_build_custom_region_list($uid) {
 </div>
 ';
 
+$content .= '<p>' . t('Please note:  Custom Regions that are not viewed by any user at least once over a 12 month period may be periodically removed from the database.') . '</p>';
+
   drupal_add_js('(function($){
   $("a.custom_region_delete").on("click", function(e) {
     e.preventDefault();

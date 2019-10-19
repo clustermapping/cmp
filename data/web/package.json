@@ -9,15 +9,18 @@
   "author": "Phase2 Technology LLC",
   "license": "ISC",
   "dependencies": {
-    "restify": "^2.6.1",
-    "underscore": "^1.6.0",
-    "d3": "^3.4.2",
-    "csvtojson": "^0.1.7",
-    "jsts": "^0.13.2",
-    "topojson": "^1.4.6",
-    "q": "^1.0.0",
-    "solr-client": "^0.2.9",
-    "phantomjs": "^1.9.7-1",
-    "simple-json2csv": "0.0.5"
+    "csvtojson": "^1.1.9",
+    "d3": "^4.13.0",
+    "jsts": "^1.6.0",
+    "mz": "^2.7.0",
+    "nodemon": "^1.15.1",
+    "puppeteer": "^1.5.0",
+    "q": "^1.5.1",
+    "restify": "^6.3.4",
+    "restify-cors-middleware": "^1.1.0",
+    "simple-json2csv": "0.0.5",
+    "solr-client": "^0.7.0",
+    "topojson": "^3.0.2",
+    "underscore": "^1.8.3"
   }
 }

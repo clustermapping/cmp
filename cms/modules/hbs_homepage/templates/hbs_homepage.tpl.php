@@ -59,7 +59,7 @@
         <div class="row blog">
           <div class="col-xs-3 icon"></div>
           <div class="col-xs-9">
-            <?php print render($blogs); ?>
+            <?php // print render($blogs); ?>
             <a href="/blog" class="read-more">Visit our blog <span class="more-arrow">&nbsp;&rarr;</span></a>
           </div>
         </div>
@@ -70,7 +70,7 @@
 
           </div>
           <div class="col-xs-9">
-            <?php print render($resources); ?>
+            <?php //print render($resources); ?>
             <a href="/resource" class="read-more">Visit our resources <span class="more-arrow">&nbsp;&rarr;</span></a>
           </div>
         </div>
@@ -92,3 +92,4 @@
   </div>
   -->
 </div>
+

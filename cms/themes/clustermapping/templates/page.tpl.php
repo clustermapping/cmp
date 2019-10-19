@@ -348,7 +348,7 @@ $navigation_menu = '<ul class="menu nav navbar-nav">
         <li><a href="/terms-of-use">Terms of Use</a></li>
       </ul>
       <a href="http://www.harvard.edu/reporting-copyright-infringements" class="copyright-report">Reporting Copyright Infringment</a>
-      <p class="copyright">Copyright &copy; 2014 President and Fellows of Harvard College. <br />All rights reserved.</p>
+      <p class="copyright">Copyright &copy; 2018 President and Fellows of Harvard College. <br />All rights reserved.</p>
     </div>
     <div class="col-md-4 logo footer-col">
       <a href="http://isc.hbs.edu" class="hbs" title="Harvard Business School"></a>

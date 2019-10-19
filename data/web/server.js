@@ -4,6 +4,7 @@ var env = process.env.NODE_ENV || 'development',
     port = config.port || 4000,
     restify = require('restify'),
     cluster = require('cluster'),
+    corsMiddleware = require('restify-cors-middleware'),
     numCPUs = require('os').cpus().length;
 
 
@@ -44,17 +45,20 @@ if (cluster.isMaster) {
   cluster.on('exit', masterExit);
 } else {
 
+console.log('Using NodeJS version: '+ process.version);
   var server = restify.createServer({name: 'Clustermapping.us Data Services'});
   server.formatters['text/html'] = formatHTML;
-  server.use(restify.queryParser({ mapParams: true }));
-  server.use(restify.bodyParser({ mapParams: false }));
-  server.use(restify.CORS());
-  server.use(restify.gzipResponse());
+  const cors = corsMiddleware({});
+  server.use(cors.actual);
+  server.use(restify.plugins.queryParser({ mapParams: true }));
+  server.use(restify.plugins.bodyParser({ mapParams: false }));
+  // server.use(restify.CORS());
+  server.use(restify.plugins.gzipResponse());
   server.use();
   registerService('regions');
   registerService('report');
   registerService('meta');
-  server.get(/\/viz\/?.*/, restify.serveStatic({directory: '../web',match: /\/viz\/?.*/}));
+  server.get(/\/viz\/?.*/, restify.plugins.serveStatic({directory: '../web',match: /\/viz\/?.*/}));
   server.on('uncaughtException', exceptionHandler);
   server.listen(port, ready);
 }
@@ -64,4 +68,5 @@ process.on('uncaughtException', function (err) {
   console.error(err.stack);
   process.exit(1);
 });
+
 

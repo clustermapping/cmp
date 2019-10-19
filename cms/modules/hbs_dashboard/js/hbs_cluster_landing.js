@@ -54,10 +54,10 @@
                     }
                     break;
                 case 'clusters-innovation':
-                    var inno_year_max = Drupal.settings.hbs_dashboard.innovation_year || 2013;
+                    var inno_year_max = Drupal.settings.hbs_dashboard.innovation_year || 2015;
                     $('.innovation-chart').show();
                     if (! $.trim($('.innovation-chart').html())) {
-                        $('.innovation-chart').html('<iframe src="/data/report/region/innovation#/country/united_states/1998/' + inno_year_max + '/traded?subcluster=false&benchmark=false" scrolling="no"></iframe>');
+                        $('.innovation-chart').html('<iframe src="/data/report/region/innovation#/country/united_states/2000/' + inno_year_max + '/traded?subcluster=false&benchmark=false" scrolling="no"></iframe>');
                     }
                     break;
                 case 'related-clusters':

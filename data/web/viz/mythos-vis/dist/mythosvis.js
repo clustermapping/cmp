@@ -1097,10 +1097,12 @@ define('layers/AxisLayer',['LayerBase'], function(LayerBase) {
                 .attr({
                   // we'll see
                     'y': function(){
-                      return (d.type === 'y')? pHeight/2 : bb.height + 15;
+		      offset = d.xoffset? d.xoffset:0;
+                      return ((d.type === 'y')? pHeight/2 : bb.height + 15) + offset;
                     },
                     'x': function(){
-                      return (d.type === 'x')? pWidth/2: bb.width - 10;
+		      offset = d.xoffset? d.xoffset:0;
+                      return ((d.type === 'x')? pWidth/2: bb.width - 10) + offset;
                     },
                     'transform':  function (){
                       return (d.type === 'y')? "translate(" + (-(pHeight/2) - 50) + "," +  pHeight/2 + ") rotate(-90)" : "";
@@ -1928,7 +1930,6 @@ define('Plot',['d3', 'LayerFactory', 'ScaleFactory'], function(d3, LayerFactory,
 
     this._margin = {top: 10, right: 10, bottom: 70, left: 70};
 
-    return this;
     return this;
   };
 

@@ -36,19 +36,19 @@ module.exports = {
     },
     port: 4001,
     base: '/data',
-    baseUrl: '54.83.55.22'
+    baseUrl: '54.159.196.192'
   },
   production: {
     solr: {
-      host: '34.207.238.121',
-      port: 80,
-      core: 'clusterdata2016',
+      host: '54.84.253.229',
+      port: 8080,
+      core: 'collection1',
       path: '/solr'
     },
     siteSolr: {
-      host: '34.207.238.121',
-      port: 80,
-      core: 'collection1',
+      host: '54.84.253.229',
+      port: 8080,
+      core: 'sitesearch',
       path: '/solr'
     },
     port: 4001,
