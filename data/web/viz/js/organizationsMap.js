@@ -619,7 +619,7 @@
         .on('click', clickToZoom);
 
     var loadingOverlay = $('#loading-overlay').show();
-      loader.request(['/content/organization'], function (orgData) {
+      loader.request(['/content/organizations'], function (orgData) {
 	
         mapObjects.orgData = orgData;
         var pointsRaw = orgData.map(function(d, i) {

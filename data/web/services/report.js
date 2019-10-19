@@ -4120,11 +4120,13 @@ function screenshot(req, res, next, path, filename, option) {
     (async () => {
       try {
         const browser = await puppeteer.launch({
-    	    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    	    //args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    	    args: ['--disable-gpu', '--no-sandbox', '--single-process', '--disable-web-security'],
     	    headless: true,
             executablePath: '/usr/bin/google-chrome-stable'
         });
         const page = await browser.newPage();
+	await page.setJavaScriptEnabled(true);
         await page.setViewport(viewportSize);
 
         await page.goto(url, {"waitUntil": "networkidle0"});

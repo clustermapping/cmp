@@ -315,6 +315,15 @@
   }
 
   function processData(data) {
+    // remove empty years
+    for (var i=0;i<data.results.length;i++) {
+      if (data.results[i].lastVal == 0) {
+        data.results[i].values.shift();
+        data.results[i].lastVal = data.results[i].values[0].value;
+        data.results[i].lastYear = data.results[i].values[0].year;
+      }
+    }
+    data.totals.end = data.results[0].lastYear;
 
     totalData = data.totals;
     color.domain(data.results.map(function(d) { return d.id; }));
