@@ -57,8 +57,9 @@ var naics = function (data_persister, naics_persister, clusters_persister, regio
     },
     _override_value = function(data) {
       if (!overrides) return undefined;
-      var ov = overrides.get(data.year_t + '/' + data.naics_t);
-      if (ov && data.region_type_t == 'country') {
+      var ov = overrides.get(data.region_type_t + '/' + data.region_code_t + '/' + data.year_t + '/' + data.naics_t);
+      //if (ov && data.region_type_t == 'country') {
+      if (ov) {
         return ov.emp;
       }
       return undefined;
