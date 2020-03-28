@@ -63,6 +63,14 @@ function create_importer(year, ibrcVars, overrides) {
       }
 
       if (v) {
+var obj = {
+          id: 'aggregate/' + region + '/' + year,
+          region: 'region/' + region,
+          year: year,
+          key: v.key,
+          value: value
+        };
+        console.log(JSON.stringify(obj));
         return {
           id: 'aggregate/' + region + '/' + year,
           region: 'region/' + region,

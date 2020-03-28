@@ -46,7 +46,7 @@ var outputDir = process.argv[3] || 'output';
 var regions = {'state': 'shapes/State_2010Census_DP1.shp', 'county': 'shapes/County_2010Census_DP1.shp'};
 var areas = {'economic': 'areas/eas.csv', 'msa': 'areas/msas.csv'};
 var zcta = 'zcta/zcta_county_rel_10.txt';
-var clusters = 'clusters/clusters2014.csv';
+var clusters = 'clusters/clusters2017.csv';
 var related_clusters = 'clusters/related.csv';
 var ibrcMeta  = 'ibrc/meta_data.csv';
 var ibrcState  = 'ibrc/state_data.csv';
@@ -57,7 +57,7 @@ var fortune1000  = 'other/fortune1000.csv';
 var overridesFile  = 'other/overrides.csv';
 var patentCompanyFile = 'other/Patents_county_year_company.csv';
 var patentClusterFile = 'other/Patents_county_year_cluster.csv';
-var cbp_years = [1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015];
+var cbp_years = [1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018];
 var cbp_data_types = {'country': 'us', 'state': 'st', 'county': 'co', 'msa': 'msa'};
 
 var countries = [
@@ -125,9 +125,12 @@ var outFile = function (file) {
 
 var sendToFile = function(file) {
   return function(cache, clear,  cb) {
-    var zip = zlib.createGzip();
-    zip.pipe(fs.createWriteStream(file+'.gz'));
-    cache.writeToStream(zip, clear, cb);
+    //var zip = zlib.createGzip();
+    var stream = fs.createWriteStream(file, {flags: 'a'});
+    //stream.write
+    //zip.pipe(fs.createWriteStream(file+'.gz'));
+    //cache.writeToStream(zip, clear, cb);
+    cache.writeToStream(stream, clear, cb);
   }
 };
 
@@ -253,7 +256,6 @@ cbp_years.forEach(function (year) {
     process.nextTick(cb);
   }]);
 });
-
 //processors.push(['write_earliest', sendToFile(outFile('earliest.json')), [earliestCache, true]]);
 
 var run_times = [];

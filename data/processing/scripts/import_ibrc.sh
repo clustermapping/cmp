@@ -1,5 +1,5 @@
 #!/bin/bash
-appdir=${1:-"/opt/development/hbs/clustermapping/dataservices"}
+appdir=${1:-"/opt/development/hbs/clustermapping/data/processing"}
 dir=`pwd`
 
 cd $appdir
