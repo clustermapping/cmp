@@ -787,7 +787,7 @@ function _hbs_dashboard_region_cluster_page_callback($cluster_data = NULL, $regi
           . $region_data['region_type_t'] .'/'
           . $region_data['region_key_t'] .'" scrolling="no"></iframe>';
 
-        $build['subcluster_chart'] = '<iframe src="/data/report/region/jobcreation#/' . $data['region']['region_type_t'] . '/' . $data['region']['key_t'] . '/1998/2016/' . $cluster_code . '?benchmark=false" scrolling="no"></iframe>';
+        $build['subcluster_chart'] = '<iframe src="/data/report/region/jobcreation#/' . $data['region']['region_type_t'] . '/' . $data['region']['key_t'] . '/1998/2017/' . $cluster_code . '?benchmark=false" scrolling="no"></iframe>';
         drupal_add_js(drupal_get_path('module', 'hbs_dashboard') .'/js/hbs_region_cluster.js', 'file');
 
         $build['related_organizations'] = _hbs_dashboard_related_content('organization');
