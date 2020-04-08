@@ -33,7 +33,7 @@
 
             <div class="clearfix"></div>
             <div class="col-md-12 header">
-                <h1>Cluster Portfolio, 2016</h1>
+                <h1>Cluster Portfolio, 2017</h1>
 
             </div>
             <div class="col-md-12">
