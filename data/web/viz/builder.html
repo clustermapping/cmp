@@ -565,7 +565,7 @@ function updateSummary() {
             emp += county.emp_tl;
             est += county.est_tl;
             payroll = payroll + ((county.private_wage_tf - payroll)/(i +1));
-            gdp += county.gross_domestic_product_tf;
+            gdp += county.gross_domestic_product_private_industries_tf;
         }
     });
     d3.select('#total-population').text(numFormat(pop));

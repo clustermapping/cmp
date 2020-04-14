@@ -198,7 +198,7 @@ function regionBuilder(client) {
             year_t: 2017,
         },
             query = client.createQuery().set('json.nl=map'),
-            fields = ['id', 'region_name_t', 'region_short_name_t', 'region_code_t', 'region_key_t', 'total_population_tf', 'emp_tl', 'est_tl', 'private_wage_tf', 'gross_domestic_product_tf'];
+            fields = ['id', 'region_name_t', 'region_short_name_t', 'region_code_t', 'region_key_t', 'total_population_tf', 'emp_tl', 'est_tl', 'private_wage_tf', 'gross_domestic_product_private_industries_tf'];
         query.start(0).rows(10000).sort({}).q(q).fl(fields);
         return deferQuery(client, query, extractDocs(processAggregate));
     };
