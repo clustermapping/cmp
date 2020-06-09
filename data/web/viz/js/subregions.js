@@ -621,7 +621,12 @@
 
   function processData(data) {
     totalData = data.totals;
-    data.results.forEach(function (d) { plotData.push(d); });
+    data.results.forEach(function (d) { 
+        if (d.type !== 'county') {
+           d.wage = 1;
+        }
+        plotData.push(d); 
+    });
   }
 
   function updateOverlay(name, data) {
